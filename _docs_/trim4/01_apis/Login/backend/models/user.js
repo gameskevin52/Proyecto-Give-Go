@@ -1,16 +1,30 @@
 const db = require('../config/config');
 const bcrypt = require('bcryptjs');
 const User = {};
+const Organization = {};
 
-User.findAll = (result) => {
-  const sql = `SELECT id, email, name, lastname, phone, image, role, created_at, updated_at FROM users`;
-  db.query(sql, (err, users) => {
+Organization.findAllOrganizaciones = (result) => {
+  const sql = `SELECT organizacion_id, organizacion_nombre, organizacion_categoria, organizacion_direccion, organizacion_contraseña FROM Organizaciones`;
+  db.query(sql, (err, organizaciones) => {
+    if (err) {
+      console.log('Error al listar organizaciones: ', err);
+      result(err, null);
+    } else if (Organizaciones) {
+      console.log('Organizaciones encontradas: ', Organizaciones.length);
+      result(null, Organizaciones);
+    }
+  });
+};
+
+User.findAllUsuarios = (result) => {
+  const sql = `SELECT usuario_id, usuario_nombre, usuario_apellido, usuario_direccion, usuario_telefono, usuario_estrato, usuario_contraseña FROM Usuarios`;
+  db.query(sql, (err, usuarios) => {
     if (err) {
       console.log('Error al listar usuarios: ', err);
       result(err, null);
-    } else {
-      console.log('Usuarios encontrados: ', users.length);
-      result(null, users);
+    } else if (Usuarios) {
+      console.log('Usuarios encontrados: ', Usuarios.length);
+      result(null, Usuarios);
     }
   });
 };
