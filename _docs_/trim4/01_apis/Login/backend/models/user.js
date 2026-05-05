@@ -4,7 +4,7 @@ const User = {};
 const Organization = {};
 
 Organization.findAllOrganizaciones = (result) => {
-  const sql = `SELECT organizacion_id, organizacion_nombre, organizacion_categoria, organizacion_direccion, organizacion_contraseña FROM Organizaciones`;
+  const sql = `SELECT organizacion_id, organizacion_nombre, organizacion_categoria, organizacion_direccion, organizacion_correo, organizacion_contraseña FROM Organizaciones`;
   db.query(sql, (err, organizaciones) => {
     if (err) {
       console.log('Error al listar organizaciones: ', err);
@@ -17,7 +17,7 @@ Organization.findAllOrganizaciones = (result) => {
 };
 
 User.findAllUsuarios = (result) => {
-  const sql = `SELECT usuario_id, usuario_nombre, usuario_apellido, usuario_direccion, usuario_telefono, usuario_estrato, usuario_contraseña FROM Usuarios`;
+  const sql = `SELECT usuario_id, usuario_nombre, usuario_apellido, usuario_direccion, usuario_telefono, usuario_estrato, usuario_correo, usuario_contraseña FROM Usuarios`;
   db.query(sql, (err, usuarios) => {
     if (err) {
       console.log('Error al listar usuarios: ', err);
@@ -29,8 +29,22 @@ User.findAllUsuarios = (result) => {
   });
 };
 
+Organization.findById = (id, result) => {
+  const sql = `SELECT organizacion_id, organizacion_nombre, organizacion_categoria, organizacion_direccion, organizacion_correo, organizacion_contraseña FROM Organizaciones WHERE organizacion_id = ?`;
+  db.query(sql, [id], (err, user) => {
+    if (err) {
+      console.log('Error al consultar: ', err);
+      result(err, null);
+    }
+    else {
+      console.log('Organizacion consultada: ',  user[0] );
+      result(null, user[0]);
+    }
+  });
+};
+
 User.findById = (id, result) => {
-  const sql = `SELECT id, email, name, lastname, image, phone, role, password FROM users WHERE id = ?`;
+  const sql = `SELECT usuario_id, usuario_nombre, usuario_apellido, usuario_direccion, usuario_telefono, usuario_estrato, usuario_correo, usuario_contraseña FROM Usuarios WHERE usuario_id = ?`;
   db.query(sql, [id], (err, user) => {
     if (err) {
       console.log('Error al consultar: ', err);
@@ -43,8 +57,22 @@ User.findById = (id, result) => {
   });
 };
 
+Organization.findByEmail = (email, result) => {
+  const sql = `SELECT organizacion_id, organizacion_nombre, organizacion_categoria, organizacion_direccion, organizacion_correo,  organizacion_contraseña FROM Organizaciones WHERE organizacion_correo = ?`;
+  db.query(sql, [email], (err, user) => {
+    if (err) {
+      console.log('Error al consultar: ', err);
+      result(err, null);
+    }
+    else {
+      console.log('Organizacion consultada: ',  user[0] );
+      result(null, user[0]);
+    }
+  });
+};
+
 User.findByEmail = (email, result) => {
-  const sql = `SELECT id, email, name, lastname, image, phone, role, password FROM users WHERE email = ?`;
+  const sql = `SELECT usuario_id, usuario_nombre, usuario_apellido, usuario_direccion, usuario_telefono, usuario_estrato, usuario_correo, usuario_contraseña FROM Usuarios WHERE usuario_correo = ?`;
   db.query(sql, [email], (err, user) => {
     if (err) {
       console.log('Error al consultar: ', err);
@@ -57,21 +85,47 @@ User.findByEmail = (email, result) => {
   });
 };
 
+Organization.create = async (organization, result) => {
+  const hash = await bcrypt.hash(organization.password, 45);  
+  const validRoles = ['admin', 'Organization'];
+  const role = validRoles.includes(organization.role) ? organization.role : 'user';
+  const sql = `INSERT INTO Organizaciones(
+                organizacion_nombre,
+                organizacion_categoria,
+                organizacion_direccion,
+                organizacion_correo,
+                organizacion_contraseña
+              ) VALUES (?,?,?,?,?)`;
+  db.query(sql, [
+    organization.name,
+    organization.category,
+    organization.address,
+    organization.email,
+    hash
+  ], (err, res) => {
+    if (err) {
+      console.log('Error al crear organización: ', err);
+      result(err, null);
+    } else {
+      console.log('Organización creada: ', { id: res.insertId, ...organization });
+      result(null, { id: res.insertId, ...organization });
+    }
+  });
+};
+
 User.create = async (user, result) => {
-  const hash = await bcrypt.hash(user.password, 10);  
-  const validRoles = ['admin', 'seller', 'customer', 'user'];
+  const hash = await bcrypt.hash(user.password, 45);  
+  const validRoles = ['admin', 'Organization', 'user', 'Voluntario', 'Bemeficiario'];
   const role = validRoles.includes(user.role) ? user.role : 'user';
-  const sql = `INSERT INTO users(
-                name, 
-                lastname,
-                email, 
-                password,
-                phone,
-                image,
-                role,
-                created_at,
-                updated_at
-            ) VALUES (?,?,?,?,?,?,?,?,?)`;
+  const sql = `INSERT INTO Usuarios(
+                usuario_id, 
+                usuario_nombre,
+                usuario_apellido, 
+                usuario_direccion, 
+                usuario_telefono, 
+                usuario_estrato, 
+                usuario_contraseña 
+              ) VALUES (?,?,?,?,?,?,?)`;
   db.query(sql,
     [
       user.name,
@@ -93,6 +147,58 @@ User.create = async (user, result) => {
       }
     }
   );
+};
+
+Organization.update = async (organization, result) => {
+  let fields = [];
+  let values = [];
+
+  if (organization.password) {
+    const hash = await bcrypt.hash(organization.password, 10);
+    fields.push("password = ?");
+    values.push(hash);
+  }
+
+  if (organization.email) {
+    fields.push("email = ?");
+    values.push(organization.email);
+  }
+  if (organization.name) {
+    fields.push("name = ?");
+    values.push(organization.name);
+  }
+  if (organization.lastname) {
+    fields.push("lastname = ?");
+    values.push(organization.lastname);
+  }
+  if (organization.phone) {
+    fields.push("phone = ?");
+    values.push(organization.phone);
+  }
+  if (organization.image) {
+    fields.push("image = ?");
+    values.push(organization.image);
+  }
+  if (organization.role) {
+    fields.push("role = ?");
+    values.push(organization.role);
+  }
+
+  fields.push("updated_at = ?");
+  values.push(new Date());
+
+  const sql = `UPDATE organizations SET ${fields.join(", ")} WHERE id = ?`;
+  values.push(organization.id);
+
+  db.query(sql, values, (err, res) => {
+    if (err) {
+      console.log('Error al actualizar organización: ', err);
+      result(err, null);
+    } else {
+      console.log('Organización actualizada: ', { id: organization.id, ...organization });
+      result(null, { id: organization.id, ...organization });
+    }
+  });
 };
 
 User.update = async (user, result) => {
