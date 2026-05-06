@@ -1,6 +1,7 @@
      const jwt = require("jsonwebtoken");
      const keys = require("../config/keys");
      
+
      function verifyToken(req, res, next) {
        const authHeader = req.headers["authorization"];
        if (!authHeader) {
@@ -31,7 +32,7 @@
            });
          }
          
-         function authorizeRoles(roles) {
+         function authorizeRoles(roles,organization) {
            return (req, res, next) => {
              if (!req.user || !roles.includes(req.user.role)) {
                return res.status(403).json({
@@ -39,9 +40,17 @@
                  message: `Acceso denegado: se requiere rol ${roles.join(" o ")}`,
                });
              }
+             if (!organization && req.user.organization != organization){
+                return res.status(403).json({
+                  success: false,
+                  menssage: `Acceso denegado: no pertenece a la organización ${organization}`
+
+                })
+             }
              next();
            };
          }
+         
          
          module.exports = {
            verifyToken,

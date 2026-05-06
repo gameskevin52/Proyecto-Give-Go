@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const User = {};
 
 User.findAll = (result) => {
-  const sql = `SELECT id, email, name, lastname, phone, image, role, created_at, updated_at FROM users`;
+  const sql = `SELECT organizacion_id, organizacion_nombre, organizacion_categoria, organizacion_direccion, organizacion_contraseña, FROM organizaciones`;
   db.query(sql, (err, users) => {
     if (err) {
       console.log('Error al listar usuarios: ', err);
@@ -16,7 +16,7 @@ User.findAll = (result) => {
 };
 
 User.findById = (id, result) => {
-  const sql = `SELECT id, email, name, lastname, image, phone, role, password FROM users WHERE id = ?`;
+  const sql = `SELECT organizacion_id, organizacion_nombre, organizacion_categoria, organizacion_direccion, organizacion_contraseña, FROM users WHERE id = ?`;
   db.query(sql, [id], (err, user) => {
     if (err) {
       console.log('Error al consultar: ', err);
@@ -30,7 +30,7 @@ User.findById = (id, result) => {
 };
 
 User.findByEmail = (email, result) => {
-  const sql = `SELECT id, email, name, lastname, image, phone, role, password FROM users WHERE email = ?`;
+  const sql = `SELECT organizacion_id, organizacion_nombre, organizacion_categoria, organizacion_direccion, organizacion_contraseña, FROM users WHERE email = ?`;
   db.query(sql, [email], (err, user) => {
     if (err) {
       console.log('Error al consultar: ', err);
@@ -45,18 +45,14 @@ User.findByEmail = (email, result) => {
 
 User.create = async (user, result) => {
   const hash = await bcrypt.hash(user.password, 10);  
-  const validRoles = ['admin', 'seller', 'customer', 'user'];
+  const validRoles = ['admin', 'organizacion', 'voluntario', 'beneficiario'];
   const role = validRoles.includes(user.role) ? user.role : 'user';
   const sql = `INSERT INTO users(
-                name, 
-                lastname,
-                email, 
-                password,
-                phone,
-                image,
-                role,
-                created_at,
-                updated_at
+                organizacion_id, 
+                organizacion_nombre,
+                organizacion_categoria, 
+                organizacion_direccion,
+                organizacion_contraseña,
             ) VALUES (?,?,?,?,?,?,?,?,?)`;
   db.query(sql,
     [
