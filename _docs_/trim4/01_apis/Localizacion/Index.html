@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario con Mapa - OpenStreetMap</title>
+    
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    
+    <link rel="stylesheet" href="styles.css">
+    
+</head>
+<body>
+    <h1>Locaizacion de voluntarios</h1>
+    
+    <input type="text" id="direccion" placeholder="Ej: Torre Eiffel, Paris" size="50">
+    <button onclick="mostrarMapa()">Mostrar en el Mapa</button>
+    
+    <div id="map"></div>
+    
+    <div class="info">
+        Este mapa usa <strong>OpenStreetMap</strong> y <strong>Leaflet</strong>, completamente gratis.<br>
+        La conversión de dirección a coordenadas usa <strong>Nominatim</strong> (Geocodificación gratuita, 1 solicitud/segundo).
+    </div>
+
+    <!-- Librerías externas -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Tu archivo JS externo -->
+    <script src="script.js"></script>
+</body>
+</html>
