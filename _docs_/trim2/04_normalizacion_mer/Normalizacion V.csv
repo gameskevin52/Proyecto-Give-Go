@@ -1,0 +1,24 @@
+﻿3FN=,,,,,,,,,,,,,,,,,,,,,
+la db debe estar en la 2FN,,,,,,,,,,,,,,,,,,,,,
+los atributos no claves deben ser independientes y dependientes por completo de la clave primeria ,,,,,,,,,,,,,,,,,,,,,
+las tablas solo deben ontener informacion sobre la entidad definida por la clave primeria,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,
+,,beneficiario,,,,,,Voluntariado,,,,,,,,,,,,,
+,,id_beneficiario,id_usuario,estrato,,,,id_usuario,id_organizacion,fecha_inicio_Volun,fecha_fin_Volun,,,,,,,,,,
+,,1,1,2,,,,2,2,2/3/2026,2/4/2026,,Usuarios,,,,,,,,
+,,,,,,,,,,,,,id_usuario,nombre_usuario 1,nombre_usuario2,apellido1,apellido2,telefono ,direccion_usuario,correo,contraseña_usuario 
+,,,,,,,,,,,,,1,maria ,Alejandra,Quiñones,gomez,3162817388,calle 34 sur86-10,papita@gmail.com,1234
+,,,,,,,,,,,,,2,kevin,,hernandez,guzman,3194563367,carrera 88 bis #5-18,xd@gmail.com,5678
+,,,,,,,,,,,,,,,,,,,,,
+,Donacion,,,,,,,Organizaciones,,,,,,,,,,,,,
+,id_donacion,id_usuario,categoria ,tipo_donacion,fecha_donacion ,cantidad_donacion,,id_organizacion,nombre_organizacion,direccion_ organizacion,Correo_organizacion,contraseña_organizacion,,,,,,,,,
+,1,2,"	
+Social",Monetaria,12/8/2025,50000,,1,Fundacion Esperanza,xsdsd86,xd@gmail.com,3456,,,,,,,,,
+,2,2,Comunidad,Material ,12/9/2025,2,,2,Ayuda Comunitaria,xsss#34-09,lol@gmail.com,7890,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,
+,Pagos,,,,,,,,,,,,,,,,,,,,
+,id_pago,id_donacion,tipo_metodo,referencia ,valor_total,,,,,,,,,,,,,,,,
+,1,1,nequi,3194563367,50000,,,,,,,,,,,,,,,,
