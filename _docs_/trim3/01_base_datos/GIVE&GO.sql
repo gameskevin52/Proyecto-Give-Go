@@ -8,7 +8,6 @@ USE give ;
 CREATE TABLE Organizaciones (
   organizacion_id INT NOT NULL AUTO_INCREMENT,
   organizacion_nombre VARCHAR(45) NOT NULL,
-  organizacion_categoria VARCHAR(45) NOT NULL,
   organizacion_direccion VARCHAR(45) NOT NULL,
   organizacion_correo VARCHAR(50) NOT NULL,
   organizacion_contraseña VARCHAR(300) NOT NULL,
