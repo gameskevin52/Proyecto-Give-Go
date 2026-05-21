@@ -10,6 +10,7 @@ CREATE TABLE Organizaciones (
   organizacion_nombre VARCHAR(45) NOT NULL,
   organizacion_categoria VARCHAR(45) NOT NULL,
   organizacion_direccion VARCHAR(45) NOT NULL,
+  organizacion_correo VARCHAR(50) NOT NULL,
   organizacion_contraseña VARCHAR(300) NOT NULL,
   PRIMARY KEY (organizacion_id))
 ENGINE = InnoDB;
@@ -24,6 +25,7 @@ CREATE TABLE Usuarios (
   usuario_direccion VARCHAR(45) NOT NULL,
   usuario_telefono VARCHAR(45) NOT NULL,
   usuario_estrato VARCHAR(45) NOT NULL,
+  usuario_correo VARCHAR(50) NOT NULL,
   usuario_contraseña VARCHAR(300) NOT NULL,
   organizacion_id INT NOT NULL,
   PRIMARY KEY (usuario_id),

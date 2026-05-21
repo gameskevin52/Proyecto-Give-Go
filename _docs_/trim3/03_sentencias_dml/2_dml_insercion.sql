@@ -33,19 +33,19 @@
 -- ------------------------------------------------------------------------------------- --
 
 INSERT INTO ORGANIZACIONES VALUES
-(null,'Fundacion Esperanza', 'Social', 'Bogotá', sha1('clave123')),
-(null,'Ayuda Comunitaria', 'Comunidad', 'Bogotá', sha1('segura456')),
-(null,'Salud para Todos', 'Salud', 'Bogotá', sha1('salud789')),
-(null,'Educacion Futuro', 'Educacion', 'Bogotá', sha1('edu321')),
-(null,'Manos Solidarias', 'Humanitaria', 'Bogotá', sha1('mano654'));
+(null,'Fundacion Esperanza', 'Social', 'Bogotá','fundacion@esperanza.org', sha1('clave123')),
+(null,'Ayuda Comunitaria', 'Comunidad', 'Bogotá', 'ayuda@comunitaria.org', sha1('segura456')),
+(null,'Salud para Todos', 'Salud', 'Bogotá', 'salud@para todos.org', sha1('salud789')),
+(null,'Educacion Futuro', 'Educacion', 'Bogotá', 'educacion@futuro.org', sha1('edu321')),
+(null,'Manos Solidarias', 'Humanitaria', 'Bogotá', 'manos@solidarias.org', sha1('mano654'));
 
 INSERT INTO USUARIOS VALUES
-(null,'Nicolay Diagelo','Cajamarca','Bogotá','371637224',2, sha1('nico123'), 2),
-(null,'Zharick Sofia','Rodriguez Gutierres','Pereira','30294395',3, sha1('zharick123'), 4),
-(null,'Kevin ','Hernandez Guzman','Medellin','3480902',2, sha1('kevin123'), 3),
-(null,'Maria Alejandra ','Quiñones','Cartagena','3372883',3, sha1('maria123'), 4),
-(null,'Mateito ','Moreno Lopez','Bogotá','302897388',3, sha1('mateito123'), 5),
-(null,'Alexander ','Toro',' Pereira','3257894156',3, sha1('alex123'), 1);
+(null,'Nicolay Diagelo','Cajamarca','Bogotá','371637224',2, 'nicolay@esperanza.org', sha1('nico123'), 2),
+(null,'Zharick Sofia','Rodriguez Gutierres','Pereira','30294395',3, 'zharick@comunitaria.org', sha1('zharick123'), 4),
+(null,'Kevin ','Hernandez Guzman','Medellin','3480902',2, 'kevin@para todos.org', sha1('kevin123'), 3),
+(null,'Maria Alejandra ','Quiñones','Cartagena','3372883',3, 'maria@futuro.org', sha1('maria123'), 4),
+(null,'Mateito ','Moreno Lopez','Bogotá','302897388',3, 'mateito@solidarias.org', sha1('mateito123'), 5),
+(null,'Alexander ','Toro',' Pereira','3257894156',3, 'alexander@esperanza.org', sha1('alex123'), 1);
 
 INSERT INTO MENSAJES VALUES 
 (null, 'Alerta', '2026-03-01', 'Mantenimiento', 'Sistema en mantenimiento', 'Activa', 2, 1),
