@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Ayudas - Give&Go</title>
+    <link rel="stylesheet" href="Ad - Ma -Styles/mapa/mapa_styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo">❤️ <strong>Give&Go</strong></div>
+            <nav class="nav-menu">
+                <a href="index.html">Inicio</a> <a href="eventos.html">Eventos</a> <a href="mapa.html" class="active-link">Mapa</a> <a href="donaciones.html">Donaciones</a>
+            </nav>
+            <div class="nav-auth">
+                <a href="admin.html" class="admin-link">Acceso Administrador</a>
+                <a href="iniciar-sesion.html" class="#">Iniciar Sesion</a>
+                <a href="registrarse.html" class="btn-register">Registrarse</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="map-page-container">
+        <div class="page-top-info">
+            <h1>Mapa de Ayudas - Kennedy</h1>
+            <p>Encuentra centros de apoyo y ofertas en la localidad de Kennedy, Bogotá</p>
+            
+            <div class="filter-row">
+                <button class="filter-chip active">Todas</button>
+                <button class="filter-chip">Salud</button>
+                <button class="filter-chip">Educación</button>
+                <button class="filter-chip">Medio Ambiente</button>
+                <button class="filter-chip">Alimentos</button>
+            </div>
+
+            <div class="search-tabs-row">
+                <div class="search-input">
+                    <input type="text" placeholder="🔍 Buscar por nombre, dirección o barrio...">
+                </div>
+                <div class="type-tabs">
+                    <button class="tab active">Todos</button>
+                    <button class="tab">Centros</button>
+                    <button class="tab">Ofertas</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-main-layout">
+            <section class="map-box">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d63631.4101584222!2d-74.2163148!3d4.6006259!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f992f88e2ce0b%3A0x5f759f81a7557781!2sSENA%20-%20Complejo%20sur!5e0!3m2!1ses-419!2sco!4v1775710536870!5m2!1ses-419!2sco" allowfullscreen="" loading="lazy"></iframe>
+                <div class="map-overlay-legend">
+                    <h4>Categorías</h4>
+                    <ul>
+                        <li><span class="dot salud"></span> Salud</li>
+                        <li><span class="dot educacion"></span> Educación</li>
+                        <li><span class="dot alimentos"></span> Alimentos</li>
+                    </ul>
+                </div>
+            </section>
+
+            <aside class="locations-list">
+                <h3>Ubicaciones (8)</h3>
+                <div class="loc-card active-card">
+                    <div class="loc-marker salud"></div>
+                    <div class="loc-details">
+                        <h4>Centro de Donaciones Kennedy Central</h4>
+                        <p class="loc-addr">📍 Carrera 78K # 38A-31 Sur</p>
+                        <span class="loc-tag salud">Salud</span>
+                    </div>
+                </div>
+                <div class="loc-card">
+                    <div class="loc-marker educacion"></div>
+                    <div class="loc-details">
+                        <h4>Fundación Ayuda Social Las Margaritas</h4>
+                        <p class="loc-addr">📍 Calle 38A Sur # 80F-25</p>
+                        <span class="loc-tag educacion">Educación</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-grid">
+            <div class="footer-info">
+                <div class="logo">❤️ <strong>Give&Go</strong></div>
+                <p>Conectando generosidad con necesidad. Juntos creamos un mundo más solidario.</p>
+            </div>
+            <div class="footer-nav">
+                <div class="f-col"><h4>PLATAFORMA</h4><a href="#">Ofertas</a><a href="#">Mapa</a></div>
+                <div class="f-col"><h4>EMPRESA</h4><a href="#">Contacto</a><a href="#">Sobre Nosotros</a></div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

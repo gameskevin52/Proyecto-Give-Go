@@ -1,0 +1,222 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    color: #1f2937;
+    background-color: #ffffff;
+    padding-top: 120px;
+}
+
+main {
+    padding-top: 0;
+}
+.topbar {
+    padding: 0.75rem 1rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #dbe2ea;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+.btn-dan{
+    border-radius: 20px;
+    background-color: red;
+    color: white;
+    border-color: rgba(255, 0, 0, 0);
+}
+
+.hero-section {
+    background-color: #ffffff;
+    margin-block-start: 0px;
+}
+
+.hero-badge {
+    display: inline-block;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    font-weight: 700;
+}
+
+.hero-card {
+    padding: 1.5rem;
+    border: 1px solid #dbe2ea;
+    border-radius: 1rem;
+    background-color: #ffffff;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.back-link-wrap {
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+}
+
+.back-link {
+    margin-left: 200px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover {
+    color: #dc2626;
+}
+
+.category-preview,
+.category-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 130px;
+    border-radius: 1rem;
+    border: 1px solid #dbe2ea;
+    font-weight: 700;
+    text-align: center;
+    padding: 1rem;
+}
+/*el transition es el que le da el relieve de flotante*/
+.category-box {
+    min-height: 140px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.category-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.category-salud {
+    background-color: #dcfce7;
+}
+
+.category-educacion {
+    background-color: #dbeafe;
+}
+
+.category-ambiente {
+    background-color: #ecfccb;
+}
+
+.category-alimentos {
+    background-color: #ffedd5;
+}
+
+.category-vivienda {
+    background-color: #ede9fe;
+}
+
+.category-textiles {
+    background-color: #fce7f3;
+}
+
+.category-voluntariado {
+    background-color: #fef9c3;
+}
+
+.category-eventos {
+    background-color: #cffafe;
+}
+
+.legal-card {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+    border: 1px solid #dbe2ea;
+    border-radius: 1rem;
+    background-color: #ffffff;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+.legal-cookies-card {
+    max-width: 900px;
+    margin: 10px;
+    padding: 2rem;
+    border: 1px solid #dbe2ea;
+    border-radius: 1rem;
+    background-color: #ffffff;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.subtitle-date {
+    margin-bottom: 5rem;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.legal-list {
+    padding-left: 1.5rem;
+}
+
+.legal-list li {
+    margin-bottom: 1.5rem;
+}
+
+.legal-list ul {
+    margin-top: 0.75rem;
+    padding-left: 1.25rem;
+}
+
+.site-footer {
+    background-color: #0f172a;
+    color: #ffffff;
+}
+
+.footer-title {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #a9b1bb;
+}
+
+.footer-text {
+    color: #d1d5dbb4;
+    line-height: 1.7;
+}
+
+.footer-link {
+    color: #d1d5dbb4;
+    text-decoration: none;
+}
+
+.footer-link:hover {
+    color: #ffffff;
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+}
+
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 90px;
+    }
+
+    .topbar {
+        font-size: 0.95rem;
+    }
+
+    .hero-card,
+    .legal-card {
+        padding: 1.25rem;
+    }
+
+    .category-preview,
+    .category-box {
+        min-height: 110px;
+    }
+
+    .back-link-wrap {
+        padding-top: 0.75rem;
+    }
+}

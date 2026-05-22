@@ -1,0 +1,1219 @@
+/*index inicio/
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Give&Go - Plataforma Solidaria</title>
+    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <link rel="stylesheet" href="./css/bootstrap.css">
+    <link rel="stylesheet" href="./css/styles_boxbox.css">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg py-3 fixed-top bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="index.html">
+            <span class="me-2">❤️</span> Give&Go
+        </a>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav gap-3">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Eventos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Mapa</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Donaciones</a></li>
+                </ul>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <a href="#" class="nav-link d-none d-lg-block">Acceso Administrador</a>
+                <a href="#" class="nav-link d-none d-lg-block">Iniciar Sesión</a>
+                <button class="btn btn-register">Registrarse</button>
+            </div>
+        </div>
+    </nav>
+
+   <div class="container">
+        <!--Encabezado-->
+        <iframe title="Vista previa" src="https://b4df8d69-7473-43ff-a5e5-a1ac30aa0084-v2-figmaiframepreview.figma.site" allow="autoplay" class="x1bpp3o7 xh8yej3 x5yr21d x1lliihq">…</iframe>
+        
+        <!--Portafolio-->
+        <div class="border portafolio"> 
+            <section>
+                <section class="border portafolio">
+                     <div class="border info">
+                        <button type="button" disabled class="btn btn-danger">♥ Plataforma Solidaria en Colombia</button>
+                        <h2>Conecta con tu comunidad,</h2>
+                        <h2>transforma vidas</h2>
+                        <p>Give&Go conecta voluntarios, beneficiarios y organizaciones en Colombia. Encuentra oportunidades de ayudar o recibe el apoyo que necesitas en tu ciudad.</p>
+                        <span class="border border-light"></span>
+                    </div>
+            <div class="border cate">Categorias</div>
+        </section>
+        </div>
+        <!--Categorias-->
+        
+        <div class="border categorias">
+            <h2 class="titulo text-center">Categorias de Ayuda</h2>
+        <section class="border categorias">
+            <div class="border col-lg-3 col-md-12 salud"></div>
+            <div class="border col-lg-3 col-md-12 educacion"></div>
+            <div class="border col-lg-3 col-md-12 ambiente"></div>
+            <div class="border col-lg-3 col-md-12 alimentos"></div>
+        </div></section>
+        <section class="border categorias">
+            <div class="border col-lg-3 col-md-12 vivienda"></div>
+            <div class="border col-lg-3 col-md-12 textiles"></div>
+            <div class="border col-lg-3 col-md-12 voluntariado"></div>
+            <div class="border col-lg-3 col-md-12 eventos"></div>
+        </div>
+        </section>
+        <!--Contactenos-->
+        <footer class="footer-custom">
+            <div class="container">
+                <!-- Fila Principal -->
+                <div class="row">
+                    <!-- Lado Izquierdo: Logo, Frase, Redes y Legal -->
+                    <div class="col-lg-6">
+                        <div class="footer-brand mb-3">
+                            <span class="heart-icon">❤️</span><strong>Give&Go</strong>
+                        </div>
+                        <p class="footer-description">Conectando generosidad con necesidad. Juntos creamos un mundo más solidario y sostenible, un objeto a la vez.</p>                        
+                        <!-- Redes Sociales (Círculos con bordes finos) -->
+                        <div class="d-flex gap-3 my-4">
+                            <div class="social-circle"><a href="#"><strong>F</strong></a></div>
+                            <div class="social-circle"><a href="#"><strong>T</strong></a></div>
+                            <div class="social-circle"><a href="#"><strong>IG</strong></a></div>
+                            <div class="social-circle"><a href="#"><strong>@</strong></a></div>
+                        </div>
+
+                        <!-- Sección Legal (Debajo de las redes en la imagen) -->
+                        <div class="mt-5">
+                            <h6 class="footer-heading">LEGAL</h6>
+                            <ul class="list-unstyled footer-list mt-3">
+                                <li><a href="terminos_de_uso.html">Términos de Uso</a></li>
+                                <li><a href="#">Política de Privacidad</a></li>
+                                <li><a href="#">Política de Cookies</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Lado Derecho: Tres Columnas de Enlaces -->
+                    <div class="col-lg-6">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h6 class="footer-heading">PLATAFORMA</h6>
+                                <ul class="list-unstyled footer-list mt-3">
+                                    <li><a href="#">Cómo Funciona</a></li>
+                                    <li><a href="#">Ofertas</a></li>
+                                    <li><a href="#">Centros de Apoyo</a></li>
+                                    <li><a href="#">Mapa</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <h6 class="footer-heading">COMUNIDAD</h6>
+                                <ul class="list-unstyled footer-list mt-3">
+                                    <li><a href="#">Voluntarios</a></li>
+                                    <li><a href="#">Beneficiarios</a></li>
+                                    <li><a href="#">Organizaciones</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <h6 class="footer-heading">EMPRESA</h6>
+                                <ul class="list-unstyled footer-list mt-3">
+                                    <li><a href="#">Sobre Nosotros</a></li>
+                                    <li><a href="#">Contacto</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Línea final (Copyright) -->
+                <div class="footer-bottom d-flex justify-content-between mt-5 pt-4">
+                    <p>© 2026 Give&Go. Todos los derechos reservados.</p>
+                    <p>Hecho con <span class="text-danger">❤️</span> para la comunidad</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="./js/scripts.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+/*CSS*/
+
+.cat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.cat-card h5 {
+    font-size: 1rem;
+    color: #2D3748;
+}
+
+.cat-card small {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* Colores de fondo pasteles (iguales a la imagen) */
+.bg-soft-green { background-color: #E6FFFA; }
+.bg-soft-blue { background-color: #EBF8FF; }
+.bg-soft-mint { background-color: #F0FFF4; }
+.bg-soft-orange { background-color: #FFFAF0; }
+.bg-soft-purple { background-color: #FAF5FF; }
+.bg-soft-pink { background-color: #FFF5F7; }
+.bg-soft-yellow { background-color: #FFFFF0; }
+.bg-soft-cyan { background-color: #E6FFFA; }
+
+.footer-custom {
+    background-color: #0B111F; /* El azul oscuro exacto de la imagen */
+    color: #ffffff;
+    padding: 100px 0 40px 0;
+    font-size: 14px;
+}
+
+.footer-brand {
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.heart-icon { color: #FF0000; }
+
+.footer-description {
+    color: #94A3B8; /* Color gris suave */
+    max-width: 350px;
+    line-height: 1.6;
+    margin-top: 20px;
+}
+
+/* Títulos de las columnas (PLATAFORMA, LEGAL, etc.) */
+.footer-heading {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #E2E8F0;
+    margin-bottom: 20px;
+}
+
+/* Enlaces del footer */
+.footer-list li { margin-bottom: 12px; }
+.footer-list a {
+    color: #94A3B8;
+    text-decoration: none;
+    transition: 0.3s;
+}
+.footer-list a:hover { color: #ffffff; }
+
+/* Círculos de redes sociales con borde sutil */
+.social-circle {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #475569;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #94A3B8;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.social-circle:hover {
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+/* Línea de copyright */
+.footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    color: #64748B;
+    font-size: 12px;
+}
+
+/* Círculos de redes sociales */
+.social-icon {
+    width: 35px;
+    height: 35px;
+    background-color: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    font-style: normal;
+    font-size: 0.8rem;
+    transition: 0.3s;
+}
+
+.social-icon:hover {
+    background-color: var(--primary-red);
+}
+/* Contenedor principal con el azul muy oscuro de la imagen */
+.footer-custom {
+    background-color: #0d1421; /* Azul noche profundo */
+    color: #ffffff;
+    padding: 60px 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Marca: Logo y Nombre */
+.footer-brand {
+    font-size: 1.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.heart-icon {
+    font-size: 1.5rem;
+}
+
+/* Descripción con opacidad para ese tono grisáceo */
+.footer-description {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 380px;
+    margin-bottom: 30px;
+}
+
+/* Redes Sociales: Círculos con fondo sutil */
+.social-circle {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.1); /* Círculo semitransparente */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    transition: background 0.3s ease;
+    cursor: pointer;
+}
+
+.social-circle:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Títulos de secciones (PLATAFORMA, COMUNIDAD, etc.) */
+.footer-heading {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #ffffff;
+    margin-bottom: 25px;
+}
+
+/* Enlaces de las listas */
+.footer-list {
+    padding: 0;
+}
+
+.footer-list li {
+    margin-bottom: 15px;
+}
+
+.footer-list a {
+    color: rgba(255, 255, 255, 0.6); /* Color apagado como en la foto */
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+
+.footer-list a:hover {
+    color: #ffffff;
+}
+
+/* Sección LEGAL separada abajo a la izquierda */
+.mt-5 {
+    margin-top: 60px !important;
+}
+a{
+  color: #F0FFF4;
+}
+
+/* Ajuste de alineación para las columnas de la derecha */
+@media (min-width: 992px) {
+    .col-lg-6:last-child {
+        padding-top: 10px; /* Alinea los títulos con el logo */
+    }
+}
+/*-------------------------------------------------------------------------------*/
+/*Terminos De Uso*/
+.caja-info {
+    max-width: 750px;
+    margin: 20px auto;
+    background-color: #f9f9f9;
+    padding: 48px;
+    border: 1px solid #ccc;
+}
+.button-contacto{
+    background-color: #f80000;
+    color: white;       
+    padding: 12px 24px;  
+    border-radius: 10px;    
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 auto;
+    border: none;
+    margin-bottom: 40px; 
+    
+}
+
+/* RESPONSIVE DESIGN */
+
+/* Tablets */
+@media (max-width: 992px) {
+
+  /* Navegador */
+  nav {
+    width: 100%;
+    height:150px;
+
+  }
+
+  .logo {
+    width: 100%;
+  }
+
+  .inicio {
+    width: 100%;
+    height: 20px;
+  }
+
+  .evento {
+    width: 100%;
+    height: 20px;
+  }
+  .mapa {
+    width: 100%;
+    height: 20px;
+  }
+  .donaciones {
+    width: 100%;
+    height: 20px;
+  }
+  .ingresa {
+    width: 100%;
+    height: 20px;
+  }
+  .contactenos{
+    width: 100%;
+    height: 1200;
+  }
+  .logo{
+    width: 100%;
+  }
+  .plataforma{
+    width: 100%;
+  }
+  .comunidad{
+    width: 100%;
+  }
+  .empresa{
+    width: 100%;
+  }
+  footer{
+    width: 100%;
+    height: 30px;
+}
+.derechos{
+    width: 100%;
+    text-align:center;
+}
+.hecho-con-amor{
+    width: 100%;
+    text-align: center;
+}
+}
+
+
+
+
+/* Celular */
+@media (max-width: 576px) {
+
+  /* Navegador */
+  .logo {
+    height: 50px;
+  }
+
+  .navega {
+    width: 100%;
+  }
+
+  .ingreso {
+    width: 100%;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*terminos de uso/
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/bootstrap.css">
+    <link rel="stylesheet" href="./css/styles_boxbox.css">
+</head>
+<body>
+    <!--Encabezado-->
+        <header class="border encabezado text-center">Give & Go</header>
+
+        <!--Navegador-->
+        <nav class="navbar navbar-expand-lg py-3 fixed-top bg-white shadow-sm">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" href="index.html">
+                    <span class="me-2">❤️</span> Give&Go
+                </a>
+                    <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                        <ul class="navbar-nav gap-3">
+                            <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#">Eventos</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#">Mapa</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#">Donaciones</a></li>
+                        </ul>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="#" class="nav-link d-none d-lg-block">Acceso Administrador</a>
+                        <a href="#" class="nav-link d-none d-lg-block">Iniciar Sesión</a>
+                        <button class="btn btn-register">Registrarse</button>
+                    </div>
+                </div>
+            </nav>
+            <div class="container">
+        
+                <h2 class="titulo-terminos text-center">Terminos De Uso</h2>
+                <div class="borde article-content">
+                    <div class="border caja-info">
+                        <ol>
+                            <h5>1. Aceptación de los Términos</h5>
+                                <p>Al acceder y utilizar Give&Go, aceptas estar sujeto a estos términos y condiciones. Si no estás de acuerdo con alguna parte de estos términos, no debes usar nuestra plataforma.</p>
+                            <h5>2. Uso de la Plataforma</h5>
+                                <p>Give&Go es una plataforma gratuita que conecta donantes, beneficiarios y organizaciones sociales en Colombia. Los usuarios se comprometen a:</p>
+                                <ul>
+                                    <li>Proporcionar información veraz y actualizada</li>
+                                    <li>Usar la plataforma de manera responsable y ética</li>
+                                    <li>No publicar contenido ofensivo, ilegal o engañoso</li>
+                                    <li>Respetar los derechos de otros usuarios</li>
+                                    <li>No utilizar la plataforma con fines comerciales no autorizados</li>
+                                </ul>
+                            <h5>3. Tipos de Usuarios</h5>
+                                <p><strong>Voluntarios:</strong> Personas que donan objetos en buen estado.</p>
+                                <p><strong>Beneficiarios:</strong> Personas que reciben donaciones.</p>
+                                <p><strong>Organizaciones:</strong> Centros de apoyo y fundaciones verificadas.</p>
+                                <p></p>
+                            <h5>4. Responsabilidades</h5>
+                                <p>Give&Go actúa únicamente como intermediario. No nos hacemos responsables de:</p>
+                                <ul>
+                                    <li>La calidad o estado de los objetos donados</li>
+                                    <li>El cumplimiento de los acuerdos entre usuarios</li>
+                                    <li>Los problemas derivados de transacciones fuera de la plataforma</li>
+                                    <li>La veracidad de la información proporcionada por los usuarios</li>
+                                </ul>
+                                <p></p>
+                            <h5>5. Propiedad Intelectual</h5>
+                                <p>Todos los contenidos de la plataforma, incluyendo diseño, logotipos, textos e imágenes, son propiedad de Give&Go y están protegidos por las leyes de propiedad intelectual de Colombia.</p>
+                                <p></p>
+                            <h5>6. Modificaciones</h5>
+                            <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios serán notificados a través de la plataforma y entrarán en vigor inmediatamente.</p>
+                            <p></p>
+                            <h5>7. Contacto</h5>
+                            <p>Para cualquier consulta sobre estos términos, contacta con nosotros en:<a href="mailto:legal@giveandgo.com">legal@giveandgo.com</a></p>
+                            
+                        </ol>
+                    </div>
+                </div>
+                <p class="text-center">¿Tienes preguntas sobre nuestras políticas?</p>
+                <button class="button-contacto text-center" href="contacto.html">Contactanos</button>
+                
+            </div>     
+                <!--Pie de pagina-->
+                <footer class="footer-custom">
+                    <div class="container">
+                        <!-- Fila Principal -->
+                        <div class="row">
+                            <!-- Lado Izquierdo: Logo, Frase, Redes y Legal -->
+                            <div class="col-lg-6">
+                                <div class="footer-brand mb-3">
+                                    <span class="heart-icon">❤️</span> <strong>Give&Go</strong>
+                                </div>
+                                <p class="footer-description">
+                                    Conectando generosidad con necesidad. Juntos creamos un mundo más solidario y sostenible, un objeto a la vez.
+                                </p>
+                                
+                                <!-- Redes Sociales (Círculos con bordes finos) -->
+                                <div class="d-flex gap-3 my-4">
+                                    <div class="social-circle">f</div>
+                                    <div class="social-circle">t</div>
+                                    <div class="social-circle">ig</div>
+                                    <div class="social-circle">in</div>
+                                </div>
+
+                                <!-- Sección Legal (Debajo de las redes en la imagen) -->
+                                <div class="mt-5">
+                                    <h6 class="footer-heading">LEGAL</h6>
+                                    <ul class="list-unstyled footer-list mt-3">
+                                        <li><a href="terminos_de_uso.html">Términos de Uso</a></li>
+                                        <li><a href="#">Política de Privacidad</a></li>
+                                        <li><a href="#">Política de Cookies</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Lado Derecho: Tres Columnas de Enlaces -->
+                            <div class="col-lg-6">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6 class="footer-heading">PLATAFORMA</h6>
+                                        <ul class="list-unstyled footer-list mt-3">
+                                            <li><a href="#">Cómo Funciona</a></li>
+                                            <li><a href="#">Ofertas</a></li>
+                                            <li><a href="#">Centros de Apoyo</a></li>
+                                            <li><a href="#">Mapa</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="footer-heading">COMUNIDAD</h6>
+                                        <ul class="list-unstyled footer-list mt-3">
+                                            <li><a href="#">Voluntarios</a></li>
+                                            <li><a href="#">Beneficiarios</a></li>
+                                            <li><a href="#">Organizaciones</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="footer-heading">EMPRESA</h6>
+                                        <ul class="list-unstyled footer-list mt-3">
+                                            <li><a href="#">Sobre Nosotros</a></li>
+                                            <li><a href="#">Contacto</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Línea final (Copyright) -->
+                        <div class="footer-bottom d-flex justify-content-between mt-5 pt-4">
+                            <p>© 2026 Give&Go. Todos los derechos reservados.</p>
+                            <p>Hecho con <span class="text-danger">❤️</span> para la comunidad</p>
+                        </div>
+                    </div>
+                </footer>
+            <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="./js/scripts.js"></script>
+    </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*index compledo con ia*/
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Give&Go - Plataforma Solidaria</title>
+    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <link rel="stylesheet" href="./css/bootstrap.css">
+    <link rel="stylesheet" href="./css/styles_boxbox.css">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg py-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <span class="me-2">❤️</span> Give&Go
+            </a>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav gap-3">
+                    <li class="nav-item"><a class="nav-link" href="#">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Eventos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Mapa</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Donaciones</a></li>
+                </ul>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <a href="#" class="nav-link d-none d-lg-block">Acceso Administrador</a>
+                <a href="#" class="nav-link d-none d-lg-block">Iniciar Sesión</a>
+                <button class="btn btn-register">Registrarse</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="container hero-section">
+        <div class="row align-items-center">
+            <!-- Columna Texto -->
+            <div class="col-lg-6">
+                <div class="badge-solidaria">❤️ Plataforma Solidaria en Colombia</div>
+                <h1 class="main-title">
+                    Conecta con tu comunidad, <span>transforma vidas</span>
+                </h1>
+                <p class="hero-desc">
+                    Give&Go conecta voluntarios, beneficiarios y organizaciones en Colombia. Encuentra oportunidades de ayudar o recibe el apoyo que necesitas en tu ciudad.
+                </p>
+                
+                <div class="d-flex gap-3 mb-5">
+                    <button class="btn btn-explore">Explorar Eventos &rarr;</button>
+                    <button class="btn btn-map shadow-sm">Ver Mapa</button>
+                </div>
+
+                <div class="row pt-4">
+                    <div class="col-4">
+                        <p class="stat-number text-danger">15K+</p>
+                        <p class="stat-label">Ofertas publicadas</p>
+                    </div>
+                    <div class="col-4">
+                        <p class="stat-number text-danger">5K+</p>
+                        <p class="stat-label">Vidas impactadas</p>
+                    </div>
+                    <div class="col-4">
+                        <p class="stat-number text-danger">1</p>
+                        <p class="stat-label">Localidades</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Tarjetas -->
+            <div class="col-lg-6 mt-5 mt-lg-0 px-lg-5">
+                <div class="cards-container shadow-sm">
+                    <div class="heart-float">❤️</div>
+                    <div class="row g-4">
+                        <div class="col-6">
+                            <div class="category-card">
+                                <span class="category-icon">🏥</span>
+                                <p class="category-name text-salud">Salud</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="category-card">
+                                <span class="category-icon">🎓</span>
+                                <p class="category-name text-edu">Educación</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="category-card">
+                                <span class="category-icon">🌱</span>
+                                <p class="category-name text-ambiente">Medio Ambiente</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="category-card">
+                                <span class="category-icon">🍞</span>
+                                <p class="category-name text-alimentos">Alimentos</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+                        <section class="container my-5 pt-5">
+                <h2 class="text-center fw-bold mb-5">Categorías de Ayuda</h2>
+                
+                <div class="row g-4">
+                    <!-- Salud -->
+                    <div class="col-6 col-md-3">
+                        <div class="cat-card bg-soft-green">
+                            <span class="fs-2">🏥</span>
+                            <h5 class="fw-bold mt-2 mb-0">Salud</h5>
+                            <small class="text-muted">2.340 ofertas</small>
+                        </div>
+                    </div>
+                    <!-- Educación -->
+                    <div class="col-6 col-md-3">
+                        <div class="cat-card bg-soft-blue">
+                            <span class="fs-2">📚</span>
+                            <h5 class="fw-bold mt-2 mb-0">Educación</h5>
+                            <small class="text-muted">3.120 ofertas</small>
+                        </div>
+                    </div>
+                    <!-- Medio Ambiente -->
+                    <div class="col-6 col-md-3">
+                        <div class="cat-card bg-soft-mint">
+                            <span class="fs-2">🌱</span>
+                            <h5 class="fw-bold mt-2 mb-0">Medio Ambiente</h5>
+                            <small class="text-muted">1.890 ofertas</small>
+                        </div>
+                    </div>
+                    <!-- Alimentos -->
+                    <div class="col-6 col-md-3">
+                        <div class="cat-card bg-soft-orange">
+                            <span class="fs-2">📦</span>
+                            <h5 class="fw-bold mt-2 mb-0">Alimentos</h5>
+                            <small class="text-muted">4.250 ofertas</small>
+                        </div>
+                    </div>
+                    <!-- Vivienda -->
+                    <div class="col-6 col-md-3">
+                        <div class="cat-card bg-soft-purple">
+                            <span class="fs-2">🏠</span>
+                            <h5 class="fw-bold mt-2 mb-0">Vivienda</h5>
+                            <small class="text-muted">1.560 ofertas</small>
+                        </div>
+                    </div>
+                    <!-- Ropa -->
+                    <div class="col-6 col-md-3">
+                        <div class="cat-card bg-soft-pink">
+                            <span class="fs-2">👕</span>
+                            <h5 class="fw-bold mt-2 mb-0">Ropa y Textiles</h5>
+                            <small class="text-muted">2.890 ofertas</small>
+                        </div>
+                    </div>
+                    <!-- Voluntariado -->
+                    <div class="col-6 col-md-3">
+                        <div class="cat-card bg-soft-yellow">
+                            <span class="fs-2">🤝</span>
+                            <h5 class="fw-bold mt-2 mb-0">Voluntariado</h5>
+                            <small class="text-muted">890 ofertas</small>
+                        </div>
+                    </div>
+                    <!-- Eventos -->
+                    <div class="col-6 col-md-3">
+                        <div class="cat-card bg-soft-cyan">
+                            <span class="fs-2">📅</span>
+                            <h5 class="fw-bold mt-2 mb-0">Eventos</h5>
+                            <small class="text-muted">450 ofertas</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+                    <footer class="footer-dark mt-5">
+            <div class="container">
+                <div class="row gy-4">
+                    <!-- Columna Logo y Redes -->
+                    <div class="col-lg-4 col-md-12">
+                        <a class="navbar-brand text-white mb-3 d-block" href="#">❤️ Give&Go</a>
+                        <p class="footer-text">Conectando generosidad con necesidad. Juntos creamos un mundo más solidario y sostenible, un objeto a la vez.</p>
+                        <div class="social-links d-flex gap-2 mt-4">
+                            <a href="#"><i class="social-icon">f</i></a>
+                            <a href="#"><i class="social-icon">t</i></a>
+                            <a href="#"><i class="social-icon">ig</i></a>
+                            <a href="#"><i class="social-icon">in</i></a>
+                        </div>
+                    </div>
+
+                    <!-- Columna Plataforma -->
+                    <div class="col-lg-2 col-6">
+                        <h6 class="text-uppercase fw-bold mb-4">Plataforma</h6>
+                        <ul class="list-unstyled footer-links">
+                            <li><a href="#">Cómo Funciona</a></li>
+                            <li><a href="#">Ofertas</a></li>
+                            <li><a href="#">Centros de Apoyo</a></li>
+                            <li><a href="#">Mapa</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Columna Comunidad -->
+                    <div class="col-lg-2 col-6">
+                        <h6 class="text-uppercase fw-bold mb-4">Comunidad</h6>
+                        <ul class="list-unstyled footer-links">
+                            <li><a href="#">Voluntarios</a></li>
+                            <li><a href="#">Beneficiarios</a></li>
+                            <li><a href="#">Organizaciones</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Columna Empresa -->
+                    <div class="col-lg-2 col-6">
+                        <h6 class="text-uppercase fw-bold mb-4">Empresa</h6>
+                        <ul class="list-unstyled footer-links">
+                            <li><a href="#">Sobre Nosotros</a></li>
+                            <li><a href="#">Contacto</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Columna Legal -->
+                    <div class="col-lg-2 col-6">
+                        <h6 class="text-uppercase fw-bold mb-4">Legal</h6>
+                        <ul class="list-unstyled footer-links">
+                            <li><a href="#">Términos de Uso</a></li>
+                            <li><a href="#">Política de Privacidad</a></li>
+                            <li><a href="#">Política de Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <hr class="my-5 border-secondary">
+
+                <!-- Copyright -->
+                <div class="row">
+                    <div class="col-md-6 text-center text-md-start">
+                        <p class="footer-copy">© 2026 Give&Go. Todos los derechos reservados.</p>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <p class="footer-copy">Hecho con <span class="text-danger">❤️</span> para la comunidad</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+/*CSS completo con ia*/
+.cat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.cat-card h5 {
+    font-size: 1rem;
+    color: #2D3748;
+}
+
+.cat-card small {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* Colores de fondo pasteles (iguales a la imagen) */
+.bg-soft-green { background-color: #E6FFFA; }
+.bg-soft-blue { background-color: #EBF8FF; }
+.bg-soft-mint { background-color: #F0FFF4; }
+.bg-soft-orange { background-color: #FFFAF0; }
+.bg-soft-purple { background-color: #FAF5FF; }
+.bg-soft-pink { background-color: #FFF5F7; }
+.bg-soft-yellow { background-color: #FFFFF0; }
+.bg-soft-cyan { background-color: #E6FFFA; }
+
+.footer-custom {
+    background-color: #0B111F; /* El azul oscuro exacto de la imagen */
+    color: #ffffff;
+    padding: 100px 0 40px 0;
+    font-size: 14px;
+}
+
+.footer-brand {
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.heart-icon { color: #FF0000; }
+
+.footer-description {
+    color: #94A3B8; /* Color gris suave */
+    max-width: 350px;
+    line-height: 1.6;
+    margin-top: 20px;
+}
+
+/* Títulos de las columnas (PLATAFORMA, LEGAL, etc.) */
+.footer-heading {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #E2E8F0;
+    margin-bottom: 20px;
+}
+
+/* Enlaces del footer */
+.footer-list li { margin-bottom: 12px; }
+.footer-list a {
+    color: #94A3B8;
+    text-decoration: none;
+    transition: 0.3s;
+}
+.footer-list a:hover { color: #ffffff; }
+
+/* Círculos de redes sociales con borde sutil */
+.social-circle {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #475569;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #94A3B8;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.social-circle:hover {
+    border-color: #ffffff;
+    color: #ffffff;
+}
+
+/* Línea de copyright */
+.footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    color: #64748B;
+    font-size: 12px;
+}
+
+/* Círculos de redes sociales */
+.social-icon {
+    width: 35px;
+    height: 35px;
+    background-color: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    font-style: normal;
+    font-size: 0.8rem;
+    transition: 0.3s;
+}
+
+.social-icon:hover {
+    background-color: var(--primary-red);
+}
+/* Contenedor principal con el azul muy oscuro de la imagen */
+.footer-custom {
+    background-color: #0d1421; /* Azul noche profundo */
+    color: #ffffff;
+    padding: 60px 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Marca: Logo y Nombre */
+.footer-brand {
+    font-size: 1.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.heart-icon {
+    font-size: 1.5rem;
+}
+
+/* Descripción con opacidad para ese tono grisáceo */
+.footer-description {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 380px;
+    margin-bottom: 30px;
+}
+
+/* Redes Sociales: Círculos con fondo sutil */
+.social-circle {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.1); /* Círculo semitransparente */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    transition: background 0.3s ease;
+    cursor: pointer;
+}
+
+.social-circle:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Títulos de secciones (PLATAFORMA, COMUNIDAD, etc.) */
+.footer-heading {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #ffffff;
+    margin-bottom: 25px;
+}
+
+/* Enlaces de las listas */
+.footer-list {
+    padding: 0;
+}
+
+.footer-list li {
+    margin-bottom: 15px;
+}
+
+.footer-list a {
+    color: rgba(255, 255, 255, 0.6); /* Color apagado como en la foto */
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+
+.footer-list a:hover {
+    color: #ffffff;
+}
+
+/* Sección LEGAL separada abajo a la izquierda */
+.mt-5 {
+    margin-top: 60px !important;
+}
+a
+
+/* Ajuste de alineación para las columnas de la derecha */
+@media (min-width: 992px) {
+    .col-lg-6:last-child {
+        padding-top: 10px; /* Alinea los títulos con el logo */
+    }
+}
+/*-------------------------------------------------------------------------------*/
+/*Terminos De Uso*/
+.caja-info {
+    max-width: 750px;
+    margin: 20px auto;
+    background-color: #f9f9f9;
+    padding: 48px;
+    border: 1px solid #ccc;
+}
+.button-contacto{
+    background-color: #f80000;
+    color: white;       
+    padding: 12px 24px;  
+    border-radius: 10px;    
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 auto;
+    border: none;
+    margin-bottom: 40px; 
+    
+}
+
+/* RESPONSIVE DESIGN */
+
+/* Tablets */
+@media (max-width: 992px) {
+
+  /* Navegador */
+  nav {
+    width: 100%;
+    height:150px;
+
+  }
+
+  .logo {
+    width: 100%;
+  }
+
+  .inicio {
+    width: 100%;
+    height: 20px;
+  }
+
+  .evento {
+    width: 100%;
+    height: 20px;
+  }
+  .mapa {
+    width: 100%;
+    height: 20px;
+  }
+  .donaciones {
+    width: 100%;
+    height: 20px;
+  }
+  .ingresa {
+    width: 100%;
+    height: 20px;
+  }
+  .contactenos{
+    width: 100%;
+    height: 1200;
+  }
+  .logo{
+    width: 100%;
+  }
+  .plataforma{
+    width: 100%;
+  }
+  .comunidad{
+    width: 100%;
+  }
+  .empresa{
+    width: 100%;
+  }
+  footer{
+    width: 100%;
+    height: 30px;
+}
+.derechos{
+    width: 100%;
+    text-align:center;
+}
+.hecho-con-amor{
+    width: 100%;
+    text-align: center;
+}
+}
+
+
+
+
+/* Celular */
+@media (max-width: 576px) {
+
+  /* Navegador */
+  .logo {
+    height: 50px;
+  }
+
+  .navega {
+    width: 100%;
+  }
+
+  .ingreso {
+    width: 100%;
+  }
+}

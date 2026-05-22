@@ -1,0 +1,82 @@
+/* --- RESET Y BASES --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+    --red: #ff0000;
+    --dark-blue: #0f172a;
+    --text-gray: #64748b;
+    --bg-light: #f8fafc;
+    --border: #e2e8f0;
+}
+
+body { font-family: 'Inter', sans-serif; background-color: var(--bg-light); color: #1e293b; }
+
+/* --- HEADER --- */
+.main-header {
+    background: white;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+.logo { font-size: 20px; display: flex; align-items: center; gap: 8px; }
+.heart-icon { color: var(--red); }
+
+.nav-menu a { text-decoration: none; color: #334155; margin: 0 15px; font-size: 14px; font-weight: 500; }
+.nav-auth { display: flex; align-items: center; gap: 20px; }
+.admin-link { text-decoration: none; color: var(--red); font-size: 14px; font-weight: 500; }
+.login-link { text-decoration: none; color: #334155; font-size: 14px; }
+.btn-register { background: var(--red); color: white !important; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-size: 14px; }
+
+/* --- CONTENIDO LOGIN --- */
+.content-wrapper { min-height: 80vh; display: flex; justify-content: center; align-items: center; padding: 60px 20px; }
+.login-section { width: 100%; max-width: 480px; text-align: center; }
+
+.back-link { display: block; text-align: left; color: var(--text-gray); text-decoration: none; font-size: 14px; margin-bottom: 30px; }
+
+.shield-circle { background: var(--red); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 24px; box-shadow: 0 4px 12px rgba(255,0,0,0.2); }
+.login-section h1 { font-size: 28px; margin-bottom: 10px; }
+.login-section p { color: var(--text-gray); margin-bottom: 30px; }
+
+.login-card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: left; }
+
+/* Alertas */
+.alert { display: flex; gap: 12px; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 13px; border: 1px solid transparent; }
+.alert-warning { background: #fffcf0; border-color: #fef3c7; color: #92400e; }
+.alert-info { background: #eff6ff; border-color: #dbeafe; color: #1e40af; }
+
+/* Formulario */
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.input-icon { position: relative; }
+.input-icon span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+.input-icon input { width: 100%; padding: 12px 12px 12px 40px; border: 1px solid var(--border); border-radius: 8px; outline: none; }
+
+.btn-submit { width: 100%; background: var(--red); color: white; border: none; padding: 14px; border-radius: 10px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+.switch-auth { text-align: center; margin-top: 25px; font-size: 14px; color: var(--text-gray); }
+.switch-auth a { color: var(--red); text-decoration: none; font-weight: 600; }
+
+/* --- FOOTER --- */
+.main-footer { background: var(--dark-blue); color: white; padding: 60px 0 30px; }
+.footer-container { max-width: 1200px; margin: 0 auto; display: flex; gap: 60px; padding: 0 20px; }
+.footer-brand { flex: 1; }
+.logo-footer { font-size: 22px; margin-bottom: 20px; }
+.footer-brand p { color: #94a3b8; font-size: 14px; line-height: 1.6; margin-bottom: 25px; }
+
+.footer-links { flex: 2; display: flex; justify-content: space-between; }
+.link-group h4 { font-size: 12px; letter-spacing: 1px; margin-bottom: 20px; color: #f8fafc; }
+.link-group a { display: block; text-decoration: none; color: #94a3b8; font-size: 14px; margin-bottom: 12px; transition: 0.2s; }
+.link-group a:hover { color: white; }
+
+.footer-bottom { max-width: 1200px; margin: 40px auto 0; padding: 30px 20px 0; border-top: 1px solid #1e293b; }
+.legal-links a { color: #94a3b8; text-decoration: none; font-size: 12px; margin-right: 25px; }
+
+.social-links a { display: inline-block; width: 32px; height: 32px; background: #1e293b; border-radius: 50%; text-align: center; line-height: 32px; margin-right: 10px; color: #94a3b8; text-decoration: none; font-size: 14px; }
