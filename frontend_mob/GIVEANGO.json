@@ -1,0 +1,51 @@
+{
+  "Organizaciones": [
+    { "id": 1, "nombre": "Fundacion Esperanza", "categoria": "Social", "direccion": "Calle 10 #23-45", "contrasenia": "clave123" },
+    { "id": 2, "nombre": "Ayuda Comunitaria", "categoria": "Comunidad", "direccion": "Carrera 15 #12-30", "contrasenia": "segura456" },
+    { "id": 3, "nombre": "Salud para Todos", "categoria": "Salud", "direccion": "Calle 8 #45-22", "contrasenia": "salud789" },
+    { "id": 4, "nombre": "Educacion Futuro", "categoria": "Educacion", "direccion": "Carrera 20 #10-15", "contrasenia": "edu321" },
+    { "id": 5, "nombre": "Manos Solidarias", "categoria": "Humanitaria", "direccion": "Calle 50 #18-60", "contrasenia": "mano654" }
+  ],
+  "Usuarios": [
+    { "id": 1, "nombre": "Nicolay Diagelo", "apellido": "Cajamarca", "direccion": "cr 84 # 34 sur", "telefono": "371637224", "estrato": 2, "contrasenia": "nico123", "organizacion_id": 1 },
+    { "id": 2, "nombre": "Zharick Sofia", "apellido": "Rodriguez Gutierres", "direccion": "cr 35 # 24 sur", "telefono": "30294395", "estrato": 3, "contrasenia": "zharick123", "organizacion_id": 2 },
+    { "id": 3, "nombre": "Kevin", "apellido": "Hernandez Guzman", "direccion": "cr 73 # 62 sur", "telefono": "3480902", "estrato": 2, "contrasenia": "kevin123", "organizacion_id": 3 },
+    { "id": 4, "nombre": "Maria Alejandra", "apellido": "Quiñones", "direccion": "cr 81 # 74 sur", "telefono": "3372883", "estrato": 3, "contrasenia": "maria123", "organizacion_id": 4 },
+    { "id": 5, "nombre": "Mateito", "apellido": "Moreno Lopez", "direccion": "cr 90 # 28 sur", "telefono": "302897388", "estrato": 3, "contrasenia": "mateito123", "organizacion_id": 5 }
+  ],
+  "Mensajes": [
+    { "id": 1, "tipo": "Alerta", "fecha": "2026-03-01", "asunto": "Mantenimiento", "descripcion": "Sistema en mantenimiento", "notificacion": "Activa", "usuario_id": 2, "organizacion_id": 1 },
+    { "id": 2, "tipo": "Aviso", "fecha": "2026-03-02", "asunto": "Actualizacion", "descripcion": "Nueva version disponible", "notificacion": "Activa", "usuario_id": 3, "organizacion_id": 1 },
+    { "id": 3, "tipo": "Recordatorio", "fecha": "2026-03-03", "asunto": "Pago", "descripcion": "Recordatorio de pago", "notificacion": "Pendiente", "usuario_id": 4, "organizacion_id": 2 },
+    { "id": 4, "tipo": "Alerta", "fecha": "2026-03-04", "asunto": "Seguridad", "descripcion": "Cambio de contraseña", "notificacion": "Activa", "usuario_id": 5, "organizacion_id": 2 },
+    { "id": 5, "tipo": "Informativo", "fecha": "2026-03-05", "asunto": "Evento", "descripcion": "Invitacion a evento", "notificacion": "Enviada", "usuario_id": 4, "organizacion_id": 3 }
+  ],
+  "Donaciones": [
+    { "id": 1, "nombre": "Donacion Escolar", "categoria": "Educacion", "tipo": "Monetaria", "metodo_pago": "Tarjeta", "valor": "50000", "usuario_id": 1, "organizacion_id": 1 },
+    { "id": 2, "nombre": "Ayuda Alimentaria", "categoria": "Alimentos", "tipo": "Monetaria", "metodo_pago": "Transferencia", "valor": "80000", "usuario_id": 2, "organizacion_id": 1 },
+    { "id": 3, "nombre": "Apoyo Comunitario", "categoria": "Social", "tipo": "Monetaria", "metodo_pago": "Efectivo", "valor": "30000", "usuario_id": 3, "organizacion_id": 2 },
+    { "id": 4, "nombre": "Donacion Medica", "categoria": "Salud", "tipo": "Monetaria", "metodo_pago": "Tarjeta", "valor": "120000", "usuario_id": 4, "organizacion_id": 2 },
+    { "id": 5, "nombre": "Fondo Solidario", "categoria": "Comunidad", "tipo": "Monetaria", "metodo_pago": "Transferencia", "valor": "60000", "usuario_id": 5, "organizacion_id": 3 }
+  ],
+  "Seguimiento_eventos": [
+    { "id": 1, "estado": "En Proceso" },
+    { "id": 2, "estado": "Completado" },
+    { "id": 3, "estado": "Cancelado" },
+    { "id": 4, "estado": "Pendiente" },
+    { "id": 5, "estado": "Reprogramado" }
+  ],
+  "Eventos": [
+    { "id": 1, "fecha": "2022-05-15", "nombre": "Evento de Caridad", "direccion": "Calle 45 # 34-56", "categoria": "Caridad", "descripcion": "Evento para necesitadas", "organizacion_id": 1, "seguimiento_id": 1 },
+    { "id": 2, "fecha": "2022-06-20", "nombre": "Evento de Construcción", "direccion": "Calle 34 # 45-67", "categoria": "Construcción", "descripcion": "Construir viviendas", "organizacion_id": 2, "seguimiento_id": 2 },
+    { "id": 3, "fecha": "2022-07-10", "nombre": "Evento de Educación", "direccion": "Calle 56 # 78-90", "categoria": "Educación", "descripcion": "Promocionar educación", "organizacion_id": 3, "seguimiento_id": 3 },
+    { "id": 4, "fecha": "2022-08-05", "nombre": "Evento de Salud", "direccion": "Calle 78 # 90-12", "categoria": "Salud", "descripcion": "Brindar atención", "organizacion_id": 4, "seguimiento_id": 4 },
+    { "id": 5, "fecha": "2022-09-15", "nombre": "Evento de Medio Ambiente", "direccion": "Calle 90 # 12-34", "categoria": "Medio Ambiente", "descripcion": "Conciencia ambiental", "organizacion_id": 5, "seguimiento_id": 5 }
+  ],
+  "Usuario_eventos": [
+    { "usuario_id": 1, "evento_id": 2 },
+    { "usuario_id": 2, "evento_id": 2 },
+    { "usuario_id": 3, "evento_id": 3 },
+    { "usuario_id": 4, "evento_id": 4 },
+    { "usuario_id": 5, "evento_id": 5 }
+  ]
+}
