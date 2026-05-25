@@ -46,13 +46,13 @@ SHOW DATABASES;
 -- 02. Usar BBDD. ---------------------------------------------------------------------- --
 --     USE __ : ------------------------------------------------------------------------ --
 -- ------------------------------------------------------------------------------------- --
-USE give;
+USE give_and_go;
 
 -- ------------------------------------------------------------------------------------- --
 -- 03. Eliminar BBDD. ------------------------------------------------------------------ --
 --     DROP DATABASE __ : -------------------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-DROP DATABASE give;
+DROP DATABASE give_and_go;
 
 -- ------------------------------------------------------------------------------------- --
 -- 04. Mostrar Tablas. ----------------------------------------------------------------- --
@@ -103,15 +103,13 @@ ALTER TABLE USUARIOS ALTER usuario_estrato DROP DEFAULT;
 -- ------------------------------------------------------------------------------------- --
 SHOW CREATE TABLE USUARIOS;
 SHOW CREATE TABLE ORGANIZACIONES;
-SHOW CREATE TABLE MENSAJES;
+SHOW CREATE TABLE DONACIONES;
 
 -- ------------------------------------------------------------------------------------- --
 -- 12. Eliminar Restricción. ----------------------------------------------------------- --
 --     ALTER TABLE __ DROP CONSTRAINT __ : --------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 ALTER TABLE USUARIOS DROP CONSTRAINT fk_usuario_organizacion;
-ALTER TABLE MENSAJES DROP CONSTRAINT fk_mensaje_usuario;
-ALTER TABLE MENSAJES DROP CONSTRAINT fk_mensaje_organizacion;
 ALTER TABLE DONACIONES DROP CONSTRAINT fk_donacion_usuario;
 ALTER TABLE DONACIONES DROP CONSTRAINT fk_donacion_organzacion;
 ALTER TABLE EVENTOS DROP CONSTRAINT fk_evento_organizacion;
@@ -124,8 +122,6 @@ ALTER TABLE USUARIO_EVENTOS DROP CONSTRAINT fk_usuario_evento_evento;
 --     ALTER TABLE __ DROP INDEX __ : -------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 ALTER TABLE USUARIOS DROP INDEX ind_fk_usuario_organizacion;
-ALTER TABLE MENSAJES DROP INDEX ind_fk_mensaje_usuario;
-ALTER TABLE MENSAJES DROP INDEX ind_fk_mensaje_organizacion;
 ALTER TABLE DONACIONES DROP INDEX ind_fk_donacion_usuario;
 ALTER TABLE DONACIONES DROP INDEX ind_fk_donacion_organzacion;
 ALTER TABLE EVENTOS DROP INDEX ind_fk_evento_organizacion;
@@ -139,7 +135,6 @@ ALTER TABLE USUARIO_EVENTOS DROP INDEX ind_fk_usuario_evento_evento;
 -- ------------------------------------------------------------------------------------- --
 ALTER TABLE USUARIOS DROP PRIMARY KEY;
 ALTER TABLE ORGANIZACIONES DROP PRIMARY KEY;
-ALTER TABLE MENSAJES DROP PRIMARY KEY;
 ALTER TABLE DONACIONES DROP PRIMARY KEY;
 ALTER TABLE SEGUIMIENTO_EVENTOS DROP PRIMARY KEY;
 ALTER TABLE EVENTOS DROP PRIMARY KEY;
@@ -151,7 +146,6 @@ ALTER TABLE EVENTOS DROP PRIMARY KEY;
 TRUNCATE USUARIOS;
 TRUNCATE ORGANIZACIONES;
 TRUNCATE DONACIONES;
-TRUNCATE MENSAJES;
 TRUNCATE SEGUIMIENTO_EVENTOS;
 TRUNCATE EVENTOS;
 TRUNCATE USUARIO_EVENTOS;
@@ -163,7 +157,6 @@ TRUNCATE USUARIO_EVENTOS;
 DROP TABLE USUARIOS;
 DROP TABLE ORGANIZACIONES;
 DROP TABLE DONACIONES;
-DROP TABLE MENSAJES;
 DROP TABLE SEGUIMIENTO_EVENTOS;
 DROP TABLE EVENTOS;
 DROP TABLE USUARIO_EVENTOS;
@@ -195,9 +188,8 @@ RENAME TABLE PERSONAS TO USUARIOS;
 ALTER TABLE USUARIOS ADD PRIMARY KEY (usuario_id);
 ALTER TABLE ORGANIZACIONES ADD PRIMARY KEY (organizacion_id);
 ALTER TABLE DONACIONES ADD PRIMARY KEY (donacion_id);
-ALTER TABLE MENSAJES ADD PRIMARY KEY (mensaje_id);
--- ALTER TABLE USUARIO_EVENTOS ADD PRIMARY KEY (usuario_eventos_id);
--- ALTER TABLE SEGUIMIENTO_EVENTOS ADD PRIMARY KEY (seguimieno_id);
+ALTER TABLE USUARIO_EVENTOS ADD PRIMARY KEY (usuario_eventos_id);
+ALTER TABLE SEGUIMIENTO_EVENTOS ADD PRIMARY KEY (seguimieno_id);
 ALTER TABLE EVENTOS ADD PRIMARY KEY (evento_id);
 
 -- ------------------------------------------------------------------------------------- --
@@ -205,8 +197,6 @@ ALTER TABLE EVENTOS ADD PRIMARY KEY (evento_id);
 --     CREATE INDEX __ ON __ ( __ ) :  ------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 CREATE INDEX ind_fk_usuario_organizacion ON USUARIOS (usuario_id);
-CREATE INDEX ind_fk_mensaje_usuario ON MENSAJES (mensaje_id);
-CREATE INDEX ind_fk_mensaje_organizacion ON MENSAJES (mensaje_id);
 CREATE INDEX ind_fk_donacion_usuario ON DONACIONES (donacion_id);
 CREATE INDEX ind_fk_donacion_organzacion ON DONACIONES (donacion_id);
 CREATE INDEX ind_fk_evento_organizacion ON EVENTOS (evento_id);
@@ -235,20 +225,6 @@ CONSTRAINT fk_usuario_organizacion
     REFERENCES Organizaciones (organizcion_id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE;
-
-ALTER TABLE MENSAJES ADD 
-CONSTRAINT fk_mensaje_usuario
-    FOREIGN KEY (usuario_id)
-    REFERENCES Usuarios (Id_usuario)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE;
-
-	ALTER TABLE MENSAJES ADD 
-CONSTRAINT fk_mensaje_organizacion
-    FOREIGN KEY (organiacion_id)
-    REFERENCES Organizaciones (organizcion_id)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE;
 
 ALTER TABLE DONACIONES ADD 
 CONSTRAINT fk_donacion_usuario
