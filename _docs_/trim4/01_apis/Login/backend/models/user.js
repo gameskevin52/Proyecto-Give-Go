@@ -1,268 +1,183 @@
-const db = require('../config/config');
-const bcrypt = require('bcryptjs');
+const db = require("../config/config");
+const bcrypt = require("bcryptjs");
+
 const User = {};
-const Organization = {};
 
-Organization.findAllOrganizaciones = (result) => {
-  const sql = `SELECT organizacion_id, organizacion_nombre, organizacion_categoria, organizacion_direccion, organizacion_correo, organizacion_contraseña FROM Organizaciones`;
-  db.query(sql, (err, organizaciones) => {
-    if (err) {
-      console.log('Error al listar organizaciones: ', err);
-      result(err, null);
-    } else if (Organizaciones) {
-      console.log('Organizaciones encontradas: ', Organizaciones.length);
-      result(null, Organizaciones);
-    }
-  });
-};
+const publicFields = `
+  usuario_id AS id,
+  usuario_nombre AS name,
+  usuario_apellido AS lastname,
+  usuario_direccion AS address,
+  usuario_telefono AS phone,
+  usuario_estrato AS stratum,
+  usuario_correo AS email,
+  organizacion_id AS organization_id
+`;
 
-User.findAllUsuarios = (result) => {
-  const sql = `SELECT usuario_id, usuario_nombre, usuario_apellido, usuario_direccion, usuario_telefono, usuario_estrato, usuario_correo, usuario_contraseña FROM Usuarios`;
-  db.query(sql, (err, usuarios) => {
-    if (err) {
-      console.log('Error al listar usuarios: ', err);
-      result(err, null);
-    } else if (Usuarios) {
-      console.log('Usuarios encontrados: ', Usuarios.length);
-      result(null, Usuarios);
-    }
-  });
-};
+const privateFields = `
+  ${publicFields},
+  usuario_contraseña AS password
+`;
 
-Organization.findById = (id, result) => {
-  const sql = `SELECT organizacion_id, organizacion_nombre, organizacion_categoria, organizacion_direccion, organizacion_correo, organizacion_contraseña FROM Organizaciones WHERE organizacion_id = ?`;
-  db.query(sql, [id], (err, user) => {
+User.findAll = (result) => {
+  const sql = `SELECT ${publicFields} FROM Usuarios`;
+
+  db.query(sql, (err, users) => {
     if (err) {
-      console.log('Error al consultar: ', err);
-      result(err, null);
+      console.log("Error al listar usuarios: ", err);
+      return result(err, null);
     }
-    else {
-      console.log('Organizacion consultada: ',  user[0] );
-      result(null, user[0]);
-    }
+
+    console.log("Usuarios encontrados: ", users.length);
+    return result(null, users);
   });
 };
 
 User.findById = (id, result) => {
-  const sql = `SELECT usuario_id, usuario_nombre, usuario_apellido, usuario_direccion, usuario_telefono, usuario_estrato, usuario_correo, usuario_contraseña FROM Usuarios WHERE usuario_id = ?`;
-  db.query(sql, [id], (err, user) => {
-    if (err) {
-      console.log('Error al consultar: ', err);
-      result(err, null);
-    }
-    else {
-      console.log('Usuario consultado: ',  user[0] );
-      result(null, user[0]);
-    }
-  });
-};
+  const sql = `SELECT ${privateFields} FROM Usuarios WHERE usuario_id = ?`;
 
-Organization.findByEmail = (email, result) => {
-  const sql = `SELECT organizacion_id, organizacion_nombre, organizacion_categoria, organizacion_direccion, organizacion_correo,  organizacion_contraseña FROM Organizaciones WHERE organizacion_correo = ?`;
-  db.query(sql, [email], (err, user) => {
+  db.query(sql, [id], (err, users) => {
     if (err) {
-      console.log('Error al consultar: ', err);
-      result(err, null);
+      console.log("Error al consultar usuario: ", err);
+      return result(err, null);
     }
-    else {
-      console.log('Organizacion consultada: ',  user[0] );
-      result(null, user[0]);
-    }
+
+    console.log("Usuario consultado: ", users[0]);
+    return result(null, users[0]);
   });
 };
 
 User.findByEmail = (email, result) => {
-  const sql = `SELECT usuario_id, usuario_nombre, usuario_apellido, usuario_direccion, usuario_telefono, usuario_estrato, usuario_correo, usuario_contraseña FROM Usuarios WHERE usuario_correo = ?`;
-  db.query(sql, [email], (err, user) => {
-    if (err) {
-      console.log('Error al consultar: ', err);
-      result(err, null);
-    }
-    else {
-      console.log('Usuario consultado: ',  user[0] );
-      result(null, user[0]);
-    }
-  });
-};
+  const sql = `SELECT ${privateFields} FROM Usuarios WHERE usuario_correo = ?`;
 
-Organization.create = async (organization, result) => {
-  const hash = await bcrypt.hash(organization.password, 45);  
-  const validRoles = ['admin', 'Organization'];
-  const role = validRoles.includes(organization.role) ? organization.role : 'user';
-  const sql = `INSERT INTO Organizaciones(
-                organizacion_nombre,
-                organizacion_categoria,
-                organizacion_direccion,
-                organizacion_correo,
-                organizacion_contraseña
-              ) VALUES (?,?,?,?,?)`;
-  db.query(sql, [
-    organization.name,
-    organization.category,
-    organization.address,
-    organization.email,
-    hash
-  ], (err, res) => {
+  db.query(sql, [email], (err, users) => {
     if (err) {
-      console.log('Error al crear organización: ', err);
-      result(err, null);
-    } else {
-      console.log('Organización creada: ', { id: res.insertId, ...organization });
-      result(null, { id: res.insertId, ...organization });
+      console.log("Error al consultar usuario: ", err);
+      return result(err, null);
     }
+
+    console.log("Usuario consultado: ", users[0]);
+    return result(null, users[0]);
   });
 };
 
 User.create = async (user, result) => {
-  const hash = await bcrypt.hash(user.password, 45);  
-  const validRoles = ['admin', 'Organization', 'user', 'Voluntario', 'Bemeficiario'];
-  const role = validRoles.includes(user.role) ? user.role : 'user';
-  const sql = `INSERT INTO Usuarios(
-                usuario_id, 
-                usuario_nombre,
-                usuario_apellido, 
-                usuario_direccion, 
-                usuario_telefono, 
-                usuario_estrato, 
-                usuario_contraseña 
-              ) VALUES (?,?,?,?,?,?,?)`;
-  db.query(sql,
+  const hash = await bcrypt.hash(user.password, 10);
+  const sql = `
+    INSERT INTO Usuarios(
+      usuario_nombre,
+      usuario_apellido,
+      usuario_direccion,
+      usuario_telefono,
+      usuario_estrato,
+      usuario_correo,
+      usuario_contraseña,
+      organizacion_id
+    ) VALUES (?,?,?,?,?,?,?,?)
+  `;
+
+  db.query(
+    sql,
     [
       user.name,
       user.lastname,
+      user.address,
+      user.phone,
+      user.stratum,
       user.email,
       hash,
-      user.phone,
-      user.image,
-      role,
-      new Date(),
-      new Date()
-    ], (err, res) => {
+      user.organization_id,
+    ],
+    (err, res) => {
       if (err) {
-        console.log('Error al crear al Usuario: ', err);
-        result(err, null);
-      } else {
-        console.log('Usuario creado: ', {id: res.insertId, ...user});
-        result(null, {id: res.insertId, ...user});
+        console.log("Error al crear usuario: ", err);
+        return result(err, null);
       }
+
+      const createdUser = {
+        id: res.insertId,
+        name: user.name,
+        lastname: user.lastname,
+        address: user.address,
+        phone: user.phone,
+        stratum: user.stratum,
+        email: user.email,
+        organization_id: user.organization_id,
+      };
+
+      console.log("Usuario creado: ", createdUser);
+      return result(null, createdUser);
     }
   );
 };
 
-Organization.update = async (organization, result) => {
-  let fields = [];
-  let values = [];
-
-  if (organization.password) {
-    const hash = await bcrypt.hash(organization.password, 10);
-    fields.push("password = ?");
-    values.push(hash);
-  }
-
-  if (organization.email) {
-    fields.push("email = ?");
-    values.push(organization.email);
-  }
-  if (organization.name) {
-    fields.push("name = ?");
-    values.push(organization.name);
-  }
-  if (organization.lastname) {
-    fields.push("lastname = ?");
-    values.push(organization.lastname);
-  }
-  if (organization.phone) {
-    fields.push("phone = ?");
-    values.push(organization.phone);
-  }
-  if (organization.image) {
-    fields.push("image = ?");
-    values.push(organization.image);
-  }
-  if (organization.role) {
-    fields.push("role = ?");
-    values.push(organization.role);
-  }
-
-  fields.push("updated_at = ?");
-  values.push(new Date());
-
-  const sql = `UPDATE organizations SET ${fields.join(", ")} WHERE id = ?`;
-  values.push(organization.id);
-
-  db.query(sql, values, (err, res) => {
-    if (err) {
-      console.log('Error al actualizar organización: ', err);
-      result(err, null);
-    } else {
-      console.log('Organización actualizada: ', { id: organization.id, ...organization });
-      result(null, { id: organization.id, ...organization });
-    }
-  });
-};
-
 User.update = async (user, result) => {
-  let fields = [];
-  let values = [];
+  const fields = [];
+  const values = [];
 
-  if (user.password) {
-    const hash = await bcrypt.hash(user.password, 10);
-    fields.push("password = ?");
-    values.push(hash);
-  }
-
-  if (user.email) {
-    fields.push("email = ?");
-    values.push(user.email);
-  }
   if (user.name) {
-    fields.push("name = ?");
+    fields.push("usuario_nombre = ?");
     values.push(user.name);
   }
   if (user.lastname) {
-    fields.push("lastname = ?");
+    fields.push("usuario_apellido = ?");
     values.push(user.lastname);
   }
+  if (user.address) {
+    fields.push("usuario_direccion = ?");
+    values.push(user.address);
+  }
   if (user.phone) {
-    fields.push("phone = ?");
+    fields.push("usuario_telefono = ?");
     values.push(user.phone);
   }
-  if (user.image) {
-    fields.push("image = ?");
-    values.push(user.image);
+  if (user.stratum) {
+    fields.push("usuario_estrato = ?");
+    values.push(user.stratum);
   }
-  if (user.role) {
-    fields.push("role = ?");
-    values.push(user.role);
+  if (user.email) {
+    fields.push("usuario_correo = ?");
+    values.push(user.email);
+  }
+  if (user.password) {
+    const hash = await bcrypt.hash(user.password, 10);
+    fields.push("usuario_contraseña = ?");
+    values.push(hash);
+  }
+  if (user.organization_id) {
+    fields.push("organizacion_id = ?");
+    values.push(user.organization_id);
   }
 
-  fields.push("updated_at = ?");
-  values.push(new Date());
+  if (fields.length === 0) {
+    return result(null, { id: user.id, message: "No hay datos para actualizar" });
+  }
 
-  const sql = `UPDATE users SET ${fields.join(", ")} WHERE id = ?`;
+  const sql = `UPDATE Usuarios SET ${fields.join(", ")} WHERE usuario_id = ?`;
   values.push(user.id);
 
   db.query(sql, values, (err, res) => {
     if (err) {
-      console.log('Error al actualizar usuario: ', err);
-      result(err, null);
-    } else {
-      console.log('Usuario actualizado: ', { id: user.id, ...user });
-      result(null, { id: user.id, ...user });
+      console.log("Error al actualizar usuario: ", err);
+      return result(err, null);
     }
+
+    console.log("Usuario actualizado: ", { id: user.id, ...user });
+    return result(null, { id: user.id, affectedRows: res.affectedRows });
   });
 };
 
 User.delete = (id, result) => {
-  const sql = `DELETE FROM users WHERE id = ?`;
+  const sql = "DELETE FROM Usuarios WHERE usuario_id = ?";
+
   db.query(sql, [id], (err, res) => {
     if (err) {
-      console.log('Error al eliminar usuario: ', err);
-      result(err, null);
-    } else {
-      console.log('Usuario eliminado con id: ', id);
-      result(null, res);
+      console.log("Error al eliminar usuario: ", err);
+      return result(err, null);
     }
+
+    console.log("Usuario eliminado con id: ", id);
+    return result(null, res);
   });
 };
 
