@@ -36,6 +36,13 @@
 /* EN CONSOLA: XAMPP / SHELL / cd mysql/bin / mysql -h localhost -u root -p / ENTER      */
 /* ************************************************************************************* */
 
+/* ************************************************************************************* */
+/* ---------------------------------------- DDL ---------------------------------------- */
+/* ----------------------------- DATA DEFINITION LANGUAGE ------------------------------ */
+/* -------------------------- LENGUAJE DE DEFINICIÓN DE DATOS -------------------------- */
+/* ------------------------------------------------------------------------------------- */
+/* ************************************************************************************* */
+
 -- ------------------------------------------------------------------------------------- --
 -- 01. Mostrar BBDDs. ------------------------------------------------------------------ --
 --     SHOW DATABASES : ---------------------------------------------------------------- -- 
@@ -46,13 +53,13 @@ SHOW DATABASES;
 -- 02. Usar BBDD. ---------------------------------------------------------------------- --
 --     USE __ : ------------------------------------------------------------------------ --
 -- ------------------------------------------------------------------------------------- --
-USE give_and_go;
+USE give;
 
 -- ------------------------------------------------------------------------------------- --
 -- 03. Eliminar BBDD. ------------------------------------------------------------------ --
 --     DROP DATABASE __ : -------------------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-DROP DATABASE give_and_go;
+-- DROP DATABASE give;
 
 -- ------------------------------------------------------------------------------------- --
 -- 04. Mostrar Tablas. ----------------------------------------------------------------- --
@@ -64,210 +71,215 @@ SHOW TABLES;
 -- 05. Mostar Columnas. ---------------------------------------------------------------- --
 --     SHOW COLUMNS FROM __ . DESCRIBE __ : -------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-SHOW COLUMNS FROM USUARIOS;
-DESCRIBE USUARIOS;
+SHOW COLUMNS FROM Usuarios;
+DESCRIBE Usuarios;
 
 -- ------------------------------------------------------------------------------------- --
 -- 06. Agregar Columna. ---------------------------------------------------------------- --
 --     ALTER TABLE __ ADD __ __ : ------------------------------------------------------ --
 -- ------------------------------------------------------------------------------------- --
-ALTER TABLE USUARIOS ADD usuario_genero VARCHAR(20);
+ALTER TABLE Usuarios ADD usuario_genero VARCHAR(20);
 
 -- ------------------------------------------------------------------------------------- --
 -- 07. Renombrar Columna. -------------------------------------------------------------- --
 --     ALTER TABLE __ CHANGE __ __ : --------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-ALTER TABLE EVENTOS CHANGE eventos_id evento_id INT NOT NULL AUTO_INCREMENT;
+ALTER TABLE Usuarios CHANGE usuario_genero usuario_genero2 VARCHAR(20);
 
 -- ------------------------------------------------------------------------------------- --
 -- 08. Eliminar Columna. --------------------------------------------------------------- --
 --     ALTER TABLE __ DROP __ : -------------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-ALTER TABLE USUARIOS DROP usuario_nombre;
+ALTER TABLE Usuarios DROP usuario_genero2;
 
 -- ------------------------------------------------------------------------------------- --
 -- 09. Agregar Valor x Defecto Columna. ------------------------------------------------ --
---     ALTER TABLE __ ALTER __ SET DEFAULT __ :	---------------------------------------- --
+--     ALTER TABLE __ ALTER __ SET DEFAULT __ : ---------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-ALTER TABLE USUARIOS ALTER usuario_estrato SET DEFAULT 2;
+ALTER TABLE Usuarios ALTER COLUMN nombre1_usuario SET DEFAULT 'Sin nombre';
 
 -- ------------------------------------------------------------------------------------- --
 -- 10. Eliminar Valor x Defecto Columna. ----------------------------------------------- --
 --     ALTER TABLE __ ALTER __ DROP DEFAULT : ------------------------------------------ --
 -- ------------------------------------------------------------------------------------- --
-ALTER TABLE USUARIOS ALTER usuario_estrato DROP DEFAULT;
+ALTER TABLE Usuarios ALTER COLUMN nombre1_usuario DROP DEFAULT;
 
 -- ------------------------------------------------------------------------------------- --
 -- 11. Mostrar Creación Tabla. --------------------------------------------------------- --
 --     SHOW CREATE TABLE __ : ---------------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-SHOW CREATE TABLE USUARIOS;
-SHOW CREATE TABLE ORGANIZACIONES;
-SHOW CREATE TABLE DONACIONES;
+SHOW CREATE TABLE Usuarios;
+SHOW CREATE TABLE Organizaciones;
+SHOW CREATE TABLE Donaciones;
 
 -- ------------------------------------------------------------------------------------- --
 -- 12. Eliminar Restricción. ----------------------------------------------------------- --
 --     ALTER TABLE __ DROP CONSTRAINT __ : --------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-ALTER TABLE USUARIOS DROP CONSTRAINT fk_usuario_organizacion;
-ALTER TABLE DONACIONES DROP CONSTRAINT fk_donacion_usuario;
-ALTER TABLE DONACIONES DROP CONSTRAINT fk_donacion_organzacion;
-ALTER TABLE EVENTOS DROP CONSTRAINT fk_evento_organizacion;
-ALTER TABLE EVENTOS DROP CONSTRAINT fk_Eventos_Seguimiento_Eventos;
-ALTER TABLE USUARIO_EVENTOS DROP CONSTRAINT fk_usuario_evento_usuario;
-ALTER TABLE USUARIO_EVENTOS DROP CONSTRAINT fk_usuario_evento_evento;
+ALTER TABLE Donaciones DROP FOREIGN KEY fk_Donaciones_Organizaciones;
+ALTER TABLE Donaciones DROP FOREIGN KEY fk_Donaciones_Usuarios;
+ALTER TABLE Eventos DROP FOREIGN KEY fk_Eventos_Organizaciones;
+ALTER TABLE Monetarios DROP FOREIGN KEY fk_Monetarios_Donaciones;
+ALTER TABLE Objetos DROP FOREIGN KEY fk_Objetos_Donaciones;
+ALTER TABLE Seguimiento_Eventos DROP FOREIGN KEY fk_Seguimiento_Eventos_Eventos;
+ALTER TABLE Seguimiento_Eventos DROP FOREIGN KEY fk_Seguimiento_Eventos_Usuarios;
 
 -- ------------------------------------------------------------------------------------- --
 -- 13. Eliminar Índice. ---------------------------------------------------------------- --
 --     ALTER TABLE __ DROP INDEX __ : -------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-ALTER TABLE USUARIOS DROP INDEX ind_fk_usuario_organizacion;
-ALTER TABLE DONACIONES DROP INDEX ind_fk_donacion_usuario;
-ALTER TABLE DONACIONES DROP INDEX ind_fk_donacion_organzacion;
-ALTER TABLE EVENTOS DROP INDEX ind_fk_evento_organizacion;
-ALTER TABLE EVENTOS DROP INDEX ind_fk_Eventos_Seguimiento_Eventos;
-ALTER TABLE USUARIO_EVENTOS DROP INDEX ind_fk_usuario_evento_usuario;
-ALTER TABLE USUARIO_EVENTOS DROP INDEX ind_fk_usuario_evento_evento;
+ALTER TABLE Donaciones DROP INDEX ind_fk_Donaciones_Organizaciones;
+ALTER TABLE Donaciones DROP INDEX ind_fk_Donaciones_usuarios;
+ALTER TABLE Eventos DROP INDEX ind_fk_Eventos_Organizaciones;
+ALTER TABLE Monetarios DROP INDEX ind_fk_Monetarios_Donaciones;
+ALTER TABLE Objetos DROP INDEX ind_fk_Objetos_Donaciones;
+ALTER TABLE Seguimiento_Eventos DROP INDEX ind_fk_Seguimiento_Eventos_Eventos;
+ALTER TABLE Seguimiento_Eventos DROP INDEX ind_fk_Seguimiento_Eventos_Usuarios;
 
 -- ------------------------------------------------------------------------------------- --
 -- 14. Eliminar Llave Primaria. -------------------------------------------------------- --
 --     ALTER TABLE __ DROP PRIMARY KEY : ----------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-ALTER TABLE USUARIOS DROP PRIMARY KEY;
-ALTER TABLE ORGANIZACIONES DROP PRIMARY KEY;
-ALTER TABLE DONACIONES DROP PRIMARY KEY;
-ALTER TABLE SEGUIMIENTO_EVENTOS DROP PRIMARY KEY;
-ALTER TABLE EVENTOS DROP PRIMARY KEY;
+ALTER TABLE Usuarios DROP PRIMARY KEY;
+ALTER TABLE Organizaciones DROP PRIMARY KEY;
+ALTER TABLE Donaciones DROP PRIMARY KEY;
+ALTER TABLE Monetarios DROP PRIMARY KEY;
+ALTER TABLE Objetos DROP PRIMARY KEY;
+ALTER TABLE Eventos DROP PRIMARY KEY;
 
 -- ------------------------------------------------------------------------------------- --
 -- 15. Limpiar Registros. -------------------------------------------------------------- --
 --     TRUNCATE __ : ------------------------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-TRUNCATE USUARIOS;
-TRUNCATE ORGANIZACIONES;
-TRUNCATE DONACIONES;
-TRUNCATE SEGUIMIENTO_EVENTOS;
-TRUNCATE EVENTOS;
-TRUNCATE USUARIO_EVENTOS;
+TRUNCATE Usuarios;
+TRUNCATE Organizaciones;
+TRUNCATE Donaciones;
+TRUNCATE Monetarios;
+TRUNCATE Objetos;
+TRUNCATE Eventos;
+TRUNCATE Seguimiento_Eventos;
 
 -- ------------------------------------------------------------------------------------- --
 -- 16. Eliminar Tabla. ----------------------------------------------------------------- --
 --     DROP TABLE __ : ----------------------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-DROP TABLE USUARIOS;
-DROP TABLE ORGANIZACIONES;
-DROP TABLE DONACIONES;
-DROP TABLE SEGUIMIENTO_EVENTOS;
-DROP TABLE EVENTOS;
-DROP TABLE USUARIO_EVENTOS;
+-- DROP TABLE Usuarios;
+-- DROP TABLE Organizaciones;
+-- DROP TABLE Donaciones;
+-- DROP TABLE Monetarios;
+-- DROP TABLE Objetos;
+-- DROP TABLE Eventos;
+-- DROP TABLE Seguimiento_Eventos;
 
 -- ------------------------------------------------------------------------------------- --
 -- 17. Crear Tabla. -------------------------------------------------------------------- --
 --     CREATE TABLE __ ( __ , __ ) : --------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-CREATE TABLE Organizaciones (
-  organizcion_id INT NOT NULL AUTO_INCREMENT,
-  organizacion_nombre VARCHAR(45) NOT NULL,
-  organizacion_categoria VARCHAR(45) NOT NULL,
-  organiacion_direccion VARCHAR(45) NOT NULL,
-  organizacin_contraseña VARCHAR(45) NOT NULL,
-  PRIMARY KEY (organizcion_id))
+CREATE TABLE Organizaciones_Ejemplo (
+  id_Organizaciones INT NOT NULL AUTO_INCREMENT,
+  nombre_organizaciones VARCHAR(100) NOT NULL,
+  direccion_organizaciones VARCHAR(90) NOT NULL,
+  correo_organizaciones VARCHAR(45) NOT NULL,
+  password_organizaciones VARCHAR(255) NOT NULL,
+  PRIMARY KEY (id_Organizaciones))
 ENGINE = InnoDB;
+
+DROP TABLE Organizaciones_Ejemplo;
 
 -- ------------------------------------------------------------------------------------- --
 -- 18. Renombrar Tabla. ---------------------------------------------------------------- --
 --     RENAME TABLE __ TO __ : --------------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-RENAME TABLE USUARIOS TO PERSONAS;
-RENAME TABLE PERSONAS TO USUARIOS;
+RENAME TABLE Usuarios TO Personas;
+RENAME TABLE Personas TO Usuarios;
 
 -- ------------------------------------------------------------------------------------- --
 -- 19. Crear Llave Primaria. ----------------------------------------------------------- --
 --     ALTER TABLE __ ADD PRIMARY KEY ( __ ) : ----------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-ALTER TABLE USUARIOS ADD PRIMARY KEY (usuario_id);
-ALTER TABLE ORGANIZACIONES ADD PRIMARY KEY (organizacion_id);
-ALTER TABLE DONACIONES ADD PRIMARY KEY (donacion_id);
-ALTER TABLE USUARIO_EVENTOS ADD PRIMARY KEY (usuario_eventos_id);
-ALTER TABLE SEGUIMIENTO_EVENTOS ADD PRIMARY KEY (seguimieno_id);
-ALTER TABLE EVENTOS ADD PRIMARY KEY (evento_id);
+ALTER TABLE Usuarios ADD PRIMARY KEY (id_usuario);
+ALTER TABLE Organizaciones ADD PRIMARY KEY (id_Organizaciones);
+ALTER TABLE Donaciones ADD PRIMARY KEY (id_Donaciones);
+ALTER TABLE Monetarios ADD PRIMARY KEY (id_Monetarios);
+ALTER TABLE Objetos ADD PRIMARY KEY (id_Objetos);
+ALTER TABLE Eventos ADD PRIMARY KEY (id_eventos);
 
 -- ------------------------------------------------------------------------------------- --
 -- 20. Crear Índice Campo. ------------------------------------------------------------- --
 --     CREATE INDEX __ ON __ ( __ ) :  ------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-CREATE INDEX ind_fk_usuario_organizacion ON USUARIOS (usuario_id);
-CREATE INDEX ind_fk_donacion_usuario ON DONACIONES (donacion_id);
-CREATE INDEX ind_fk_donacion_organzacion ON DONACIONES (donacion_id);
-CREATE INDEX ind_fk_evento_organizacion ON EVENTOS (evento_id);
+CREATE INDEX ind_usuarios_correo ON Usuarios (correo_usuario);
+CREATE INDEX ind_organizaciones_nombre ON Organizaciones (nombre_organizaciones);
+CREATE INDEX ind_donaciones_fecha ON Donaciones (fecha_donacion);
 
 -- ------------------------------------------------------------------------------------- --
 -- 21. Crear Índice Multicampo. -------------------------------------------------------- --
 --     CREATE INDEX _ ON _ ( __ , __ ) : ----------------------------------------------- -- 
 -- ------------------------------------------------------------------------------------- --
-CREATE INDEX ind_fk_usuario_id_evento_id
-ON USUARIO_EVENTOS (usuario_id, evento_id);
+CREATE INDEX idx_evento_usuario ON Seguimiento_Eventos (id_evento, id_usuario);
 
 -- ------------------------------------------------------------------------------------- --
 -- 22. Crear Índice Único. ------------------------------------------------------------- --
 --     CREATE UNIQUE INDEX __ ON __ ( __ ) : ------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-CREATE UNIQUE INDEX ind_fk_usuario_evento_usuario ON USUARIO_EVENTOS (usuario_id);
-CREATE UNIQUE INDEX ind_fk_usuario_evento_evento ON USUARIO_EVENTOS (evento_id);
+CREATE UNIQUE INDEX idx_unique_correo_usuario ON Usuarios (correo_usuario);
+CREATE UNIQUE INDEX idx_unique_correo_organizacion ON Organizaciones (correo_organizaciones);
+
 -- ------------------------------------------------------------------------------------- --
 -- 23. Crear Restricción. -------------------------------------------------------------- --
 --     ALTER TABLE __ ADD CONSTRAINT __ FOREIGN KEY ( __ ) REFERENCES __ ( __ ) -------- --
 --     ON DELETE CASCADE ON UPDATE CASCADE : ------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
-ALTER TABLE USUARIOS ADD 
-CONSTRAINT fk_usuario_organizacion
-    FOREIGN KEY (organizacion_id)
-    REFERENCES Organizaciones (organizcion_id)
-	ON DELETE CASCADE
-	ON UPDATE CASCADE;
-
-ALTER TABLE DONACIONES ADD 
-CONSTRAINT fk_donacion_usuario
-    FOREIGN KEY (usuario_id)
-    REFERENCES Usuarios (Id_usuario)
+ALTER TABLE Donaciones ADD 
+CONSTRAINT fk_Donaciones_Organizaciones
+    FOREIGN KEY (id_Organizaciones)
+    REFERENCES Organizaciones (id_Organizaciones)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
-	ALTER TABLE DONACIONES ADD 
-CONSTRAINT fk_donacion_organzacion
-    FOREIGN KEY (organizacion_id)
-    REFERENCES Organizaciones (organizcion_id)
+ALTER TABLE Donaciones ADD 
+CONSTRAINT fk_Donaciones_Usuarios
+    FOREIGN KEY (id_Usuarios)
+    REFERENCES Usuarios (id_usuario)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
-	ALTER TABLE EVENTOS ADD 
-CONSTRAINT fk_evento_organizacion
-    FOREIGN KEY (organizacion_id)
-    REFERENCES Organizaciones (organizcion_id)
+ALTER TABLE Eventos ADD 
+CONSTRAINT fk_Eventos_Organizaciones
+    FOREIGN KEY (id_Organizaciones)
+    REFERENCES Organizaciones (id_Organizaciones)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
-	ALTER TABLE EVENTOS ADD 
-CONSTRAINT fk_Eventos_Seguimiento_Eventos
-    FOREIGN KEY (Seguimiento_Eventos_Seguimiento)
-    REFERENCES Seguimiento_Eventos (seguimiento_id)
+ALTER TABLE Monetarios ADD 
+CONSTRAINT fk_Monetarios_Donaciones
+    FOREIGN KEY (id_Donaciones)
+    REFERENCES Donaciones (id_Donaciones)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
-	ALTER TABLE USUARIO_EVENTOS ADD 
-CONSTRAINT fk_usuario_evento_usuario
-    FOREIGN KEY (usuario_id)
-    REFERENCES Usuarios (Id_usuario)
+ALTER TABLE Objetos ADD 
+CONSTRAINT fk_Objetos_Donaciones
+    FOREIGN KEY (id_Donaciones)
+    REFERENCES Donaciones (id_Donaciones)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
 
-	ALTER TABLE USUARIO_EVENTOS ADD 
-CONSTRAINT fk_usuario_evento_evento
-    FOREIGN KEY (evento_id)
-    REFERENCES Eventos (eventos_id)
+ALTER TABLE Seguimiento_Eventos ADD 
+CONSTRAINT fk_Seguimiento_Eventos_Eventos
+    FOREIGN KEY (id_evento)
+    REFERENCES Eventos (id_eventos)
     ON DELETE CASCADE
     ON UPDATE CASCADE;
-	
+
+ALTER TABLE Seguimiento_Eventos ADD 
+CONSTRAINT fk_Seguimiento_Eventos_Usuarios
+    FOREIGN KEY (id_usuario)
+    REFERENCES Usuarios (id_usuario)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE;
+
+    	
 /* ************************************************************************************* */
 /* ------------------------------------------------------------------------------------- */
 /* ----------------------------------- BIBLIOGRAFÍA ------------------------------------ */
