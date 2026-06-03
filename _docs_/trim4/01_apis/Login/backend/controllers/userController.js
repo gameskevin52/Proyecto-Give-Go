@@ -5,16 +5,20 @@ const keys = require("../config/keys");
 
 function normalizeUser(body) {
   return {
-    id: body.id || body.usuario_id,
-    name: body.name || body.usuario_nombre,
-    lastname: body.lastname || body.usuario_apellido,
-    address: body.address || body.usuario_direccion,
-    phone: body.phone || body.usuario_telefono,
-    stratum: body.stratum || body.usuario_estrato,
-    email: body.email || body.usuario_correo,
-    password: body.password || body.usuario_contraseña,
-    organization_id: body.organization_id || body.organizacion_id,
+    id: body.id || body.id_usuario,
+    role: body.role || body.roles || "Voluntario",
+    first_name: body.first_name || body.name || body.nombre1_usuario,
+    second_name: body.second_name || body.nombre2_usuario,
+    first_lastname: body.first_lastname || body.lastname || body.apellido1_usuario,
+    second_lastname: body.second_lastname || body.apellido2_usuario,
+    phone: body.phone || body.telefono_usuario,
+    email: body.email || body.correo_usuario,
+    password: body.password || body.password_usuario,
   };
+}
+
+function isValidRole(role) {
+  return ["Admin", "Voluntario", "Beneficiario"].includes(role);
 }
 
 module.exports = {
@@ -24,13 +28,13 @@ module.exports = {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "El correo y la contraseña son obligatorios",
+        message: "El correo y la contrasena son obligatorios",
       });
     }
 
     User.findByEmail(email, async (err, myUser) => {
       if (err) {
-        return res.status(501).json({
+        return res.status(500).json({
           success: false,
           message: "Error al consultar el usuario",
           error: err,
@@ -49,7 +53,7 @@ module.exports = {
       if (!isPasswordValid) {
         return res.status(401).json({
           success: false,
-          message: "Contraseña o correo incorrecto",
+          message: "Contrasena o correo incorrecto",
         });
       }
 
@@ -57,27 +61,20 @@ module.exports = {
         {
           id: myUser.id,
           email: myUser.email,
-          role: "user",
-          organization_id: myUser.organization_id,
+          role: myUser.role,
         },
         keys.secretOrKey,
         { expiresIn: "1h" }
       );
 
+      delete myUser.password;
+
       return res.status(200).json({
         success: true,
         message: "Usuario autenticado",
         data: {
-          id: myUser.id,
-          name: myUser.name,
-          lastname: myUser.lastname,
-          address: myUser.address,
-          phone: myUser.phone,
-          stratum: myUser.stratum,
-          email: myUser.email,
-          role: "user",
-          organization_id: myUser.organization_id,
-          session_token: `Bearer ${token}`,
+          ...myUser,
+          session_token: `JWT ${token}`,
         },
       });
     });
@@ -86,7 +83,7 @@ module.exports = {
   getAllUsers(req, res) {
     User.findAll((err, users) => {
       if (err) {
-        return res.status(501).json({
+        return res.status(500).json({
           success: false,
           message: "Error al listar usuarios",
           error: err,
@@ -106,7 +103,7 @@ module.exports = {
 
     User.findById(id, (err, user) => {
       if (err) {
-        return res.status(501).json({
+        return res.status(500).json({
           success: false,
           message: "Error al consultar el usuario",
           error: err,
@@ -120,8 +117,6 @@ module.exports = {
         });
       }
 
-      delete user.password;
-
       return res.status(200).json({
         success: true,
         message: "Usuario encontrado",
@@ -133,16 +128,23 @@ module.exports = {
   register(req, res) {
     const user = normalizeUser(req.body);
 
-    if (!user.name || !user.lastname || !user.email || !user.password) {
+    if (!user.first_name || !user.first_lastname || !user.phone || !user.email || !user.password) {
       return res.status(400).json({
         success: false,
-        message: "Nombre, apellido, correo, contraseña y son obligatorios",
+        message: "Primer nombre, primer apellido, telefono, correo y contrasena son obligatorios",
+      });
+    }
+
+    if (!isValidRole(user.role)) {
+      return res.status(400).json({
+        success: false,
+        message: "El rol debe ser Admin, Voluntario o Beneficiario",
       });
     }
 
     User.create(user, (err, data) => {
       if (err) {
-        return res.status(501).json({
+        return res.status(500).json({
           success: false,
           message: "Error al crear el usuario",
           error: err,
@@ -160,9 +162,16 @@ module.exports = {
   getUserUpdate(req, res) {
     const user = normalizeUser({ ...req.body, id: req.params.id });
 
+    if (user.role && !isValidRole(user.role)) {
+      return res.status(400).json({
+        success: false,
+        message: "El rol debe ser Admin, Voluntario o Beneficiario",
+      });
+    }
+
     User.update(user, (err, data) => {
       if (err) {
-        return res.status(501).json({
+        return res.status(500).json({
           success: false,
           message: "Error al actualizar el usuario",
           error: err,
@@ -182,7 +191,7 @@ module.exports = {
 
     User.delete(id, (err, data) => {
       if (err) {
-        return res.status(501).json({
+        return res.status(500).json({
           success: false,
           message: "Error al eliminar el usuario",
           error: err,

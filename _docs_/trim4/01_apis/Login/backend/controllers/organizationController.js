@@ -5,11 +5,11 @@ const keys = require("../config/keys");
 
 function normalizeOrganization(body) {
   return {
-    id: body.id || body.organizacion_id,
-    name: body.name || body.organizacion_nombre,
-    address: body.address || body.organizacion_direccion,
-    email: body.email || body.organizacion_correo,
-    password: body.password || body.organizacion_contraseña,
+    id: body.id || body.id_Organizaciones || body.organizacion_id,
+    name: body.name || body.nombre_organizaciones || body.organizacion_nombre,
+    address: body.address || body.direccion_organizaciones || body.organizacion_direccion,
+    email: body.email || body.correo_organizaciones || body.organizacion_correo,
+    password: body.password || body.password_organizaciones,
   };
 }
 
@@ -20,13 +20,13 @@ module.exports = {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "El correo y la contraseña son obligatorios",
+        message: "El correo y la contrasena son obligatorios",
       });
     }
 
     Organization.findByEmail(email, async (err, organization) => {
       if (err) {
-        return res.status(501).json({
+        return res.status(500).json({
           success: false,
           message: "Error al consultar la organizacion",
           error: err,
@@ -45,7 +45,7 @@ module.exports = {
       if (!isPasswordValid) {
         return res.status(401).json({
           success: false,
-          message: "Contraseña o correo incorrecto",
+          message: "Contrasena o correo incorrecto",
         });
       }
 
@@ -53,22 +53,21 @@ module.exports = {
         {
           id: organization.id,
           email: organization.email,
-          role: "organization",
+          role: "Organizacion",
         },
         keys.secretOrKey,
         { expiresIn: "1h" }
       );
 
+      delete organization.password;
+
       return res.status(200).json({
         success: true,
         message: "Organizacion autenticada",
         data: {
-          id: organization.id,
-          name: organization.name,
-          address: organization.address,
-          email: organization.email,
-          role: "organization",
-          session_token: `Bearer ${token}`,
+          ...organization,
+          role: "Organizacion",
+          session_token: `JWT ${token}`,
         },
       });
     });
@@ -77,7 +76,7 @@ module.exports = {
   getAllOrganizations(req, res) {
     Organization.findAll((err, organizations) => {
       if (err) {
-        return res.status(501).json({
+        return res.status(500).json({
           success: false,
           message: "Error al listar organizaciones",
           error: err,
@@ -97,7 +96,7 @@ module.exports = {
 
     Organization.findById(id, (err, organization) => {
       if (err) {
-        return res.status(501).json({
+        return res.status(500).json({
           success: false,
           message: "Error al consultar la organizacion",
           error: err,
@@ -110,8 +109,6 @@ module.exports = {
           message: "Organizacion no encontrada",
         });
       }
-
-      delete organization.password;
 
       return res.status(200).json({
         success: true,
@@ -127,13 +124,13 @@ module.exports = {
     if (!organization.name || !organization.address || !organization.email || !organization.password) {
       return res.status(400).json({
         success: false,
-        message: "Nombre, direccion, correo y contraseña son obligatorios",
+        message: "Nombre, direccion, correo y contrasena son obligatorios",
       });
     }
 
     Organization.create(organization, (err, data) => {
       if (err) {
-        return res.status(501).json({
+        return res.status(500).json({
           success: false,
           message: "Error al crear la organizacion",
           error: err,
@@ -153,7 +150,7 @@ module.exports = {
 
     Organization.update(organization, (err, data) => {
       if (err) {
-        return res.status(501).json({
+        return res.status(500).json({
           success: false,
           message: "Error al actualizar la organizacion",
           error: err,
@@ -173,7 +170,7 @@ module.exports = {
 
     Organization.delete(id, (err, data) => {
       if (err) {
-        return res.status(501).json({
+        return res.status(500).json({
           success: false,
           message: "Error al eliminar la organizacion",
           error: err,

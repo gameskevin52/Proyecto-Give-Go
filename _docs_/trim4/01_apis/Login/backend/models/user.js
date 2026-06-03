@@ -4,19 +4,19 @@ const bcrypt = require("bcryptjs");
 const User = {};
 
 const publicFields = `
-  usuario_id AS id,
-  usuario_nombre AS name,
-  usuario_apellido AS lastname,
-  usuario_direccion AS address,
-  usuario_telefono AS phone,
-  usuario_estrato AS stratum,
-  usuario_correo AS email,
-  organizacion_id AS organization_id
+  id_usuario AS id,
+  roles AS role,
+  nombre1_usuario AS first_name,
+  nombre2_usuario AS second_name,
+  apellido1_usuario AS first_lastname,
+  apellido2_usuario AS second_lastname,
+  telefono_usuario AS phone,
+  correo_usuario AS email
 `;
 
 const privateFields = `
   ${publicFields},
-  usuario_contraseña AS password
+  password_usuario AS password
 `;
 
 User.findAll = (result) => {
@@ -28,13 +28,12 @@ User.findAll = (result) => {
       return result(err, null);
     }
 
-    console.log("Usuarios encontrados: ", users.length);
     return result(null, users);
   });
 };
 
 User.findById = (id, result) => {
-  const sql = `SELECT ${privateFields} FROM Usuarios WHERE usuario_id = ?`;
+  const sql = `SELECT ${publicFields} FROM Usuarios WHERE id_usuario = ?`;
 
   db.query(sql, [id], (err, users) => {
     if (err) {
@@ -42,13 +41,12 @@ User.findById = (id, result) => {
       return result(err, null);
     }
 
-    console.log("Usuario consultado: ", users[0]);
     return result(null, users[0]);
   });
 };
 
 User.findByEmail = (email, result) => {
-  const sql = `SELECT ${privateFields} FROM Usuarios WHERE usuario_correo = ?`;
+  const sql = `SELECT ${privateFields} FROM Usuarios WHERE correo_usuario = ?`;
 
   db.query(sql, [email], (err, users) => {
     if (err) {
@@ -56,7 +54,6 @@ User.findByEmail = (email, result) => {
       return result(err, null);
     }
 
-    console.log("Usuario consultado: ", users[0]);
     return result(null, users[0]);
   });
 };
@@ -65,28 +62,28 @@ User.create = async (user, result) => {
   const hash = await bcrypt.hash(user.password, 10);
   const sql = `
     INSERT INTO Usuarios(
-      usuario_nombre,
-      usuario_apellido,
-      usuario_direccion,
-      usuario_telefono,
-      usuario_estrato,
-      usuario_correo,
-      usuario_contraseña,
-      organizacion_id
+      roles,
+      nombre1_usuario,
+      nombre2_usuario,
+      apellido1_usuario,
+      apellido2_usuario,
+      telefono_usuario,
+      correo_usuario,
+      password_usuario
     ) VALUES (?,?,?,?,?,?,?,?)
   `;
 
   db.query(
     sql,
     [
-      user.name,
-      user.lastname,
-      user.address,
+      user.role,
+      user.first_name,
+      user.second_name || null,
+      user.first_lastname,
+      user.second_lastname || null,
       user.phone,
-      user.stratum,
       user.email,
       hash,
-      user.organization_id,
     ],
     (err, res) => {
       if (err) {
@@ -94,19 +91,16 @@ User.create = async (user, result) => {
         return result(err, null);
       }
 
-      const createdUser = {
+      return result(null, {
         id: res.insertId,
-        name: user.name,
-        lastname: user.lastname,
-        address: user.address,
+        role: user.role,
+        first_name: user.first_name,
+        second_name: user.second_name || null,
+        first_lastname: user.first_lastname,
+        second_lastname: user.second_lastname || null,
         phone: user.phone,
-        stratum: user.stratum,
         email: user.email,
-        organization_id: user.organization_id,
-      };
-
-      console.log("Usuario creado: ", createdUser);
-      return result(null, createdUser);
+      });
     }
   );
 };
@@ -115,45 +109,45 @@ User.update = async (user, result) => {
   const fields = [];
   const values = [];
 
-  if (user.name) {
-    fields.push("usuario_nombre = ?");
-    values.push(user.name);
+  if (user.role) {
+    fields.push("roles = ?");
+    values.push(user.role);
   }
-  if (user.lastname) {
-    fields.push("usuario_apellido = ?");
-    values.push(user.lastname);
+  if (user.first_name) {
+    fields.push("nombre1_usuario = ?");
+    values.push(user.first_name);
   }
-  if (user.address) {
-    fields.push("usuario_direccion = ?");
-    values.push(user.address);
+  if (user.second_name !== undefined) {
+    fields.push("nombre2_usuario = ?");
+    values.push(user.second_name || null);
+  }
+  if (user.first_lastname) {
+    fields.push("apellido1_usuario = ?");
+    values.push(user.first_lastname);
+  }
+  if (user.second_lastname !== undefined) {
+    fields.push("apellido2_usuario = ?");
+    values.push(user.second_lastname || null);
   }
   if (user.phone) {
-    fields.push("usuario_telefono = ?");
+    fields.push("telefono_usuario = ?");
     values.push(user.phone);
   }
-  if (user.stratum) {
-    fields.push("usuario_estrato = ?");
-    values.push(user.stratum);
-  }
   if (user.email) {
-    fields.push("usuario_correo = ?");
+    fields.push("correo_usuario = ?");
     values.push(user.email);
   }
   if (user.password) {
     const hash = await bcrypt.hash(user.password, 10);
-    fields.push("usuario_contraseña = ?");
+    fields.push("password_usuario = ?");
     values.push(hash);
-  }
-  if (user.organization_id) {
-    fields.push("organizacion_id = ?");
-    values.push(user.organization_id);
   }
 
   if (fields.length === 0) {
     return result(null, { id: user.id, message: "No hay datos para actualizar" });
   }
 
-  const sql = `UPDATE Usuarios SET ${fields.join(", ")} WHERE usuario_id = ?`;
+  const sql = `UPDATE Usuarios SET ${fields.join(", ")} WHERE id_usuario = ?`;
   values.push(user.id);
 
   db.query(sql, values, (err, res) => {
@@ -162,13 +156,12 @@ User.update = async (user, result) => {
       return result(err, null);
     }
 
-    console.log("Usuario actualizado: ", { id: user.id, ...user });
     return result(null, { id: user.id, affectedRows: res.affectedRows });
   });
 };
 
 User.delete = (id, result) => {
-  const sql = "DELETE FROM Usuarios WHERE usuario_id = ?";
+  const sql = "DELETE FROM Usuarios WHERE id_usuario = ?";
 
   db.query(sql, [id], (err, res) => {
     if (err) {
@@ -176,7 +169,6 @@ User.delete = (id, result) => {
       return result(err, null);
     }
 
-    console.log("Usuario eliminado con id: ", id);
     return result(null, res);
   });
 };

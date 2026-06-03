@@ -1,36 +1,30 @@
-     // server.js
-     const express = require('express');
-     const logger = require('morgan');
-     const cors = require('cors');
-     const usersRoutes = require('./routes/userRoutes');
-     const organizationRoutes = require('./routes/organizationRoutes');
+const express = require("express");
+const logger = require("morgan");
+const cors = require("cors");
+const usersRoutes = require("./routes/userRoutes");
+const organizationRoutes = require("./routes/organizationRoutes");
 
-     const app = express();
+const app = express();
 
-     // Middlewares globales
-         app.use(logger('dev'));
-         app.use(express.json());
-         app.use(express.urlencoded({ extended: true }));
-         app.use(cors());
-    
-         // Rutas
-         app.use('/api/users', usersRoutes);
-         app.use('/api/organizations', organizationRoutes);
-    
-         // Endpoints de prueba
-         app.get('/', (req, res) => {
-           res.send('Ruta raíz del Backend');
-         });
-    
-         app.get('/test', (req, res) => {
-           res.send('Ruta TEST');
-         });
-    
-         // Manejo de errores
-         app.use((err, req, res, next) => {
-           console.log(err);
-           res.status(err.status || 500).send(err.stack);
-         });
-    
-         // Exportamos la app para que la use index.js
-         module.exports = app;
+app.use(logger("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+
+app.use("/api/users", usersRoutes);
+app.use("/api/organizations", organizationRoutes);
+
+app.get("/", (req, res) => {
+  res.send("Ruta raiz del Backend");
+});
+
+app.get("/test", (req, res) => {
+  res.send("Ruta TEST");
+});
+
+app.use((err, req, res, next) => {
+  console.log(err);
+  res.status(err.status || 500).send(err.stack);
+});
+
+module.exports = app;
