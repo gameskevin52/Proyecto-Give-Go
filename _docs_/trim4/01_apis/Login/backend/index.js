@@ -2,12 +2,12 @@
         const app = require('./server');
         const cors = require('cors');
         const port = process.env.PORT || 3000;
-        const host = process.env.HOST || '192.168.56.1';
+        const host = process.env.HOST || '192.168.137.218';
         
         // Configuración CORS
         app.use(cors({
           origin: [
-                'http://192.168.56.1',
+                'http://192.168.137.218',
                 'http://localhost', 
                 'http://127.0.0.1'    
               ],
