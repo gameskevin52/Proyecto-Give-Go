@@ -9,7 +9,7 @@ const swaggerJsdoc = require('swagger-jsdoc');
          description: 'Documentación completa de la API REST',
          contact: {
            name: 'Give & Go',
-           email: 'profealbeiro2020@gmail.com'
+           email: 'quinonesgomezmariaalejandra@gmail.com'
          }
        },
        servers: [

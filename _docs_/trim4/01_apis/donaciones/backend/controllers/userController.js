@@ -166,5 +166,4 @@
      };
 
      //pregunta 1: que hace el archivo? respuesta: controla todas las acciones relacionadas con los usuarios, se manejan funciones como: inicio sesion, registrar usuarios, listar usuarios, buscar usuarios, actualizar usuarios, eliminar usuarios. 
-
      //pregunta 2: recibe solicitudes del cliente (frontend), procesa la infor y responde con datos o mensajes. es el intermedirario entre las rutas (routes) y el modelo (models/user.js).
