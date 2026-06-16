@@ -91,7 +91,6 @@ CREATE TABLE Objetos (
   categoria_objeto ENUM('Salud', 'Educacion', 'Medio Ambiente', 'Alimentos', 'Vivienda', 'Ropa') NOT NULL,
   descripcion_de_evento VARCHAR(250) NOT NULL,
   cantidad_total VARCHAR(100) NOT NULL,
-  id_Donaciones INT NOT NULL,
   PRIMARY KEY (id_Donaciones),
   INDEX ind_fk_Objetos_Donaciones (id_Donaciones ASC),
   CONSTRAINT fk_Objetos_Donaciones
