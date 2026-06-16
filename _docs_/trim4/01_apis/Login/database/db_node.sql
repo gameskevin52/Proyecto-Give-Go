@@ -1,7 +1,7 @@
--- DROP DATABASE give ;
+
+DROP DATABASE give ;
 CREATE DATABASE give DEFAULT CHARACTER SET utf8 ;
 USE give ;
-
 
 CREATE TABLE Usuarios (
   id_usuario INT NOT NULL AUTO_INCREMENT,
@@ -19,8 +19,6 @@ CREATE TABLE Usuarios (
 ENGINE = InnoDB;
 
 
-
-
 CREATE TABLE Organizaciones (
   id_Organizaciones INT NOT NULL AUTO_INCREMENT,
   nombre_organizaciones VARCHAR(100) NOT NULL,
@@ -30,8 +28,6 @@ CREATE TABLE Organizaciones (
   PRIMARY KEY (id_Organizaciones),
   UNIQUE INDEX correo_organizaciones_UNIQUE (correo_organizaciones ASC))
 ENGINE = InnoDB;
-
-
 
 
 CREATE TABLE Eventos (
@@ -50,8 +46,6 @@ CREATE TABLE Eventos (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
-
-
 
 
 CREATE TABLE Donaciones (
@@ -77,33 +71,28 @@ CREATE TABLE Donaciones (
 ENGINE = InnoDB;
 
 
-
-
-CREATE TABLE Monetarios (
-  id_Monetarios INT NOT NULL AUTO_INCREMENT,
-  tipo_metodo VARCHAR(45) NOT NULL,
-  num_cuenta VARCHAR(45) NOT NULL,
-  valor_total DECIMAL NOT NULL,
-  id_Donaciones INT NOT NULL,
-  PRIMARY KEY (id_Monetarios),
+CREATE TABLE monetarios (
+    id_Donaciones INT(11) NOT NULL,
+    tipo_metodo VARCHAR(45),
+    num_cuenta VARCHAR(45),
+    valor_total DECIMAL(10,0),
+    PRIMARY KEY (id_Donaciones),    
   INDEX ind_fk_Monetarios_Donaciones (id_Donaciones ASC),
   CONSTRAINT fk_Monetarios_Donaciones
     FOREIGN KEY (id_Donaciones)
-    REFERENCES Donaciones (id_Donaciones)
+    REFERENCES donaciones(id_Donaciones)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
-
-
 CREATE TABLE Objetos (
-  id_Objetos INT NOT NULL AUTO_INCREMENT,
+  id_Donaciones INT NOT NULL,
   categoria_objeto ENUM('Salud', 'Educacion', 'Medio Ambiente', 'Alimentos', 'Vivienda', 'Ropa') NOT NULL,
   descripcion_de_evento VARCHAR(250) NOT NULL,
   cantidad_total VARCHAR(100) NOT NULL,
   id_Donaciones INT NOT NULL,
-  PRIMARY KEY (id_Objetos),
+  PRIMARY KEY (id_Donaciones),
   INDEX ind_fk_Objetos_Donaciones (id_Donaciones ASC),
   CONSTRAINT fk_Objetos_Donaciones
     FOREIGN KEY (id_Donaciones)
@@ -111,8 +100,6 @@ CREATE TABLE Objetos (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
-
-
 
 
 CREATE TABLE Seguimiento_Eventos (
@@ -131,7 +118,3 @@ CREATE TABLE Seguimiento_Eventos (
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
-
-
-
-
