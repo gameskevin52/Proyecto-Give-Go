@@ -77,77 +77,80 @@
 -- ------------------------------------------------------------------------------------- --
 -- INSERTA DATOS A LAS TABLAS
 INSERT INTO Organizaciones VALUES
-(null,'Fundacion Esperanza', 'Social', 'Calle 10 #23-45', 'clave123');
+(NULL, 'Fundacion Esperanza', 'Calle 10 #23-45', 'contacto@fundacionesperanza.org', SHA2('clave123', 256));
 
 INSERT INTO Usuarios VALUES
-(null,'Nicolay Diagelo','Cajamarca',' cr 84 # 34 sur','371637224','tres','nico123', 1);
+(NULL, 'Voluntario', 'Nicolay', 'Diagelo', 'Cajamarca', 'Mendoza', '371637224', 'nicolay@email.com', SHA2('nico123', 256));
 
-INSERT INTO MENSAJES VALUES 
-(null, 'Alerta', '2026-03-01', 'Mantenimiento', 'Sistema en mantenimiento', 'Activa', 2, 1);
-
-INSERT INTO DONACIONES VALUES
-(null, 'Donacion Escolar', 'Educacion', 'Monetaria', 'Tarjeta', '50000', 1, 1);
+INSERT INTO Donaciones VALUES
+(NULL, 'Educacion', 'Monetaria', NOW(), 1, 1);
 
 INSERT INTO Seguimiento_Eventos VALUES
-(null,'En Proceso');
+(1, 1);
 
 INSERT INTO Eventos VALUES
-(5,'2022-09-15','Evento de Medio Ambiente','Calle 90 # 12-34','Medio Ambiente','Promover conciencia ambiental y conservación',5,5);
+(NULL, 'Evento de Medio Ambiente', 'Medio Ambiente', 'Promover conciencia ambiental', '2025-06-15 10:00:00', 1, 1);
 
-INSERT INTO Usuario_Eventos VALUES
-(1,2);
+INSERT INTO Monetarios VALUES
+(NULL, 'Tarjeta', '****1234', 50000.00, 1);
+
+INSERT INTO Objetos VALUES
+(NULL, 'Alimentos', 'Paquete de alimentos no perecederos', '5', 1);
 
 -- ------------------------------------------------------------------------------------- --
 -- 1.2. Actualizar. -------------------------------------------------------------------- --
 --      UPDATE __ SET __ = __ WHERE __ = __ : ------------------------------------------ --
 -- ------------------------------------------------------------------------------------- --
 -- ACTUALIZA EL DATO DE UNA TABLA GUIANDOSE DEL ID
-UPDATE ORGANIZACION SET 
-organizacion_nombre = 'Salud para uno y para Todos'
-WHERE organizacion_id = 3;
+UPDATE Organizaciones SET 
+nombre_organizaciones = 'Salud para todos'
+WHERE id_Organizaciones = 1;
 
-UPDATE USUARIOS SET 
-usuario_nombre = 'Maria Alejandra'
-WHERE usuario_id = 4;
+UPDATE Usuarios SET 
+nombre1_usuario = 'Maria Alejandra'
+WHERE id_Usuarios = 1;
 
-UPDATE MENSAJES SET 
-mensajes_asunto = 'donacion'
-WHERE eventos_id = '3';
+UPDATE Donaciones SET 
+categoria_donaciones = 'Salud'
+WHERE id_Donaciones = 1;
 
-UPDATE DONACIONES SET 
-donacion_tipo = 'Material'
-WHERE donacion_id = '1';
+UPDATE Monetarios SET 
+valor_total = 75000.00
+WHERE id_Monetarios = 1;
 
-UPDATE Seguimiento_Eventos SET 
-seguimiento_estado = 'Completado'
-WHERE eventos_id = '2';
+UPDATE Objetos SET 
+cantidad_total = '10'
+WHERE id_Objetos = 1;
 
-UPDATE EVENTOS SET 
-eventos_id = '6'
-WHERE eventos_id = '2';
+UPDATE Eventos SET 
+estado_evento = 0
+WHERE id_Eventos = 1;
 
 -- ------------------------------------------------------------------------------------- --
 -- 1.3. Eliminar. ---------------------------------------------------------------------- --
 --      DELETE FROM __ WHERE __ = __ : ------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- ELIMINAR DATOS DE UNA TABLA TENIENDO EN CUENTA EL ID
-DELETE FROM ORGANIZACIONES 
-WHERE organizacion_id = '5';
+DELETE FROM Organizaciones 
+WHERE id_Organizaciones = 2;
 
-DELETE FROM USUARIOS 
-WHERE usuario_id = '5';
+DELETE FROM Usuarios 
+WHERE id_Usuarios = 2;
 
-DELETE FROM MENSAJES 
-WHERE mensaje_id = '5';
+DELETE FROM Donaciones 
+WHERE id_Donaciones = 2;
 
-DELETE FROM DONACIONES 
-WHERE donacion_id = '5';
+DELETE FROM Monetarios 
+WHERE id_Monetarios = 2;
+
+DELETE FROM Objetos 
+WHERE id_Objetos = 2;
 
 DELETE FROM Seguimiento_Eventos 
-WHERE seguimiento_id = '5';
+WHERE id_Eventos = 2 AND id_Usuarios = 2;
 
-DELETE FROM EVENTOS 
-WHERE evento_id = '5';
+DELETE FROM Eventos 
+WHERE id_Eventos = 2;
 
 
 /* ************************************************************************************* */
@@ -160,52 +163,52 @@ WHERE evento_id = '5';
 --      SELECT * FROM __ : ------------------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LA TABLA COMPLETA DE UNA TABLA CON SU INFORMACION
-SELECT * FROM ORGANIZACIONES;
-SELECT * FROM USUARIOS;
-SELECT * FROM MENSAJES;
-SELECT * FROM DONACIONES;
+SELECT * FROM Organizaciones;
+SELECT * FROM Usuarios;
+SELECT * FROM Donaciones;
 SELECT * FROM Seguimiento_Eventos;
-SELECT * FROM EVENTOS;
-SELECT * FROM USUARIO_EVENTOS;
+SELECT * FROM Eventos;
+SELECT * FROM Monetarios;
+SELECT * FROM Objetos;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.2. Específicas. ------------------------------------------------------------------- --
 --      SELECT __ , __ FROM __ : ------------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA INFORMACION ESPECIFICANDO COLUMNAS QUE DESEA MOSTRAR
-SELECT organizacion_id, organizacion_nombre, organizacion_categoria FROM ORGANIZACIONES;
-SELECT organizacion_id, usuario_nombre, usuario_estrato FROM USUARIOS;
-SELECT mensaje_tipo, mensaje_descripcion, usuario_id FROM MENSAJES;
-SELECT donacion_nombre, donacion_tipo, usuario_id, organizacion_id  FROM DONACIONES;
-SELECT seguimiento_id, seguimiento_estado FROM SEGUIMIENTO_EVENTOS;
-SELECT evento_fecha, evento_nombre, organizacion_id, Seguimiento_Eventos_Seguimiento FROM EVENTOS;
-SELECT usuario_id, evento_id FROM USUARIO_EVENTOS;
+SELECT id_Organizaciones, nombre_organizaciones, direccion_organizaciones FROM Organizaciones;
+SELECT id_Usuarios, nombre1_usuario, apellido1_usuario, roles FROM Usuarios;
+SELECT id_Donaciones, categoria_donaciones, tipo_donaciones FROM Donaciones;
+SELECT id_Eventos, id_Usuarios FROM Seguimiento_Eventos;
+SELECT id_Eventos, nombre_eventos, categoria_eventos, fecha_evento FROM Eventos;
+SELECT id_Monetarios, tipo_metodo, valor_total FROM Monetarios;
+SELECT id_Objetos, categoria_objeto, cantidad_total FROM Objetos;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.3. Con Criterios. ----------------------------------------------------------------- --
 --      SELECT __ , __ FROM __ WHERE __ = __ : ----------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LAS COLUMNAS ESPECIFICAS DE UNA TABLA GUIANDOSE POR EL ID A MOSTRAR 
-SELECT organizacion_id, organizacion_nombre, organizacion_categoria FROM ORGANIZACIONES
-WHERE organizacion_id = 4;
+SELECT id_Organizaciones, nombre_organizaciones, correo_organizaciones FROM Organizaciones
+WHERE id_Organizaciones = 1;
 
-SELECT usuario_nombre, usuario_estrato, organizacion_id FROM USUARIOS
-WHERE usuario_id = 2;
+SELECT nombre1_usuario, apellido1_usuario, correo_usuario FROM Usuarios
+WHERE id_Usuarios = 1;
 
-SELECT mensaje_fecha, mensaje_tipo, mensaje_descripcion, organiacion_id FROM MENSAJES
-WHERE mensaje_id = 1;
+SELECT categoria_donaciones, tipo_donaciones, fecha_donacion FROM Donaciones
+WHERE id_Donaciones = 1;
 
-SELECT donacion_id, donacion_nombre, donacion_categoria, donacion_tipo FROM DONACIONES
-WHERE donacion_id = 5;
+SELECT id_Eventos, id_Usuarios FROM Seguimiento_Eventos
+WHERE id_Eventos = 1;
 
-SELECT seguimiento_id, seguimiento_estado FROM SEGUIMIENTO_EVENTOS
-WHERE seguimiento_id = 3;
+SELECT nombre_eventos, categoria_eventos, fecha_evento FROM Eventos
+WHERE id_Eventos = 1;
 
-SELECT evento_fecha, Seguimiento_Eventos_Seguimiento, organizacion_id FROM EVENTOS
-WHERE evento_id = 2;
+SELECT tipo_metodo, valor_total FROM Monetarios
+WHERE id_Donaciones = 1;
 
-SELECT usuario_id, evento_id FROM USUARIO_EVENTOS
-WHERE evento_id = 2;
+SELECT categoria_objeto, cantidad_total FROM Objetos
+WHERE id_Donaciones = 1;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.4. Con Operadores Lógicos. -------------------------------------------------------- --
@@ -217,81 +220,81 @@ WHERE evento_id = 2;
 --        SELECT __ , __ FROM __ WHERE __ = __ OR __ = __ : ---------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LA INFOMACION DE CADA UNO DE LOS ID SEGUN LAS INDICACIONES DE LAS COLUMNAS A MOSTRAR UTILIZANDO EL OR
-SELECT organizacion_id, organizacion_nombre, organizacion_categoria FROM ORGANIZACIONES
-WHERE organizacion_id = 2 OR organizacion_id = 4;
+SELECT id_Organizaciones, nombre_organizaciones FROM Organizaciones
+WHERE id_Organizaciones = 1 OR id_Organizaciones = 2;
 
-SELECT usuario_id, usuario_nombre, usuario_estrato, organizacion_id FROM USUARIOS
-WHERE usuario_id = 2 OR usuario_id = 3;
+SELECT id_Usuarios, nombre1_usuario, roles FROM Usuarios
+WHERE id_Usuarios = 1 OR id_Usuarios = 2;
 
-SELECT mensaje_id, mensaje_fecha, mensaje_tipo, mensaje_descripcion, organiacion_id FROM MENSAJES
-WHERE mensaje_id = 1 OR mensaje_id = 11;
+SELECT id_Donaciones, categoria_donaciones FROM Donaciones
+WHERE id_Donaciones = 1 OR id_Donaciones = 2;
 
-SELECT donacion_id, donacion_nombre, donacion_categoria, donacion_tipo FROM DONACIONES
-WHERE donacion_id = 5 OR donacion_id = 1;
+SELECT id_Eventos, id_Usuarios FROM Seguimiento_Eventos
+WHERE id_Eventos = 1 OR id_Eventos = 2;
 
-SELECT seguimiento_id, seguimiento_estado FROM SEGUIMIENTO_EVENTOS
-WHERE seguimiento_id = 3 OR seguimiento_id = 8;
+SELECT id_Eventos, nombre_eventos FROM Eventos
+WHERE id_Eventos = 1 OR id_Eventos = 2;
 
-SELECT evento_id, evento_fecha, Seguimiento_Eventos_Seguimiento, organizacion_id FROM EVENTOS
-WHERE evento_id = 2 OR evento_id = 4;
+SELECT id_Monetarios, valor_total FROM Monetarios
+WHERE id_Monetarios = 1 OR id_Monetarios = 2;
 
-SELECT evento_id, usuario_id FROM USUARIO_EVENTOS
-WHERE evento_id = 2 OR evento_id = 1;
+SELECT id_Objetos, categoria_objeto FROM Objetos
+WHERE id_Objetos = 1 OR id_Objetos = 2;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.4.2. Y [AND] . -------------------------------------------------------------------- --
 --        SELECT __ , __ FROM __ WHERE __ = __ AND __ = __ : --------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LAS COLUMNAS DE UNA TABLA Y LA INFORMACION QUE CUMPLA LA CONDICION AND
-SELECT organizacion_id, organizacion_nombre, organizacion_categoria FROM ORGANIZACIONES
-WHERE organizacion_categoria = 'Social' AND organizacion_nombre = 'Fundacion Esperanza';
+SELECT id_Organizaciones, nombre_organizaciones FROM Organizaciones
+WHERE nombre_organizaciones = 'Fundacion Esperanza' AND direccion_organizaciones = 'Calle 10 #23-45';
 
-SELECT usuario_id, usuario_apellido, usuario_nombre, usuario_estrato, organizacion_id FROM USUARIOS
-WHERE usuario_estrato = 'tres' AND usuario_apellido = 'Cajamarca';
+SELECT id_Usuarios, nombre1_usuario, roles FROM Usuarios
+WHERE roles = 'Voluntario' AND telefono_usuario = '371637224';
 
-SELECT mensaje_id, mensaje_fecha, mensaje_tipo, mensaje_descripcion, organiacion_id FROM MENSAJES
-WHERE mensaje_fecha = '2026-03-01' AND mensaje_tipo = 'Alerta';
+SELECT id_Donaciones, categoria_donaciones, tipo_donaciones FROM Donaciones
+WHERE categoria_donaciones = 'Educacion' AND tipo_donaciones = 'Monetaria';
 
-SELECT donacion_id, donacion_nombre, donacion_categoria, donacion_tipo FROM DONACIONES
-WHERE donacion_tipo = 'Monetaria' AND donacion_categoria = 'Educacion';
+SELECT id_Eventos, id_Usuarios FROM Seguimiento_Eventos
+WHERE id_Eventos = 1 AND id_Usuarios = 1;
 
-SELECT seguimiento_id, seguimiento_estado FROM SEGUIMIENTO_EVENTOS
-WHERE seguimiento_id = '2' AND seguimiento_estado = 'En Proceso';
+SELECT id_Eventos, nombre_eventos, estado_evento FROM Eventos
+WHERE estado_evento = 1 AND categoria_eventos = 'Medio Ambiente';
 
-SELECT evento_id, evento_fecha, evento_categoria, Seguimiento_Eventos_Seguimiento, organizacion_id FROM EVENTOS
-WHERE evento_categoria = 'Salud' AND Seguimiento_Eventos_Seguimiento = '4';
+SELECT id_Monetarios, tipo_metodo, valor_total FROM Monetarios
+WHERE tipo_metodo = 'Tarjeta' AND valor_total > 0;
 
-SELECT evento_id, usuario_id FROM USUARIO_EVENTOS
-WHERE evento_id = '2' AND usuario_id = '1';
+SELECT id_Objetos, categoria_objeto FROM Objetos
+WHERE categoria_objeto = 'Alimentos' AND cantidad_total > 0;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.4.3. NO [NOT] . ------------------------------------------------------------------- --
 --        SELECT __ , __ FROM __ WHERE __ = __ AND __ = __ : --------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LAS COLUMNAS DE UNA TABLA Y LA INFORMACION SIN MOSTRAR CIERTA INFORMACION (NOT IN)
-SELECT organizacion_id, organizacion_nombre, organizacion_categoria FROM ORGANIZACIONES
-WHERE organizacion_categoria NOT IN ('Salud');
+SELECT id_Organizaciones, nombre_organizaciones FROM Organizaciones
+WHERE nombre_organizaciones NOT IN ('Salud para todos');
 
-SELECT usuario_id, usuario_apellido, usuario_nombre, usuario_estrato, organizacion_id FROM USUARIOS
-WHERE usuario_estrato NOT IN ('tres');
+SELECT id_Usuarios, nombre1_usuario, roles FROM Usuarios
+WHERE roles NOT IN ('Admin');
 
-SELECT mensaje_id, mensaje_fecha, mensaje_tipo, mensaje_descripcion, organiacion_id FROM MENSAJES
-WHERE mensaje_tipo NOT IN ('Alerta');
+SELECT id_Donaciones, categoria_donaciones FROM Donaciones
+WHERE categoria_donaciones NOT IN ('Salud');
 
-SELECT donacion_id, donacion_nombre, donacion_categoria, donacion_tipo, donacion_metodopago FROM DONACIONES
-WHERE donacion_metodopago NOT IN ('Tarjeta');
+SELECT id_Eventos, id_Usuarios FROM Seguimiento_Eventos
+WHERE id_Usuarios NOT IN (2);
 
-SELECT seguimiento_id, seguimiento_estado FROM SEGUIMIENTO_EVENTOS
-WHERE seguimiento_estado NOT IN ('Cancelado');
+SELECT id_Eventos, nombre_eventos, estado_evento FROM Eventos
+WHERE estado_evento NOT IN (0);
 
-SELECT evento_id, evento_fecha, evento_categoria, Seguimiento_Eventos_Seguimiento, organizacion_id FROM EVENTOS
-WHERE evento_nombre NOT IN ('Evento de Construcción');
+SELECT id_Monetarios, tipo_metodo FROM Monetarios
+WHERE tipo_metodo NOT IN ('Efectivo');
 
-SELECT evento_id, usuario_id FROM USUARIO_EVENTOS
-WHERE usuario_id NOT IN ('2');
+SELECT id_Objetos, categoria_objeto FROM Objetos
+WHERE categoria_objeto NOT IN ('Ropa');
 
 -- ------------------------------------------------------------------------------------- --
--- 2.5. Con Operadores de Comparación. --------------------------------------- --
+-- 2.5. Con Operadores de Comparación. ------------------------------------------------- --
 --      <>, <, <=, >, >= : ------------------------------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 
@@ -300,36 +303,46 @@ WHERE usuario_id NOT IN ('2');
 --        SELECT __ , __ FROM __ WHERE __ <> __ : -------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LA INFORMACION EN LA QUE EL VALOR SEA MAYOR O MENOR (NO =) AL VALOR ESTABLECIDO
-SELECT * FROM DONACIONES WHERE donacion_valor <> 50000;
-SELECT * FROM USUARIOS WHERE usuario_estrato <> '2';
+SELECT * FROM Monetarios WHERE valor_total <> 50000;
+SELECT * FROM Usuarios WHERE id_Usuarios <> 1;
+SELECT * FROM Eventos WHERE estado_evento <> 1;
+
 -- ------------------------------------------------------------------------------------- --
 -- 2.5.2. Menor que [<] . -------------------------------------------------------------- --
 --        SELECT __ , __ FROM __ WHERE __ < __ : --------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LA INFORMACION EN LA QUE EL VALOR SEA MENOR (NO =) AL VALOR ESTABLECIDO
-SELECT * FROM DONACIONES WHERE donacion_valor < 80000;
-SELECT * FROM USUARIOS WHERE usuario_estrato < '3';
+SELECT * FROM Monetarios WHERE valor_total < 80000;
+SELECT * FROM Eventos WHERE id_Eventos < 5;
+SELECT * FROM Donaciones WHERE id_Donaciones < 3;
+
 -- ------------------------------------------------------------------------------------- --
 -- 2.5.3. Mayor que [>] . -------------------------------------------------------------- --
 --        SELECT __ , __ FROM __ WHERE __ > __ : --------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LA INFORMACION EN LA QUE EL VALOR SEA MAYOR (NO =) AL VALOR ESTABLECIDO
-SELECT * FROM DONACIONES WHERE donacion_valor > 80000;
-SELECT * FROM USUARIOS WHERE usuario_estrato > '2';
+SELECT * FROM Monetarios WHERE valor_total > 80000;
+SELECT * FROM Eventos WHERE id_Eventos > 2;
+SELECT * FROM Usuarios WHERE id_Usuarios > 1;
+
 -- ------------------------------------------------------------------------------------- --
 -- 2.5.4. Menor o igual que [<=] . ----------------------------------------------------- --
 --        SELECT __ , __ FROM __ WHERE __ > __ : --------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LA INFORMACION EN LA QUE EL VALOR SEA MENOR O IGUAL AL VALOR ESTABLECIDO
-SELECT * FROM DONACIONES WHERE donacion_valor <= 80000;
-SELECT * FROM USUARIOS WHERE usuario_estrato <= '3';
+SELECT * FROM Monetarios WHERE valor_total <= 80000;
+SELECT * FROM Eventos WHERE id_Eventos <= 3;
+SELECT * FROM Donaciones WHERE id_Donaciones <= 2;
+
 -- ------------------------------------------------------------------------------------- --
 -- 2.5.5. Mayor o igual que [>=] . ----------------------------------------------------- --
 --        SELECT __ , __ FROM __ WHERE __ > __ : --------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LA INFORMACION EN LA QUE EL VALOR SEA MAYOR O IGUAL AL VALOR ESTABLECIDO
-SELECT * FROM DONACIONES WHERE donacion_valor >= 80000;
-SELECT * FROM USUARIOS WHERE usuario_estrato >= '3';
+SELECT * FROM Monetarios WHERE valor_total >= 80000;
+SELECT * FROM Eventos WHERE id_Eventos >= 3;
+SELECT * FROM Usuarios WHERE id_Usuarios >= 1;
+
 -- ------------------------------------------------------------------------------------- --
 -- 2.6. Con otros Operadores. ---------------------------------------------------------- --
 --      LIKE, BETWEEN, IN -------------------------------------------------------------- --
@@ -341,42 +354,46 @@ SELECT * FROM USUARIOS WHERE usuario_estrato >= '3';
 -- ------------------------------------------------------------------------------------- --
 -- SELECCIONA UNA TABLA Y MUESTRA UNA COLUMNA EN LA QUE LA INFORMACION INICIE CON 
 -- LA LETRA USANDO UN COMODIN PARA EL RESTO ('%') 
-SELECT * FROM ORGANIZACIONES WHERE organizacion_categoria LIKE 's%';
-SELECT * FROM USUARIOS WHERE usuario_nombre LIKE 'm%';
-SELECT * FROM MENSAJES WHERE mensaje_notificacion LIKE 'a%';
-SELECT * FROM DONACIONES WHERE donacion_metodopago LIKE 't%';
-SELECT * FROM SEGUIMIENTO_EVENTOS WHERE seguimiento_estado LIKE 'p%';
-SELECT * FROM EVENTOS WHERE evento_categoria LIKE 'e%';
-SELECT * FROM USUARIO_EVENTOS WHERE evento_id LIKE '1%';
+SELECT * FROM Organizaciones WHERE nombre_organizaciones LIKE 'F%';
+SELECT * FROM Usuarios WHERE nombre1_usuario LIKE 'M%';
+SELECT * FROM Donaciones WHERE categoria_donaciones LIKE 'E%';
+SELECT * FROM Seguimiento_Eventos WHERE id_Eventos LIKE '1%';
+SELECT * FROM Eventos WHERE categoria_eventos LIKE 'M%';
+SELECT * FROM Monetarios WHERE tipo_metodo LIKE 'T%';
+SELECT * FROM Objetos WHERE categoria_objeto LIKE 'A%';
+
 -- ------------------------------------------------------------------------------------- --
 -- SELECCIONA UNA TABLA Y MUESTRA UNA COLUMNA EN LA QUE LA INFORMACION CON LA LETRA EN CIERTA UBICACION  
 -- (EN ESTE CASO LA DOS) USE POSTERIORMENTE UN COMODIN ('%') PARA EL RESTO DE LA FRASE  
-SELECT * FROM ORGANIZACIONES WHERE organizacion_categoria LIKE '_o%';
-SELECT * FROM USUARIOS WHERE usuario_nombre LIKE '_a%';
-SELECT * FROM MENSAJES WHERE mensaje_notificacion LIKE '_e%';
-SELECT * FROM DONACIONES WHERE donacion_metodopago LIKE '_r%';
-SELECT * FROM SEGUIMIENTO_EVENTOS WHERE seguimiento_estado LIKE '_e%';
-SELECT * FROM EVENTOS WHERE evento_categoria LIKE '_a%';
-SELECT * FROM USUARIO_EVENTOS WHERE evento_id LIKE '_2%';
+SELECT * FROM Organizaciones WHERE nombre_organizaciones LIKE '_a%';
+SELECT * FROM Usuarios WHERE nombre1_usuario LIKE '_a%';
+SELECT * FROM Donaciones WHERE categoria_donaciones LIKE '_d%';
+SELECT * FROM Seguimiento_Eventos WHERE id_Eventos LIKE '_1%';
+SELECT * FROM Eventos WHERE categoria_eventos LIKE '_e%';
+SELECT * FROM Monetarios WHERE tipo_metodo LIKE '_a%';
+SELECT * FROM Objetos WHERE categoria_objeto LIKE '_l%';
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.6.2. Entre [BETWEEN] . ------------------------------------------------------------ --
 --        SELECT __ , __ FROM __ WHERE __ BETWEEN __ AND __ : -------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- SELECCIONA LA TABLA Y COLUMNA EN LA QUE SEA UN RANGO DE FECHA DETERMINADA POR (AND)
-SELECT * FROM EVENTOS 
-WHERE evento_fecha BETWEEN '2022-05-15' AND '2022-07-10';
+SELECT * FROM Eventos 
+WHERE fecha_evento BETWEEN '2025-01-01' AND '2025-12-31';
 
-SELECT * FROM EVENTOS 
-WHERE evento_fecha >= '2022-05-15' AND evento_fecha <= '2022-07-10';
+SELECT * FROM Eventos 
+WHERE fecha_evento >= '2025-01-01' AND fecha_evento <= '2025-12-31';
+
+SELECT * FROM Monetarios WHERE valor_total BETWEEN 50000 AND 200000;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.6.3. Lista [IN ( __ )] . ---------------------------------------------------------- --
 --        SELECT __ , __ FROM __ WHERE __ IN( __ , __ ) : ------------------------------ --
 -- ------------------------------------------------------------------------------------- --
 -- SELECCIONA LA TABLA Y COLUMNA EN LA QUE CONTENGA LA INFORMACION BUSCADA
-SELECT * FROM DONACIONES 
-WHERE donacion_valor IN (80000);
+SELECT * FROM Monetarios WHERE valor_total IN (50000, 75000, 100000);
+SELECT * FROM Usuarios WHERE roles IN ('Voluntario', 'Beneficiario');
+SELECT * FROM Eventos WHERE estado_evento IN (1);
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.7. Ordenadas. --------------------------------------------------------------------- --
@@ -389,191 +406,194 @@ WHERE donacion_valor IN (80000);
 -- ------------------------------------------------------------------------------------- --
 -- SELECCIONA LA TABLA Y COLUMNA ESPECIFICA EN LA QUE SE MUESTRE 
 -- UNICAMENTE SU INFORMACION DE FORMA ASCENDENTE TENIENDO EN CUENTA EL ID
-SELECT * FROM ORGANIZACIONES 
-WHERE organizacion_id = 2 
-ORDER BY organizacion_id;
+SELECT * FROM Organizaciones 
+WHERE id_Organizaciones = 1 
+ORDER BY id_Organizaciones ASC;
 
-SELECT * FROM USUARIOS 
-WHERE usuario_id = 3 
-ORDER BY usuario_id;
+SELECT * FROM Usuarios 
+WHERE id_Usuarios = 1 
+ORDER BY id_Usuarios ASC;
 
-SELECT * FROM MENSAJES 
-WHERE mensaje_id = 1 
-ORDER BY mensaje_id;
+SELECT * FROM Donaciones 
+WHERE id_Donaciones = 1 
+ORDER BY id_Donaciones ASC;
 
-SELECT * FROM DONACIONES 
-WHERE donacion_id = 2 
-ORDER BY usuario_id;
+SELECT * FROM Seguimiento_Eventos 
+WHERE id_Eventos = 1
+ORDER BY id_Eventos ASC;
 
-SELECT * FROM SEGUIMIENTO_EVENTOS 
-WHERE seguimiento_estado = "PENDIENTE"
-ORDER BY seguimiento_id;
+SELECT * FROM Eventos 
+WHERE estado_evento = 1
+ORDER BY id_Eventos ASC;
 
-SELECT * FROM EVENTOS 
-WHERE evento_categoria = "Educación"
-ORDER BY evento_id;
+SELECT * FROM Monetarios 
+WHERE id_Donaciones = 1
+ORDER BY id_Monetarios ASC;
 
-SELECT * FROM USUARIO_EVENTOS 
-WHERE usuario_id = 2 
-ORDER BY evento_id;
+SELECT * FROM Objetos 
+WHERE id_Donaciones = 1 
+ORDER BY id_Objetos ASC;
+
 -- ------------------------------------------------------------------------------------- --
 -- SELECCIONA UNA TABLA EN LA QUE SE MUESTRE UNICAMENTE LA INFORMACION DE 
 -- LAS OPCIONES DE FORMA ASCENDENTE
-SELECT * FROM ORGANIZACIONES
-WHERE organizacion_id = 2 OR organizacion_id = 3 
-ORDER BY organizacion_nombre ASC;
+SELECT * FROM Organizaciones
+WHERE id_Organizaciones = 1 OR id_Organizaciones = 2 
+ORDER BY nombre_organizaciones ASC;
 
-SELECT * FROM USUARIOS
-WHERE usuario_id = 2 OR usuario_id = 3 
-ORDER BY usuario_nombre ASC;
+SELECT * FROM Usuarios
+WHERE id_Usuarios = 1 OR id_Usuarios = 2 
+ORDER BY nombre1_usuario ASC;
 
-SELECT * FROM MENSAJES
-WHERE mensaje_id = 2 OR mensaje_id = 3 
-ORDER BY mensaje_tipo ASC;
+SELECT * FROM Donaciones
+WHERE id_Donaciones = 1 OR id_Donaciones = 2 
+ORDER BY categoria_donaciones ASC;
 
-SELECT * FROM DONACIONES 
-WHERE donacion_metodopago = "Tarjeta" OR donacion_metodopago = "Efectivo"
-ORDER BY usuario_id ASC;
+SELECT * FROM Seguimiento_Eventos
+WHERE id_Eventos = 1 OR id_Eventos = 2 
+ORDER BY id_Usuarios ASC;
 
-SELECT * FROM SEGUIMIENTO_EVENTOS
-WHERE seguimiento_id = 2 OR seguimiento_id = 3 
-ORDER BY seguimiento_estado ASC;
+SELECT * FROM Eventos
+WHERE id_Eventos = 1 OR id_Eventos = 2 
+ORDER BY nombre_eventos ASC;
 
-SELECT * FROM EVENTOS
-WHERE evento_id = 2 OR evento_id = 3 
-ORDER BY evento_fecha ASC;
+SELECT * FROM Monetarios
+WHERE id_Monetarios = 1 OR id_Monetarios = 2 
+ORDER BY valor_total ASC;
 
-SELECT * FROM USUARIO_EVENTOS
-WHERE usuario_id = 2 OR evento_id = 3 
-ORDER BY usuario_id ASC;
+SELECT * FROM Objetos
+WHERE id_Objetos = 1 OR id_Objetos = 2 
+ORDER BY categoria_objeto ASC;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.7.2. Descendente [DESC] . --------------------------------------------------------- --
---        SELECT __ , __ FROM __ WHERE __ = __ ORDER BY __ DES; : ---------------------- --
+--        SELECT __ , __ FROM __ WHERE __ = __ ORDER BY __ DESC; : ---------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- SELECCIONA LA TABLA Y COLUMNA ESPECIFICA EN LA QUE SE MUESTRE 
 -- UNICAMENTE SU INFORMACION DE FORMA DESCENDENTE TENIENDO EN CUENTA EL ID
-SELECT * FROM ORGANIZACIONES 
-WHERE organizacion_id = 2 
-ORDER BY organizacion_id DESC;
+SELECT * FROM Organizaciones 
+WHERE id_Organizaciones = 1 
+ORDER BY id_Organizaciones DESC;
 
-SELECT * FROM USUARIOS 
-WHERE usuario_id = 2 
-ORDER BY usuario_id DESC;
+SELECT * FROM Usuarios 
+WHERE id_Usuarios = 1 
+ORDER BY id_Usuarios DESC;
 
-SELECT * FROM MENSAJES 
-WHERE mensaje_id = 1 
-ORDER BY mensaje_id DESC;
+SELECT * FROM Donaciones 
+WHERE id_Donaciones = 1 
+ORDER BY id_Donaciones DESC;
 
-SELECT * FROM DONACIONES 
-WHERE donacion_metodopago = "Tarjeta"
-ORDER BY usuario_id DESC;
+SELECT * FROM Seguimiento_Eventos 
+WHERE id_Eventos = 1
+ORDER BY id_Eventos DESC;
 
-SELECT * FROM SEGUIMIENTO_EVENTOS 
-WHERE seguimiento_estado = "PENDIENTE"
-ORDER BY seguimiento_id DESC;
+SELECT * FROM Eventos 
+WHERE estado_evento = 1
+ORDER BY id_Eventos DESC;
 
-SELECT * FROM EVENTOS 
-WHERE evento_categoria = "Educación"
-ORDER BY eventos_id DESC;
+SELECT * FROM Monetarios 
+WHERE valor_total > 0
+ORDER BY valor_total DESC;
 
-SELECT * FROM USUARIO_EVENTOS 
-WHERE usuario_id = 2 
-ORDER BY evento_id DESC;
+SELECT * FROM Objetos 
+WHERE id_Donaciones = 1 
+ORDER BY id_Objetos DESC;
+
 -- ------------------------------------------------------------------------------------- --
 -- SELECCIONA UNA TABLA EN LA QUE SE MUESTRE UNICAMENTE LA INFORMACION DE 
 -- LAS OPCIONES DE FORMA DESCENDENTE
-SELECT * FROM ORGANIZACIONES
-WHERE organizacion_id = 2 OR organizacion_id = 3 
-ORDER BY organizacion_nombre DESC;
+SELECT * FROM Organizaciones
+WHERE id_Organizaciones = 1 OR id_Organizaciones = 2 
+ORDER BY nombre_organizaciones DESC;
 
-SELECT * FROM USUARIOS
-WHERE usuario_id = 2 OR usuario_id = 3 
-ORDER BY usuario_nombre DESC;
+SELECT * FROM Usuarios
+WHERE id_Usuarios = 1 OR id_Usuarios = 2 
+ORDER BY nombre1_usuario DESC;
 
-SELECT * FROM MENSAJES
-WHERE mensaje_id = 2 OR mensaje_id = 3 
-ORDER BY mensaje_tipo DESC;
+SELECT * FROM Donaciones
+WHERE id_Donaciones = 1 OR id_Donaciones = 2 
+ORDER BY categoria_donaciones DESC;
 
-SELECT * FROM DONACIONES 
-WHERE donacion_metodopago = "Tarjeta" OR donacion_metodopago = "Efectivo"
-ORDER BY usuario_id DESC;
+SELECT * FROM Seguimiento_Eventos
+WHERE id_Eventos = 1 OR id_Eventos = 2 
+ORDER BY id_Usuarios DESC;
 
-SELECT * FROM SEGUIMIENTO_EVENTOS
-WHERE seguimiento_id = 2 OR seguimiento_id = 3 
-ORDER BY seguimiento_estado DESC;
+SELECT * FROM Eventos
+WHERE id_Eventos = 1 OR id_Eventos = 2 
+ORDER BY nombre_eventos DESC;
 
-SELECT * FROM EVENTOS
-WHERE evento_id = 2 OR evento_id = 3 
-ORDER BY evento_fecha DESC;
+SELECT * FROM Monetarios
+WHERE id_Monetarios = 1 OR id_Monetarios = 2 
+ORDER BY valor_total DESC;
 
-SELECT * FROM USUARIO_EVENTOS
-WHERE usuario_id = 2 OR evento_id = 3 
-ORDER BY usuario_id DESC;
+SELECT * FROM Objetos
+WHERE id_Objetos = 1 OR id_Objetos = 2 
+ORDER BY categoria_objeto DESC;
+
 -- ------------------------------------------------------------------------------------- --
 -- SELECCIONA UNA TABLA EN LA QUE SE MUESTRE UNICAMENTE LA INFORMACION DE 
 -- LAS OPCIONES ID DE FORMA DESCENDENTE
-SELECT * FROM ORGANIZACIONES
-WHERE organizacion_id = 2 OR organizacion_id = 3 
-ORDER BY organizacion_categoria DESC;
+SELECT * FROM Organizaciones
+WHERE id_Organizaciones = 1 OR id_Organizaciones = 2 
+ORDER BY nombre_organizaciones DESC;
 
-SELECT * FROM USUARIOS
-WHERE usuario_id = 2 OR usuario_id = 3 
-ORDER BY usuario_estrato DESC;
+SELECT * FROM Usuarios
+WHERE id_Usuarios = 1 OR id_Usuarios = 2 
+ORDER BY apellido1_usuario DESC;
 
-SELECT * FROM MENSAJES
-WHERE mensaje_id = 2 OR mensaje_id = 3 
-ORDER BY mensaje_fecha DESC;
+SELECT * FROM Donaciones
+WHERE id_Donaciones = 1 OR id_Donaciones = 2 
+ORDER BY fecha_donacion DESC;
 
-SELECT * FROM DONACIONES
-WHERE donacion_id = 2 OR donacion_id = 3 
-ORDER BY donacion_metodopago DESC;
+SELECT * FROM Seguimiento_Eventos
+WHERE id_Eventos = 1 OR id_Eventos = 2 
+ORDER BY id_Usuarios DESC;
 
-SELECT * FROM SEGUIMIENTO_EVENTOS
-WHERE seguimiento_id = 2 OR seguimiento_id = 3 
-ORDER BY seguimiento_estado DESC;
+SELECT * FROM Eventos
+WHERE id_Eventos = 1 OR id_Eventos = 2 
+ORDER BY fecha_evento DESC;
 
-SELECT * FROM EVENTOS
-WHERE evento_id = 2 OR evento_id = 3 
-ORDER BY evento_fecha DESC;
+SELECT * FROM Monetarios
+WHERE id_Monetarios = 1 OR id_Monetarios = 2 
+ORDER BY valor_total DESC;
 
-SELECT * FROM USUARIO_EVENTOS
-WHERE usuario_id = 2 OR evento_id = 3 
-ORDER BY usuario_id DESC;
+SELECT * FROM Objetos
+WHERE id_Objetos = 1 OR id_Objetos = 2 
+ORDER BY cantidad_total DESC;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.7.3. Combinadas . ----------------------------------------------------------------- --
---        SELECT __ , __ FROM __ WHERE __ = __ ORDER BY __ DES; : ---------------------- --
+--        SELECT __ , __ FROM __ WHERE __ = __ ORDER BY __ ASC, __ DESC; : ------------- --
 -- ------------------------------------------------------------------------------------- --
 -- SELECCIONA UNA TABLA EN LA QUE SE MUESTRE UNICAMENTE LA INFORMACION DE 
 -- LAS OPCIONES ID DE FORMA DESCENDENTE Y OTRA INFORMACION SOLICITADA DE FORMA DESCENDENTE 
-SELECT * FROM ORGANIZACIONES
-WHERE organizacion_id = 2 OR organizacion_id = 3 
-ORDER BY organizacion_id ASC, organizacion_contraseña DESC;
+SELECT * FROM Organizaciones
+WHERE id_Organizaciones = 1 OR id_Organizaciones = 2 
+ORDER BY id_Organizaciones ASC, nombre_organizaciones DESC;
 
-SELECT * FROM USUARIOS
-WHERE usuario_id = 2 OR usuario_id = 3 
-ORDER BY usuario_id ASC, usuario_contraseña DESC;
+SELECT * FROM Usuarios
+WHERE id_Usuarios = 1 OR id_Usuarios = 2 
+ORDER BY id_Usuarios ASC, apellido1_usuario DESC;
 
-SELECT * FROM MENSAJES
-WHERE mensaje_id = 2 OR mensaje_id = 3 
-ORDER BY mensaje_id ASC, mensaje_tipo DESC;
+SELECT * FROM Donaciones
+WHERE id_Donaciones = 1 OR id_Donaciones = 2 
+ORDER BY id_Donaciones ASC, fecha_donacion DESC;
 
-SELECT * FROM DONACIONES
-WHERE donacion_id = 2 OR donacion_id = 3 
-ORDER BY donacion_id ASC, donacion_valor DESC;
+SELECT * FROM Seguimiento_Eventos
+WHERE id_Eventos = 1 OR id_Eventos = 2 
+ORDER BY id_Eventos ASC, id_Usuarios DESC;
 
-SELECT * FROM SEGUIMIENTO_EVENTOS
-WHERE seguimiento_id = 2 OR seguimiento_id = 3 
-ORDER BY seguimiento_id ASC, seguimiento_estado DESC;
+SELECT * FROM Eventos
+WHERE id_Eventos = 1 OR id_Eventos = 2 
+ORDER BY id_Eventos ASC, fecha_evento DESC;
 
-SELECT * FROM EVENTOS
-WHERE evento_fecha  OR evento_id = 3 
-ORDER BY evento_id ASC, evento_fecha DESC;
+SELECT * FROM Monetarios
+WHERE id_Monetarios = 1 OR id_Monetarios = 2 
+ORDER BY id_Monetarios ASC, valor_total DESC;
 
-SELECT * FROM USUARIO_EVENTOS
-WHERE usuario_id = 2 OR evento_id = 3 
-ORDER BY usuario_id ASC, evento_id DESC;
+SELECT * FROM Objetos
+WHERE id_Objetos = 1 OR id_Objetos = 2 
+ORDER BY id_Objetos ASC, cantidad_total DESC;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.8. Calculadas con Funciones. ------------------------------------------------------ --
@@ -586,13 +606,13 @@ ORDER BY usuario_id ASC, evento_id DESC;
 -- ------------------------------------------------------------------------------------- --
 -- REALICE UNA CONSULTA EN LA QUE SE SUMEN VALORES, TOTAL DE DONACIONES, 
 -- UN SOLO USUARIO, DE CADA USUARIO
-SELECT SUM(donacion_valor) FROM DONACIONES;
+SELECT SUM(valor_total) FROM Monetarios;
 
-SELECT usuario_id, SUM(donacion_valor) FROM DONACIONES 
-WHERE usuario_id = '1';
+SELECT id_Donaciones, SUM(valor_total) FROM Monetarios 
+WHERE id_Donaciones = '1';
 
-SELECT usuario_id, SUM(donacion_valor) FROM DONACIONES 
-GROUP BY usuario_id;
+SELECT id_Donaciones, SUM(valor_total) FROM Monetarios 
+GROUP BY id_Donaciones;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.8.2. Promedio [AVG()] . ----------------------------------------------------------- --
@@ -600,11 +620,11 @@ GROUP BY usuario_id;
 -- ------------------------------------------------------------------------------------- --
 -- REALICE UNA CONSULTA EN LA QUE SE SAQUE EL PROMEDIO DE LOS VALORES, PROMEDIO DE DONACIONES, 
 -- Y EL PROMEDIO DONADO DE CADA USUARIO
-SELECT usuario_id, AVG(donacion_valor) FROM DONACIONES 
-WHERE usuario_id = '2';
+SELECT id_Donaciones, AVG(valor_total) FROM Monetarios 
+WHERE id_Donaciones = '1';
 
-SELECT usuario_id, AVG(donacion_valor) FROM DONACIONES 
-GROUP BY usuario_id;
+SELECT id_Donaciones, AVG(valor_total) FROM Monetarios 
+GROUP BY id_Donaciones;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.8.3. Máximo [MAX()] . ------------------------------------------------------------- --
@@ -612,11 +632,11 @@ GROUP BY usuario_id;
 -- ------------------------------------------------------------------------------------- --
 -- REALICE UNA CONSULTA EN LA QUE SE SAQUE EL VALOR MAS ALTO DE DONACIONES EN UN USUARIO
 -- Y EL VALOR MAS ALTO DE DONACIONES EN CADA USUARIO
-SELECT usuario_id, MAX(donacion_valor) FROM DONACIONES 
-WHERE usuario_id = '3';
+SELECT id_Donaciones, MAX(valor_total) FROM Monetarios 
+WHERE id_Donaciones = '1';
 
-SELECT usuario_id, MAX(donacion_valor) FROM DONACIONES 
-GROUP BY usuario_id;
+SELECT id_Donaciones, MAX(valor_total) FROM Monetarios 
+GROUP BY id_Donaciones;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.8.4. Mínimo [MIN()] . ------------------------------------------------------------- --
@@ -624,25 +644,25 @@ GROUP BY usuario_id;
 -- ------------------------------------------------------------------------------------- --
 -- REALICE UNA CONSULTA EN LA QUE SE SAQUE EL VALOR MAS BAJO DE DONACIONES EN UN USUARIO
 -- Y EL VALOR MAS BAJO DE DONACIONES EN CADA USUARIO
-SELECT usuario_id, MIN(donacion_valor) FROM DONACIONES 
-WHERE usuario_id = '3';
+SELECT id_Donaciones, MIN(valor_total) FROM Monetarios 
+WHERE id_Donaciones = '1';
 
-SELECT usuario_id, MIN(donacion_valor) FROM DONACIONES 
-GROUP BY usuario_id;
+SELECT id_Donaciones, MIN(valor_total) FROM Monetarios 
+GROUP BY id_Donaciones;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.8.5. Conteo [COUNT()] . ----------------------------------------------------------- --
---        SELECT __ , COUT( __ ) FROM __ GROUP BY __ : --------------------------------- --
+--        SELECT __ , COUNT( __ ) FROM __ GROUP BY __ : -------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- REALICE UNA CONSULTA EN LA QUE SE SAQUE LA CANTIDAD DE DONACIONES QUE REALIZO UN USUARIO
 -- Y LA CANTIDAD DE DONACIONES QUE REALIZO CADA USUARIO
-SELECT donacion_metodopago, COUNT(organizacion_id) FROM DONACIONES 
-WHERE organizacion_id = '2'
-GROUP BY donacion_metodopago;
+SELECT tipo_metodo, COUNT(id_Donaciones) FROM Monetarios 
+WHERE id_Donaciones = '1'
+GROUP BY tipo_metodo;
 
-SELECT donacion_metodopago, COUNT(organizacion_id) FROM DONACIONES 
-WHERE organizacion_id
-GROUP BY donacion_metodopago;
+SELECT tipo_metodo, COUNT(id_Donaciones) FROM Monetarios 
+WHERE id_Donaciones IS NOT NULL
+GROUP BY tipo_metodo;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.9. Calculadas con Alias. ---------------------------------------------------------- --
@@ -654,82 +674,79 @@ GROUP BY donacion_metodopago;
 -- LA DONACION MAXIMA DE CADA USUARIO,
 -- LA DONACION MAS BAJA DE CADA USUARIO,
 -- LA CANTIDAD DE DONACIONES DE CADA USUARIO) Y LE PONGA UN ALIAS A CADA CONSULTA
-SELECT SUM(donacion_valor) AS suma_donaciones FROM DONACIONES;
+SELECT SUM(valor_total) AS suma_donaciones FROM Monetarios;
 
-SELECT usuario_id, SUM(donacion_valor) AS suma_donaciones
-FROM DONACIONES 
-GROUP BY usuario_id
+SELECT id_Donaciones, SUM(valor_total) AS suma_donaciones
+FROM Monetarios 
+GROUP BY id_Donaciones
 ORDER BY suma_donaciones ASC;
 
-SELECT usuario_id, AVG(donacion_valor) AS promedio_donaciones
-FROM DONACIONES 
-GROUP BY usuario_id
+SELECT id_Donaciones, AVG(valor_total) AS promedio_donaciones
+FROM Monetarios 
+GROUP BY id_Donaciones
 ORDER BY promedio_donaciones DESC;
 
-SELECT usuario_id, MAX(donacion_valor) AS maximo_donaciones
-FROM DONACIONES 
-GROUP BY usuario_id
+SELECT id_Donaciones, MAX(valor_total) AS maximo_donaciones
+FROM Monetarios 
+GROUP BY id_Donaciones
 ORDER BY maximo_donaciones DESC;
 
-SELECT usuario_id, MIN(donacion_valor) AS minimo_donaciones
-FROM DONACIONES 
-GROUP BY usuario_id
+SELECT id_Donaciones, MIN(valor_total) AS minimo_donaciones
+FROM Monetarios 
+GROUP BY id_Donaciones
 ORDER BY minimo_donaciones ASC;
 
-SELECT usuario_id, COUNT(donacion_valor) AS minimo_donaciones
-FROM DONACIONES 
-GROUP BY usuario_id
-ORDER BY minimo_donaciones DESC;
+SELECT id_Donaciones, COUNT(valor_total) AS cantidad_donaciones
+FROM Monetarios 
+GROUP BY id_Donaciones
+ORDER BY cantidad_donaciones DESC;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.10. Calculadas Condicionantes. ---------------------------------------------------- --
 --      SELECT __ , FUN( __ ) AS __ FROM __ GROUP BY __ HAVING __ = __ OR __ = __ : ---- --
 -- ------------------------------------------------------------------------------------- --
--- CALCULA LA SUMA DE LAS DONACIONES HECHAS EN EFECTIVO POR EL USUARIO 3 Y LAS ORDENA DE FORMA ASCENDENTE.
-SELECT usuario_id, donacion_metodopago, SUM(donacion_valor) AS suma_donaciones
-FROM DONACIONES 
-GROUP BY donacion_id HAVING usuario_id ='3' AND donacion_metodopago ='Efectivo' 
+-- CALCULA LA SUMA DE LAS DONACIONES HECHAS EN TARJETA PARA LA DONACION 1
+SELECT id_Donaciones, tipo_metodo, SUM(valor_total) AS suma_donaciones
+FROM Monetarios 
+GROUP BY id_Monetarios HAVING id_Donaciones = 1 AND tipo_metodo = 'Tarjeta' 
 ORDER BY suma_donaciones ASC;
 
--- CALCULA EL PROMEDIO DE LAS DONACIONES HECHAS EN EFECTIVO POR EL USUARIO 3 Y LAS ORDENA DE FORMA ASCENDENTE.
-SELECT usuario_id, donacion_metodopago, AVG(donacion_valor) AS promedio_donaciones
-FROM DONACIONES 
-GROUP BY donacion_id HAVING usuario_id ='3' AND donacion_metodopago ='Efectivo' 
+-- CALCULA EL PROMEDIO DE LAS DONACIONES HECHAS EN TARJETA PARA LA DONACION 1
+SELECT id_Donaciones, tipo_metodo, AVG(valor_total) AS promedio_donaciones
+FROM Monetarios 
+GROUP BY id_Monetarios HAVING id_Donaciones = 1 AND tipo_metodo = 'Tarjeta' 
 ORDER BY promedio_donaciones ASC;
 
--- CALCULA LA DONACION MAS ALTA HECHA EN EFECTIVO POR EL USUARIO 3 Y LAS ORDENA DE FORMA ASCENDENTE.
-SELECT usuario_id, donacion_metodopago, MAX(donacion_valor) AS promedio_donaciones
-FROM DONACIONES 
-GROUP BY donacion_id HAVING usuario_id ='3' AND donacion_metodopago ='Efectivo' 
-ORDER BY promedio_donaciones ASC;
+-- CALCULA LA DONACION MAS ALTA HECHA EN TARJETA PARA LA DONACION 1
+SELECT id_Donaciones, tipo_metodo, MAX(valor_total) AS maximo_donaciones
+FROM Monetarios 
+GROUP BY id_Monetarios HAVING id_Donaciones = 1 AND tipo_metodo = 'Tarjeta' 
+ORDER BY maximo_donaciones ASC;
 
--- CALCULA LA DONACION MAS BAJA HECHA EN EFECTIVO POR EL USUARIO 3 Y LAS ORDENA DE FORMA ASCENDENTE.
-SELECT usuario_id, donacion_metodopago, MIN(donacion_valor) AS promedio_donaciones
-FROM DONACIONES 
-GROUP BY donacion_id HAVING usuario_id ='3' AND donacion_metodopago ='Efectivo' 
-ORDER BY promedio_donaciones ASC;
+-- CALCULA LA DONACION MAS BAJA HECHA EN TARJETA PARA LA DONACION 1
+SELECT id_Donaciones, tipo_metodo, MIN(valor_total) AS minimo_donaciones
+FROM Monetarios 
+GROUP BY id_Monetarios HAVING id_Donaciones = 1 AND tipo_metodo = 'Tarjeta' 
+ORDER BY minimo_donaciones ASC;
 
--- CALCULA LA CANTIDAD DE DONACIONES HECHAS EN EFECTIVO POR EL USUARIO 3 Y LAS ORDENA DE FORMA ASCENDENTE.
-SELECT usuario_id, donacion_metodopago, COUNT(donacion_valor) AS promedio_donaciones
-FROM DONACIONES 
-GROUP BY donacion_id HAVING usuario_id ='3' AND donacion_metodopago ='Efectivo' 
-ORDER BY promedio_donaciones ASC;
+-- CALCULA LA CANTIDAD DE DONACIONES HECHAS EN TARJETA PARA LA DONACION 1
+SELECT id_Donaciones, tipo_metodo, COUNT(valor_total) AS cantidad_donaciones
+FROM Monetarios 
+GROUP BY id_Monetarios HAVING id_Donaciones = 1 AND tipo_metodo = 'Tarjeta' 
+ORDER BY cantidad_donaciones ASC;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.11. Calculadas con Operadores. ---------------------------------------------------- --
---        SELECT __ , __ , __*0.19 AS __ FROM __ : ------------------------------------- --
+--        SELECT __ , __ , ROUND(__*0.19,2) AS __ FROM __ : ---------------------------- --
 -- ------------------------------------------------------------------------------------- --
--- SACAR EL IVA DE LA DONACCION
-SELECT donacion_nombre, donacion_valor, donacion_valor * 0.19 
-FROM DONACIONES;
+-- SACAR EL IVA DE LA DONACION
+SELECT valor_total, valor_total * 0.19 FROM Monetarios;
 
 -- SACAR EL IVA DE LA DONACION Y AGREGALE UN ALIAS
-SELECT donacion_nombre, donacion_valor, donacion_valor * 0.19 AS iva_donacion 
-FROM DONACIONES;
+SELECT valor_total, valor_total * 0.19 AS iva_donacion FROM Monetarios;
 
 -- QUITAR LOS DECIMALES AL PORCENTAJE DEL IVA
-SELECT donacion_nombre, donacion_valor, ROUND(donacion_valor*0.19,2) AS iva_donacion 
-FROM DONACIONES;
+SELECT valor_total, ROUND(valor_total * 0.19, 2) AS iva_donacion FROM Monetarios;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.12. Calculadas con Fechas. -------------------------------------------------------- --
@@ -741,19 +758,19 @@ FROM DONACIONES;
 --         SELECT __ , __ , NOW() AS __ FROM __ : -------------------------------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LAS COLUMNAS __ CON LA FECHA Y HORA ACTUAL DEL SISTEMA
-SELECT donacion_categoria, donacion_valor, NOW() FROM DONACIONES;
+SELECT categoria_donaciones, fecha_donacion, NOW() FROM Donaciones;
 
 -- MUESTRA LAS COLUMNAS __ CON LA FECHA Y HORA ACTUAL DEL SISTEMA AGREGANDOLE UN ALIAS 
-SELECT donacion_categoria, donacion_valor, NOW() AS fecha_actual FROM DONACIONES;
+SELECT categoria_donaciones, fecha_donacion, NOW() AS fecha_actual FROM Donaciones;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.12.2. Formato de Fecha. ----------------------------------------------------------- --
 --         SELECT __ , __ , DATE_FORMAT(NOW(), '%Y-%m-%d') AS __ FROM __ : ------------- --
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LAS COLUMNAS __ CON LA FECHA ACTUAL DEL SISTEMA Y LE AGREGA UN ALIAS
-SELECT usuario_id, usuario_nombre, 
-DATE_FORMAT(NOW(),'%Y-%m-%d') AS fecha_actual 
-FROM USUARIOS;
+SELECT id_Usuarios, nombre1_usuario, 
+DATE_FORMAT(NOW(), '%Y-%m-%d') AS fecha_actual 
+FROM Usuarios;
 
 -- ------------------------------------------------------------------------------------- --
 -- 2.12.3. Diferencia Fechas. ---------------------------------------------------------- --
@@ -764,13 +781,12 @@ FROM USUARIOS;
 -- ------------------------------------------------------------------------------------- --
 -- MUESTRA LOS EVENTOS Y CALCULA CUÁNTO TIEMPO HA PASADO DESDE CADA EVENTO HASTA LA 
 -- FECHA ACTUAL EN AÑOS, MESES Y DÍAS.
-SELECT evento_id, evento_nombre, evento_fecha,
-DATE_FORMAT(NOW(),'%Y-%m-%d') AS fecha_actual,
-TIMESTAMPDIFF(YEAR, evento_fecha, NOW()) AS años_transcurridos,
-TIMESTAMPDIFF(MONTH, evento_fecha, NOW()) AS meses_transcurridos, 
-TIMESTAMPDIFF(DAY, evento_fecha, NOW()) - 
-TIMESTAMPDIFF(MONTH, evento_fecha, NOW()) * 30 AS dias_transcurridos
-FROM EVENTOS;
+SELECT id_Eventos, nombre_eventos, fecha_evento,
+DATE_FORMAT(NOW(), '%Y-%m-%d') AS fecha_actual,
+TIMESTAMPDIFF(YEAR, fecha_evento, NOW()) AS años_transcurridos,
+TIMESTAMPDIFF(MONTH, fecha_evento, NOW()) AS meses_transcurridos, 
+TIMESTAMPDIFF(DAY, fecha_evento, NOW()) AS dias_transcurridos
+FROM Eventos;
 
 
 /* ************************************************************************************* */
@@ -778,22 +794,21 @@ FROM EVENTOS;
 /* ---------------------------- INSERT INTO, UPDATE, DELETE ---------------------------- */
 /* ************************************************************************************* */
 
-INSERT INTO USUARIOS VALUES
-(null,'Edier','Toro',' cr 84 # 34 sur','371637224',2,'Edya123', 2);
+INSERT INTO Usuarios VALUES
+(NULL, 'Voluntario', 'Edier', NULL, 'Toro', NULL, '3001234567', 'edier@email.com', SHA2('edya123', 256));
 
 -- INSERTAR NUEVOS DATOS PERO CON LA FECHA ACTUAL
-INSERT INTO MENSAJES VALUES
-(NULL ,'Notificacion',DATE_FORMAT(NOW(),'%Y-%m-%d'),'Mantenimiento Sistema',
-'Sistema en mantenimiento...', 'Activa', 3, 1);
+INSERT INTO Donaciones (categoria_donaciones, tipo_donaciones, fecha_donacion, id_Organizaciones, id_Usuarios) 
+VALUES ('Comunitaria', 'Monetaria', NOW(), 1, 1);
 
-INSERT INTO EVENTOS VALUES
-(NULL,DATE_FORMAT(NOW(),'%Y-%m-%d'), 'Titerestelares','Calle 45 # 34-56',
- 'Infantil','Obra de teatro para niños con cancer', 3,1);
+INSERT INTO Eventos (nombre_eventos, categoria_eventos, descripcion_eventos, fecha_evento, estado_evento, id_Organizaciones) 
+VALUES ('Titerestelares', 'Infantil', 'Obra de teatro para niños con cancer', NOW(), 1, 1);
 
--- INSERTAR NUEVOS DATOS INCLUYECDO EL IVA
-INSERT INTO DONACIONES VALUES
-(null,'Fondos Maternos','Comunidad','Monetaria',
-	'Tarjeta', 500000 * 0.19, 2,5);
+-- INSERTAR NUEVOS DATOS INCLUYENDO EL IVA
+INSERT INTO Monetarios (tipo_metodo, num_cuenta, valor_total, id_Donaciones) 
+VALUES ('Tarjeta', '****5678', ROUND(500000 * 1.19, 2), 1);
 
 
+/* ************************************************************************************* */
+/* ------------------------------- FIN DEL ARCHIVO ------------------------------------- */
 /* ************************************************************************************* */
