@@ -1,20 +1,21 @@
 const db = require("../config/config");
 const Donacion = {}; 
 
-const publicFields = `
+
+const publicFields  = ` 
   id_Donaciones AS id,
   categoria_donaciones AS category,
   tipo_donaciones AS donation_type,
   fecha_donacion AS donation_date,
   id_Organizaciones AS organization_id,
   id_Usuarios AS user_id
-`;
+`; // Campos públicos de la tabla Donaciones
 
 Donacion.findAll = (result) => {
   const sql = `
     SELECT ${publicFields}
     FROM Donaciones
-  `;
+  `; // Consulta SQL para obtener todas las donaciones con los campos públicos
 
   db.query(sql, (err, donations) => {
     if (err) {
@@ -24,7 +25,7 @@ Donacion.findAll = (result) => {
 
     return result(null, donations);
   });
-};
+}; // Método para obtener todas las donaciones, utilizando los campos públicos definidos en publicFields
 
 Donacion.findById = (id, result) => {
   const sql = `
@@ -41,7 +42,7 @@ Donacion.findById = (id, result) => {
 
     return result(null, donations[0]);
   });
-};
+}; // Método para obtener una donación por su ID, utilizando los campos públicos definidos en publicFields
 
 Donacion.delete = (id, result) => {
   const sql = `
@@ -57,8 +58,10 @@ Donacion.delete = (id, result) => {
 
     return result(null, res);
   });
-};
+}; // Método para eliminar una donación por su ID
 
+
+// Método para crear una nueva donación, insertando los datos en la tabla Donaciones y dependiendo del tipo de donación, insertando los datos correspondientes en las tablas Monetarios u Objetos
 Donacion.create = (donation, result) => {
   const sqlDonacion = `
     INSERT INTO Donaciones(
@@ -69,8 +72,10 @@ Donacion.create = (donation, result) => {
       id_Usuarios
     )
     VALUES (?, ?, ?, ?, ?)
-  `;
+  `; // Consulta SQL para crear una nueva donación, insertando los campos necesarios en la tabla Donaciones
 
+
+  // Insertar la donación en la tabla Donaciones y obtener el ID generado para luego insertar los datos específicos en las tablas Monetarios u Objetos dependiendo del tipo de donación
   db.query(
     sqlDonacion,
     [
@@ -97,7 +102,7 @@ Donacion.create = (donation, result) => {
             valor_total
           )
           VALUES (?, ?, ?, ?)
-        `;
+        `; // Consulta SQL para crear una donación monetaria, insertando los campos necesarios en la tabla Monetarios
 
         db.query(
           sqlMonetary,
@@ -133,7 +138,7 @@ Donacion.create = (donation, result) => {
             cantidad_total
           )
           VALUES (?, ?, ?, ?)
-        `;
+        `; // Consulta SQL para crear una donación de objetos, insertando los campos necesarios en la tabla Objetos
 
         db.query(
           sqlObject,
@@ -158,7 +163,7 @@ Donacion.create = (donation, result) => {
             });
           }
         );
-      }
+      } // Validación para asegurarse de que el tipo de donación sea válido (Monetario u Objeto)
 
       else {
         return result(
@@ -168,6 +173,38 @@ Donacion.create = (donation, result) => {
       }
     }
   );
-};
+}; // Método para crear una nueva donación, insertando los datos en la tabla Donaciones y dependiendo del tipo de donación, insertando los datos correspondientes en las tablas Monetarios u Objetos
+
+Donacion.update = (id, donation, result) => {
+  const sql = `
+    UPDATE Donaciones
+    SET
+      categoria_donaciones = ?,
+      tipo_donaciones = ?,
+      id_Organizaciones = ?,
+      id_Usuarios = ?
+    WHERE id_Donaciones = ?
+  `;
+
+  db.query(
+    sql,
+    [
+      donation.category,
+      donation.donation_type,
+      donation.organization_id,
+      donation.user_id,
+      id
+    ],
+    (err, res) => {
+      if (err) {
+        console.log("Error al actualizar donación:", err);
+        return result(err, null);
+      }
+
+      return result(null, res);
+    }
+  );
+};// Método para actualizar una donación existente, modificando los campos necesarios en la tabla Donaciones
+
 
 module.exports = Donacion;

@@ -3,6 +3,7 @@ const logger = require("morgan");
 const cors = require("cors");
 const usersRoutes = require("./routes/userRoutes");
 const organizationRoutes = require("./routes/organizationRoutes");
+const donacionRoutes = require("./routes/donacionRoutes");
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(cors());
 
 app.use("/api/users", usersRoutes);
 app.use("/api/organizations", organizationRoutes);
+app.use("/api/donaciones", donacionRoutes);
 
 app.get("/", (req, res) => {
   res.send("Ruta raiz del Backend");
