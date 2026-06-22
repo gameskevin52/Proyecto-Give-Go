@@ -5,6 +5,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
 const usersRoutes = require("./routes/userRoutes");
 const organizationRoutes = require("./routes/organizationRoutes");
+const donacionRoutes = require("./routes/donacionRoutes");
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOption
 // ============================================
 app.use("/api/users", usersRoutes);
 app.use("/api/organizations", organizationRoutes);
+app.use("/api/donaciones", donacionRoutes);
 
 app.get("/", (req, res) => {
   res.send("Ruta raiz del Backend");
