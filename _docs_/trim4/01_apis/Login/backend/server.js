@@ -10,7 +10,7 @@ const donacionRoutes = require("./routes/donacionRoutes");
 const app = express();
 
 // ============================================
-// 🔥 CONFIGURACIÓN CORS MEJORADA PARA SWAGGER
+// CONFIGURACIÓN CORS MEJORADA PARA SWAGGER
 // ============================================
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
