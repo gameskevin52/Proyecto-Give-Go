@@ -3,12 +3,12 @@ const Donacion = {};
 
 
 const publicFields  = ` 
-  id_Donaciones AS id,
-  categoria_donaciones AS category,
-  tipo_donaciones AS donation_type,
-  fecha_donacion AS donation_date,
-  id_Organizaciones AS organization_id,
-  id_Usuarios AS user_id
+  id_donaciones AS id,
+  categoria_donaciones,
+  tipo_donaciones,
+  fecha_donacion,
+  id_organizaciones,
+  id_usuario
 `; // Campos públicos de la tabla Donaciones
 
 Donacion.findAll = (result) => {
@@ -31,7 +31,7 @@ Donacion.findById = (id, result) => {
   const sql = `
     SELECT ${publicFields}
     FROM Donaciones
-    WHERE id_Donaciones = ?
+    WHERE id_donaciones = ?
   `;
 
   db.query(sql, [id], (err, donations) => {
@@ -47,7 +47,7 @@ Donacion.findById = (id, result) => {
 Donacion.delete = (id, result) => {
   const sql = `
     DELETE FROM Donaciones
-    WHERE id_Donaciones = ?
+    WHERE id_donaciones = ?
   `;
 
   db.query(sql, [id], (err, res) => {
@@ -68,8 +68,8 @@ Donacion.create = (donation, result) => {
       categoria_donaciones,
       tipo_donaciones,
       fecha_donacion,
-      id_Organizaciones,
-      id_Usuarios
+      id_organizaciones,
+      id_usuario
     )
     VALUES (?, ?, ?, ?, ?)
   `; // Consulta SQL para crear una nueva donación, insertando los campos necesarios en la tabla Donaciones
@@ -96,7 +96,7 @@ Donacion.create = (donation, result) => {
       if (donation.donation_type === "Monetario") {
         const sqlMonetary = `
           INSERT INTO Monetarios(
-            id_Donaciones,
+            id_donaciones,
             tipo_metodo,
             num_cuenta,
             valor_total
@@ -132,7 +132,7 @@ Donacion.create = (donation, result) => {
       else if (donation.donation_type === "Objeto") {
         const sqlObject = `
           INSERT INTO Objetos(
-            id_Donaciones,
+            id_donaciones,
             categoria_objeto,
             descripcion_de_evento,
             cantidad_total
@@ -177,13 +177,13 @@ Donacion.create = (donation, result) => {
 
 Donacion.update = (id, donation, result) => {
   const sql = `
-    UPDATE Donaciones
+    UPDATE Donaciones ON CASCADE
     SET
       categoria_donaciones = ?,
       tipo_donaciones = ?,
-      id_Organizaciones = ?,
-      id_Usuarios = ?
-    WHERE id_Donaciones = ?
+      id_organizaciones = ?,
+      id_usuario = ?
+    WHERE id_donaciones = ?
   `;
 
   db.query(

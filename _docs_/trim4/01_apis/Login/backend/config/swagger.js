@@ -104,6 +104,82 @@ const options = {
             error: { type: "object" },
           },
         },
+        Donacion: {
+          type: "object",
+          properties: {
+            id: { type: "integer", example: 1, readOnly: true },
+            category: { type: "string", example: "Educacion" },
+            donation_type: {
+              type: "string",
+              enum: ["Monetario", "Objeto"],
+              example: "Monetario",
+            },
+            donation_date: { 
+              type: "string", 
+              format: "date-time",
+              example: "2026-06-26T10:30:00Z"
+            },
+            organization_id: { type: "integer", example: 1 },
+            user_id: { type: "integer", example: 1 },
+          },
+        },
+        CreateDonacion: {
+          type: "object",
+          required: ["category", "donation_type", "organization_id", "user_id"],
+          properties: {
+            category: { 
+              type: "string", 
+              example: "Educacion",
+              description: "Categoría de la donación"
+            },
+            donation_type: {
+              type: "string",
+              enum: ["Monetario", "Objeto"],
+              example: "Monetario",
+              description: "Tipo de donación"
+            },
+            organization_id: { 
+              type: "integer", 
+              example: 1,
+              description: "ID de la organización receptora"
+            },
+            user_id: { 
+              type: "integer", 
+              example: 1,
+              description: "ID del usuario donador"
+            },
+            payment_method: {
+              type: "string",
+              example: "Tarjeta",
+              description: "Método de pago (solo para Monetario)"
+            },
+            account_number: {
+              type: "string",
+              example: "12345678",
+              description: "Número de cuenta (opcional para Monetario)"
+            },
+            total_value: {
+              type: "number",
+              example: 50000,
+              description: "Valor total de la donación monetaria"
+            },
+            object_category: {
+              type: "string",
+              example: "Alimentos",
+              description: "Categoría del objeto (para Objeto)"
+            },
+            description: {
+              type: "string",
+              example: "Descripción del evento",
+              description: "Descripción de la donación de objetos"
+            },
+            quantity: {
+              type: "integer",
+              example: 10,
+              description: "Cantidad de objetos donados"
+            },
+          },
+        },
       },
     },
     security: [
@@ -115,11 +191,13 @@ const options = {
       { name: "Auth", description: "Autenticación" },
       { name: "Users", description: "Gestión de usuarios" },
       { name: "Organizations", description: "Gestión de organizaciones" },
+      { name: "Donaciones", description: "Gestión de donaciones" },
     ],
   },
   apis: [
     path.join(__dirname, '../routes/userRoutes.js'),
-    path.join(__dirname, '../routes/organizationRoutes.js')
+    path.join(__dirname, '../routes/organizationRoutes.js'),
+    path.join(__dirname, '../routes/donacionRoutes.js')
   ],
 };
 
