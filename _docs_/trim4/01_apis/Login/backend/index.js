@@ -2,7 +2,11 @@
         const app = require('./server');
         const cors = require('cors');
         const port = process.env.PORT || 3000;
+<<<<<<< HEAD
         const host = process.env.HOST || '192.168.1.8';
+=======
+        const host = process.env.HOST || '127.0.0.1';
+>>>>>>> Nicolay_cajamarca
         
         // Configuración CORS
         app.use(cors({

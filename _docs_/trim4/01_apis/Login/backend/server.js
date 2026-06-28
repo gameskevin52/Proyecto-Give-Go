@@ -1,11 +1,10 @@
 const express = require("express");
 const logger = require("morgan");
 const cors = require("cors");
-const swaggerUi = require("swagger-ui-express");
-const swaggerSpec = require("./config/swagger");
 const usersRoutes = require("./routes/userRoutes");
 const organizationRoutes = require("./routes/organizationRoutes");
 const donacionRoutes = require("./routes/donacionRoutes");
+const eventRoutes = require("./routes/eventRoutes");
 
 const app = express();
 
@@ -32,29 +31,35 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ============================================
-// DOCUMENTACIÓN SWAGGER
+// DOCUMENTACIÓN SWAGGER (OPCIONAL)
 // ============================================
-const swaggerOptions = {  
-  swaggerOptions: {
-    docExpansion: 'list',           
-    defaultModelsExpandDepth: -1,   
-    defaultModelExpandDepth: 1,     
-    displayRequestDuration: true,   
-    filter: false,                  
-    layout: 'BaseLayout',  
-    showExtensions: true,
-    showCommonExtensions: true,
-    deepLinking: true,         
-    persistAuthorization: true,
-    tagsSorter: 'alpha',       
-    operationsSorter: function(a, b) {
-      const methodOrder = { 'post': 1, 'get': 2, 'put': 3, 'delete': 4 };
-      return methodOrder[a.get('method')] - methodOrder[b.get('method')];
-    }  
-  }  
-};
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
+try {
+  const swaggerUi = require("swagger-ui-express");
+  const swaggerSpec = require("./config/swagger");
+  const swaggerOptions = {
+    swaggerOptions: {
+      docExpansion: 'list',
+      defaultModelsExpandDepth: -1,
+      defaultModelExpandDepth: 1,
+      displayRequestDuration: true,
+      filter: false,
+      layout: 'BaseLayout',
+      showExtensions: true,
+      showCommonExtensions: true,
+      deepLinking: true,
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: function(a, b) {
+        const methodOrder = { 'post': 1, 'get': 2, 'put': 3, 'delete': 4 };
+        return methodOrder[a.get('method')] - methodOrder[b.get('method')];
+      }
+    }
+  };
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
+  console.log('📚 Swagger disponible en: http://localhost:3000/api-docs');
+} catch (error) {
+  console.warn('⚠️ Swagger no disponible:', error.message);
+}
 
 // ============================================
 // RUTAS DE LA API
@@ -62,6 +67,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOption
 app.use("/api/users", usersRoutes);
 app.use("/api/organizations", organizationRoutes);
 app.use("/api/donaciones", donacionRoutes);
+app.use("/api", eventRoutes);
 
 app.get("/", (req, res) => {
   res.send("Ruta raiz del Backend");
@@ -79,5 +85,8 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).send(err.stack);
 });
 
+<<<<<<< HEAD
 console.log('📚 Swagger disponible en: http://192.168.1.8:3000/api-docs');
+=======
+>>>>>>> Nicolay_cajamarca
 module.exports = app;
