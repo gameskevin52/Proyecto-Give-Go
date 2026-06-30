@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useAuth } from '../../contexts/AuthContext';
 import { EventService, DonationService, CategoryService, DonacionCompleta } from '../../services/db';
 import { Evento, Usuario, Categoria } from '../../types';
-import { Button, Input, Select, Card, Table, Badge, Modal, ConfirmDialog, Textarea, EmptyState } from '../../components/UI';
+import { Button, Input, Select, Card, Table, Badge, Modal, ConfirmDialog, Textarea, EmptyState, formatCOP, formatDate } from '../../components/UI';
 import { Calendar, Heart, Users, Plus, Edit, Trash2, Mail, Phone, Box } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -70,7 +70,7 @@ export const OrgDashboard: React.FC = () => {
           <div className="flex justify-between items-center">
             <div>
               <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Fondos Recibidos</p>
-              <h3 className="text-2xl font-black text-neutral-900 mt-1">{totalFunds}€</h3>
+              <h3 className="text-2xl font-black text-neutral-900 mt-1">{formatCOP(totalFunds)}</h3>
             </div>
             <div className="p-3 bg-neutral-100 text-neutral-900 rounded">
               <Heart className="w-5 h-5" />
@@ -106,11 +106,11 @@ export const OrgDashboard: React.FC = () => {
                   </div>
                   <div className="text-right">
                     {don.tipo === 'monetaria' ? (
-                      <span className="font-extrabold text-red-600">+{don.monetaria?.valor}€</span>
+                      <span className="font-extrabold text-red-600">+{formatCOP(don.monetaria?.valor || 0)}</span>
                     ) : (
                       <span className="font-semibold text-neutral-800">{don.objeto?.cantidad} x {don.objeto?.categoria}</span>
                     )}
-                    <p className="text-[9px] text-neutral-400">{don.fecha}</p>
+                    <p className="text-[9px] text-neutral-400">{formatDate(don.fecha)}</p>
                   </div>
                 </div>
               ))
@@ -238,7 +238,7 @@ export const OrgEvents: React.FC = () => {
               <p className="text-[10px] text-neutral-400 line-clamp-1 mt-0.5">{item.descripcion}</p>
             </td>
             <td className="px-5 py-3 font-semibold text-neutral-600">{item.categoria}</td>
-            <td className="px-5 py-3 font-medium text-neutral-600">{item.fecha}</td>
+            <td className="px-5 py-3 font-medium text-neutral-600">{formatDate(item.fecha)}</td>
             <td className="px-5 py-3">
               <Badge variant={item.estado === 'activo' ? 'success' : 'neutral'}>
                 {item.estado}
@@ -362,12 +362,12 @@ export const OrgCampaigns: React.FC = () => {
             </td>
             <td className="px-5 py-3">
               {item.tipo === 'monetaria' ? (
-                <span className="font-extrabold text-red-600">+{item.monetaria?.valor}€ ({item.monetaria?.metodo})</span>
+                <span className="font-extrabold text-red-600">+{formatCOP(item.monetaria?.valor || 0)} ({item.monetaria?.metodo})</span>
               ) : (
                 <span className="text-neutral-800 font-semibold">{item.objeto?.cantidad} u. de {item.objeto?.categoria}</span>
               )}
             </td>
-            <td className="px-5 py-3 text-neutral-500 font-medium">{item.fecha}</td>
+            <td className="px-5 py-3 text-neutral-500 font-medium">{formatDate(item.fecha)}</td>
           </tr>
         )}
       />

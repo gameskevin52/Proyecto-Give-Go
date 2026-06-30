@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { EventService, CategoryService, OrganizationService } from '../services/db';
 import { Evento, Categoria, Organizacion } from '../types';
-import { Card, Button, SearchBar, Select, Badge, Alert, EmptyState } from '../components/UI';
+import { Card, Button, SearchBar, Select, Badge, Alert, EmptyState, formatDate } from '../components/UI';
 import { Calendar, Building2, Tag, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -180,7 +180,7 @@ export const Events: React.FC = () => {
                     </div>
                     <div className="flex items-center">
                       <Calendar className="w-4 h-4 mr-2 text-neutral-400 shrink-0" />
-                      <span>Fecha del Evento: <span className="text-neutral-950">{evt.fecha}</span></span>
+                      <span>Fecha del Evento: <span className="text-neutral-950">{formatDate(evt.fecha)}</span></span>
                     </div>
                   </div>
 

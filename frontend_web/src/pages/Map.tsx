@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { OrganizationService, EventService } from '../services/db';
 import { Organizacion, Evento } from '../types';
-import { Card, Badge, Button } from '../components/UI';
+import { Card, Badge, Button, formatDate } from '../components/UI';
 import { MapPin, Building2, Phone, Mail, Navigation, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -57,9 +57,9 @@ export const Map: React.FC = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-black text-neutral-900 uppercase tracking-wider">Mapa Solidario</h1>
+        <h1 className="text-3xl font-black text-neutral-900 uppercase tracking-wider">Mapa Solidario de Kennedy</h1>
         <p className="text-xs text-neutral-500 mt-1">
-          Visualiza la distribución geográfica de nuestras organizaciones asociadas y descubre los puntos de acción benéfica.
+          Visualiza la distribución geográfica de nuestras organizaciones asociadas en la localidad de Kennedy, Bogotá D.C. y descubre los puntos de acción benéfica.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export const Map: React.FC = () => {
         <div className="lg:col-span-2 bg-neutral-100 border border-neutral-200 rounded-lg p-6 relative min-h-[400px] flex flex-col justify-between overflow-hidden">
           <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-xs px-3 py-1.5 rounded border border-neutral-200 text-xs font-semibold text-neutral-700 shadow-xs z-10 flex items-center gap-1.5">
             <Navigation className="w-4 h-4 text-red-600 animate-pulse" />
-            <span>Región Central (Zonas de Acción Activa)</span>
+            <span>Localidad de Kennedy (Bogotá D.C. - Colombia)</span>
           </div>
 
           {/* Grid de fondo y representación abstracta del territorio */}
@@ -161,7 +161,7 @@ export const Map: React.FC = () => {
                           <div key={evt.id} className="p-3 bg-neutral-50 border border-neutral-150 rounded flex flex-col justify-between items-start gap-1">
                             <span className="text-xs font-semibold text-neutral-800">{evt.nombre}</span>
                             <div className="flex justify-between items-center w-full mt-1">
-                              <span className="text-[10px] text-neutral-500">Fecha: {evt.fecha}</span>
+                              <span className="text-[10px] text-neutral-500">Fecha: {formatDate(evt.fecha)}</span>
                               <Badge variant="success">Abierto</Badge>
                             </div>
                           </div>

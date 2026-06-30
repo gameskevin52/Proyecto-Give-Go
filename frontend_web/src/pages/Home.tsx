@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { EventService, UserService, DonationService, OrganizationService } from '../services/db';
-import { Button, Card, Badge } from '../components/UI';
+import { Button, Card, Badge, formatCOP, formatDate } from '../components/UI';
 import { Heart, Users, Calendar, ArrowRight, ShieldCheck, Award } from 'lucide-react';
 import { Evento } from '../types';
 
@@ -35,7 +35,7 @@ export const Home: React.FC = () => {
         volunteers: volunteers + 15, // agregar algunos ficticios para volumen visual
         organizations: orgsCount,
         events: activeEvents,
-        donationsVal: totalMonetary + 1250, // base visual + real
+        donationsVal: totalMonetary + 5000000, // base visual + real
       });
 
       // Primeros 3 eventos activos
@@ -49,12 +49,12 @@ export const Home: React.FC = () => {
       {/* Hero Section */}
       <section className="bg-neutral-900 text-white rounded-2xl p-8 md:p-16 flex flex-col md:flex-row items-center justify-between gap-8 shadow-md">
         <div className="max-w-xl space-y-6">
-          <Badge variant="danger">Give&amp;Go - Impulsando Solidaridad</Badge>
+          <Badge variant="danger">Give&amp;Go - Kennedy, Bogotá D.C.</Badge>
           <h1 className="text-4xl md:text-5xl font-black font-display tracking-tight leading-tight">
             Conectamos <span className="text-red-500">Voluntad</span> con <span className="border-b-4 border-red-600">Necesidades</span>
           </h1>
           <p className="text-sm text-neutral-300 leading-relaxed">
-            Plataforma integral para voluntarios, beneficiarios y organizaciones. Participa en eventos locales, realiza donaciones seguras y gestiona causas benéficas de forma transparente.
+            Plataforma integral para voluntarios, beneficiarios y organizaciones de la localidad de Kennedy, Bogotá D.C. Participa en eventos locales, realiza donaciones seguras y apoya causas benéficas de forma transparente.
           </p>
           <div className="flex flex-wrap gap-4 pt-2">
             <Button variant="primary" size="lg" onClick={() => navigate('/events')}>
@@ -114,7 +114,7 @@ export const Home: React.FC = () => {
           <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3">
             <Award className="w-5 h-5 text-red-600" />
           </div>
-          <h4 className="text-2xl font-black text-neutral-900 font-display">{stats.donationsVal}€</h4>
+          <h4 className="text-2xl font-black text-neutral-900 font-display">{formatCOP(stats.donationsVal)}</h4>
           <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-1">Fondos Recaudados</p>
         </div>
       </section>
@@ -151,7 +151,7 @@ export const Home: React.FC = () => {
                 </p>
                 <div className="flex items-center text-xs text-neutral-500 font-medium">
                   <Calendar className="w-4 h-4 mr-1.5 text-neutral-400" />
-                  <span>Fecha: {evt.fecha}</span>
+                  <span>Fecha: {formatDate(evt.fecha)}</span>
                 </div>
               </div>
             </Card>

@@ -136,7 +136,7 @@ export const Register: React.FC = () => {
               
               <Input
                 label="Nombre de la Organización"
-                placeholder="Ej: Fundación Esperanza"
+                placeholder="Ej: Fundación Manos por Kennedy"
                 error={errors.orgNombre?.message}
                 {...formRegister('orgNombre', { 
                   required: selectedRole === 'organizacion' ? 'El nombre de la organización es obligatorio' : false,
@@ -146,7 +146,7 @@ export const Register: React.FC = () => {
 
               <Input
                 label="Dirección Física de la Sede"
-                placeholder="Calle Solidaridad 45, Madrid"
+                placeholder="Calle 38 Sur # 78-45, Kennedy, Bogotá D.C."
                 error={errors.orgDireccion?.message}
                 {...formRegister('orgDireccion', { 
                   required: selectedRole === 'organizacion' ? 'La dirección de la sede es requerida' : false 
@@ -186,7 +186,7 @@ export const Register: React.FC = () => {
 
               <Input
                 label="Número de Teléfono"
-                placeholder="Ej: +34 600 123 456"
+                placeholder="Ej: +57 300 123 4567"
                 error={errors.telefono?.message}
                 {...formRegister('telefono', { required: 'El número de teléfono es obligatorio' })}
               />

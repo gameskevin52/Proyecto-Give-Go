@@ -196,7 +196,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
               <div>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-300 mb-3">Contacto</h4>
                 <p className="text-xs text-neutral-400">Email: soporte@giveandgo.com</p>
-                <p className="text-xs text-neutral-400 mt-1">Teléfono: +34 900 123 456</p>
+                <p className="text-xs text-neutral-400 mt-1">Teléfono: +57 300 123 4567</p>
               </div>
             </div>
             <div className="border-t border-neutral-800 mt-8 pt-4 text-center text-xs text-neutral-500">

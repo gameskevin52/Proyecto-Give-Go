@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { RequestService } from '../../services/db';
 import { Solicitud } from '../../types';
-import { Button, Input, Select, Card, Table, Badge, Modal, ConfirmDialog, Textarea, Alert, EmptyState } from '../../components/UI';
+import { Button, Input, Select, Card, Table, Badge, Modal, ConfirmDialog, Textarea, Alert, EmptyState, formatDate } from '../../components/UI';
 import { Plus, Edit, Trash2, Calendar, FileText, CheckCircle } from 'lucide-react';
 
 interface SolicitudFormData {
@@ -127,7 +127,7 @@ export const BeneficiaryDashboard: React.FC = () => {
                 <td className="px-5 py-3 font-mono text-neutral-400">{item.id}</td>
                 <td className="px-5 py-3 font-bold text-neutral-900">{item.titulo}</td>
                 <td className="px-5 py-3 text-neutral-600 max-w-sm font-medium">{item.descripcion}</td>
-                <td className="px-5 py-3 text-neutral-500 font-medium">{item.fecha}</td>
+                <td className="px-5 py-3 text-neutral-500 font-medium">{formatDate(item.fecha)}</td>
                 <td className="px-5 py-3">
                   <Badge variant={statusBadgeMap[item.estado] || 'neutral'}>
                     {item.estado}

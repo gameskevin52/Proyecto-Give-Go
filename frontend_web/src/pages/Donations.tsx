@@ -187,28 +187,29 @@ export const Donations: React.FC = () => {
                 <Select
                   label="Método de Pago"
                   options={[
-                    { value: 'tarjeta', label: 'Tarjeta de Crédito / Débito' },
-                    { value: 'transferencia', label: 'Transferencia Bancaria' },
-                    { value: 'paypal', label: 'PayPal' }
+                    { value: 'nequi', label: 'Nequi' },
+                    { value: 'daviplata', label: 'Daviplata' },
+                    { value: 'pse', label: 'PSE / Transferencia Bancaria' },
+                    { value: 'tarjeta', label: 'Tarjeta de Crédito / Débito' }
                   ]}
                   {...register('metodo')}
                 />
 
                 <Input
                   type="number"
-                  label="Valor (€ Euros)"
-                  placeholder="Ej: 50"
+                  label="Valor (COP $ - Pesos Colombianos)"
+                  placeholder="Ej: 150000"
                   error={errors.valor?.message}
                   {...register('valor', { 
                     required: selectedTipo === 'monetaria' ? 'El valor es requerido' : false,
-                    min: { value: 1, message: 'La donación mínima es de 1€' }
+                    min: { value: 10000, message: 'La donación mínima es de $ 10.000' }
                   })}
                 />
               </div>
 
               <Input
-                label="Identificador de Cuenta / Tarjeta"
-                placeholder="Ej: ES12 3456 ... o número de tarjeta"
+                label="Identificador de Cuenta / Celular (Nequi, Daviplata o Ahorros)"
+                placeholder="Ej: Celular Nequi 3101234567, Cuenta de Ahorros Bancolombia, etc."
                 error={errors.cuenta?.message}
                 {...register('cuenta', { 
                   required: selectedTipo === 'monetaria' ? 'La cuenta o método identificativo es requerido' : false,
