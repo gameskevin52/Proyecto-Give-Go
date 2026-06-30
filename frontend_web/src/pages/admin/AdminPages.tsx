@@ -23,7 +23,9 @@ import {
   SearchBar, 
   Pagination, 
   EmptyState,
-  Textarea
+  Textarea,
+  formatCOP,
+  formatDate
 } from '../../components/UI';
 import { 
   Users, 
@@ -133,7 +135,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="flex justify-between items-center">
             <div>
               <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Fondos Recaudados</p>
-              <h3 className="text-2xl font-black text-neutral-900 mt-1">{stats.monetaryTotal}€</h3>
+              <h3 className="text-2xl font-black text-neutral-900 mt-1">{formatCOP(stats.monetaryTotal)}</h3>
             </div>
             <div className="p-3 bg-neutral-100 text-neutral-900 rounded">
               <TrendingUp className="w-5 h-5" />
@@ -157,11 +159,11 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                   <div className="text-right">
                     {don.tipo === 'monetaria' ? (
-                      <span className="font-extrabold text-red-600 text-sm">+{don.monetaria?.valor}€</span>
+                      <span className="font-extrabold text-red-600 text-xs">+{formatCOP(don.monetaria?.valor || 0)}</span>
                     ) : (
                       <span className="font-semibold text-neutral-800">{don.objeto?.cantidad} x {don.objeto?.categoria}</span>
                     )}
-                    <p className="text-[9px] text-neutral-400 mt-0.5">{don.fecha}</p>
+                    <p className="text-[9px] text-neutral-400 mt-0.5">{formatDate(don.fecha)}</p>
                   </div>
                 </div>
               ))
@@ -186,7 +188,7 @@ export const AdminDashboard: React.FC = () => {
                   <p className="text-[10px] text-neutral-500 line-clamp-1">{evt.descripcion}</p>
                   <div className="flex justify-between text-[9px] text-neutral-400 pt-1">
                     <span>Categoría: {evt.categoria}</span>
-                    <span>Fecha: {evt.fecha}</span>
+                    <span>Fecha: {formatDate(evt.fecha)}</span>
                   </div>
                 </div>
               ))
@@ -711,7 +713,7 @@ export const AdminEvents: React.FC = () => {
             </td>
             <td className="px-5 py-3 text-xs text-neutral-600">{item.categoria}</td>
             <td className="px-5 py-3 text-xs text-neutral-600 font-medium">{getOrgName(item.organizacionId)}</td>
-            <td className="px-5 py-3 text-xs text-neutral-600">{item.fecha}</td>
+            <td className="px-5 py-3 text-xs text-neutral-600">{formatDate(item.fecha)}</td>
             <td className="px-5 py-3 text-xs">
               <Badge variant={item.estado === 'activo' ? 'success' : 'neutral'}>
                 {item.estado}
@@ -868,12 +870,12 @@ export const AdminDonations: React.FC = () => {
             </td>
             <td className="px-5 py-3 text-xs">
               {item.tipo === 'monetaria' ? (
-                <span className="font-extrabold text-red-600">{item.monetaria?.valor}€ ({item.monetaria?.metodo})</span>
+                <span className="font-extrabold text-red-600">{formatCOP(item.monetaria?.valor || 0)} ({item.monetaria?.metodo})</span>
               ) : (
                 <span className="text-neutral-800 font-medium">{item.objeto?.cantidad} u. de {item.objeto?.categoria}</span>
               )}
             </td>
-            <td className="px-5 py-3 text-xs text-neutral-600">{item.fecha}</td>
+            <td className="px-5 py-3 text-xs text-neutral-600">{formatDate(item.fecha)}</td>
             <td className="px-5 py-3 text-xs">
               <button onClick={() => handleDelete(item.id)} className="p-1 rounded text-red-500 hover:text-red-700 hover:bg-red-50">
                 <Trash2 className="w-4 h-4" />

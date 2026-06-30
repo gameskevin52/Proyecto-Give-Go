@@ -23,15 +23,15 @@ import {
 
 // Claves de LocalStorage
 const KEYS = {
-  USERS: 'gg_users',
-  ORGANIZATIONS: 'gg_organizations',
-  EVENTS: 'gg_events',
-  TRACKING: 'gg_tracking',
-  DONATIONS: 'gg_donations',
-  DONATIONS_MONETARY: 'gg_donations_monetary',
-  DONATIONS_OBJECTS: 'gg_donations_objects',
-  CATEGORIES: 'gg_categories',
-  REQUESTS: 'gg_requests',
+  USERS: 'co_users',
+  ORGANIZATIONS: 'co_organizations',
+  EVENTS: 'co_events',
+  TRACKING: 'co_tracking',
+  DONATIONS: 'co_donations',
+  DONATIONS_MONETARY: 'co_donations_monetary',
+  DONATIONS_OBJECTS: 'co_donations_objects',
+  CATEGORIES: 'co_categories',
+  REQUESTS: 'co_requests',
 };
 
 // Función de inicialización
@@ -165,7 +165,7 @@ export const OrganizationService = {
       rol: 'organizacion',
       nombre1: org.nombre,
       apellido1: 'Organización',
-      telefono: '+34600000000',
+      telefono: '+57 300 000 0000',
       correo: org.correo,
       password: org.password,
       estado: 'activo'

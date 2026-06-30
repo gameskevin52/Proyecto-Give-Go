@@ -8,7 +8,7 @@ export const INITIAL_USERS: Usuario[] = [
     nombre2: 'Global',
     apellido1: 'Give',
     apellido2: 'Go',
-    telefono: '+34600123456',
+    telefono: '+57 300 123 4567',
     correo: 'admin@giveandgo.com',
     password: 'Admin123*',
     estado: 'activo'
@@ -20,7 +20,7 @@ export const INITIAL_USERS: Usuario[] = [
     nombre2: 'Andrés',
     apellido1: 'Mendoza',
     apellido2: 'Castro',
-    telefono: '+34611222333',
+    telefono: '+57 310 987 6543',
     correo: 'carlos@volunteer.com',
     password: 'User123*',
     estado: 'activo'
@@ -30,7 +30,7 @@ export const INITIAL_USERS: Usuario[] = [
     rol: 'voluntario',
     nombre1: 'Sofía',
     apellido1: 'Pérez',
-    telefono: '+34622333444',
+    telefono: '+57 315 222 3333',
     correo: 'sofia@volunteer.com',
     password: 'User123*',
     estado: 'activo'
@@ -40,7 +40,7 @@ export const INITIAL_USERS: Usuario[] = [
     rol: 'beneficiario',
     nombre1: 'Juan',
     apellido1: 'Gómez',
-    telefono: '+34633444555',
+    telefono: '+57 320 444 5555',
     correo: 'juan@beneficiary.com',
     password: 'User123*',
     estado: 'activo'
@@ -50,7 +50,7 @@ export const INITIAL_USERS: Usuario[] = [
     rol: 'beneficiario',
     nombre1: 'María',
     apellido1: 'Rodríguez',
-    telefono: '+34644555666',
+    telefono: '+57 301 555 6666',
     correo: 'maria@beneficiary.com',
     password: 'User123*',
     estado: 'activo'
@@ -60,23 +60,23 @@ export const INITIAL_USERS: Usuario[] = [
 export const INITIAL_ORGANIZATIONS: Organizacion[] = [
   {
     id: 'org_1',
-    nombre: 'Fundación Esperanza',
-    direccion: 'Calle de la Solidaridad 45, Madrid',
-    correo: 'contacto@esperanza.org',
+    nombre: 'Fundación Manos por Kennedy',
+    direccion: 'Calle 38 Sur # 78-45, Kennedy Central, Bogotá D.C.',
+    correo: 'contacto@manosporkennedy.org',
     password: 'Org123*'
   },
   {
     id: 'org_2',
-    nombre: 'Cáritas Local',
-    direccion: 'Avenida del Bien Común 12, Barcelona',
-    correo: 'info@caritaslocal.org',
+    nombre: 'Fundación Bogotá Solidaria',
+    direccion: 'Carrera 80 # 40B Sur-12, Castilla, Bogotá D.C.',
+    correo: 'info@bogotasolidaria.org',
     password: 'Org123*'
   },
   {
     id: 'org_3',
-    nombre: 'Planeta Verde',
-    direccion: 'Paseo de la Sostenibilidad 8, Valencia',
-    correo: 'hola@planetaverde.org',
+    nombre: 'Asociación Social Ciudad Kennedy',
+    direccion: 'Avenida Ciudad de Cali # 13-08, Patio Bonito, Bogotá D.C.',
+    correo: 'hola@ciudadkennedy.org',
     password: 'Org123*'
   }
 ];
@@ -87,7 +87,7 @@ export const INITIAL_ORG_USERS: Usuario[] = INITIAL_ORGANIZATIONS.map(org => ({
   rol: 'organizacion',
   nombre1: org.nombre,
   apellido1: 'Organización',
-  telefono: '+34600000000',
+  telefono: '+57 300 000 0000',
   correo: org.correo,
   password: org.password,
   estado: 'activo'
@@ -97,31 +97,31 @@ export const INITIAL_CATEGORIES: Categoria[] = [
   {
     id: 'cat_1',
     nombre: 'Alimentos',
-    descripcion: 'Campañas de recogida y distribución de alimentos no perecederos',
+    descripcion: 'Campañas de recogida y distribución de alimentos no perecederos en la localidad',
     estado: 'activo'
   },
   {
     id: 'cat_2',
     nombre: 'Educación',
-    descripcion: 'Apoyo escolar, donación de material educativo y tutorías',
+    descripcion: 'Apoyo escolar, donación de útiles y kits escolares, tutorías pedagógicas',
     estado: 'activo'
   },
   {
     id: 'cat_3',
     nombre: 'Salud',
-    descripcion: 'Asistencia médica elemental, donación de medicamentos e higiene',
+    descripcion: 'Asistencia médica comunitaria, brigadas de salud y donación de elementos de higiene',
     estado: 'activo'
   },
   {
     id: 'cat_4',
     nombre: 'Medio Ambiente',
-    descripcion: 'Actividades de reforestación, limpieza de entornos y reciclaje',
+    descripcion: 'Reforestación de zonas verdes, recuperación de parques y limpieza de humedales',
     estado: 'activo'
   },
   {
     id: 'cat_5',
     nombre: 'Económico',
-    descripcion: 'Aportaciones monetarias para el mantenimiento de refugios y proyectos sociales',
+    descripcion: 'Aportaciones monetarias para el sostenimiento de comedores comunitarios y albergues',
     estado: 'activo'
   }
 ];
@@ -129,36 +129,36 @@ export const INITIAL_CATEGORIES: Categoria[] = [
 export const INITIAL_EVENTS: Evento[] = [
   {
     id: 'evt_1',
-    nombre: 'Gran Recogida de Alimentos Primavera',
+    nombre: 'Jornada de Donación en Kennedy Central',
     categoria: 'Alimentos',
-    descripcion: 'Ayúdanos a clasificar y empaquetar alimentos recibidos en nuestro almacén central para familias vulnerables.',
+    descripcion: 'Ayúdanos a clasificar y empaquetar alimentos recibidos para las familias vulnerables de la localidad de Kennedy en nuestro centro comunitario.',
     fecha: '2026-07-15',
     estado: 'activo',
     organizacionId: 'org_1'
   },
   {
     id: 'evt_2',
-    nombre: 'Tutorías de Matemáticas para Niños',
+    nombre: 'Campaña Solidaria Patio Bonito',
     categoria: 'Educación',
-    descripcion: 'Buscamos voluntarios para impartir clases de apoyo los fines de semana a niños de primaria.',
+    descripcion: 'Buscamos voluntarios para apoyar en el reforzamiento escolar y tutorías los fines de semana para niños del sector de Patio Bonito.',
     fecha: '2026-07-20',
     estado: 'activo',
     organizacionId: 'org_1'
   },
   {
     id: 'evt_3',
-    nombre: 'Jornada de Reforestación Urbana',
+    nombre: 'Reforestación del Humedal El Burro',
     categoria: 'Medio Ambiente',
-    descripcion: 'Plantación de árboles autóctonos en el cinturón verde metropolitano. Trae calzado cómodo.',
+    descripcion: 'Jornada de siembra de especies nativas y limpieza en el Humedal El Burro de Kennedy. ¡Trae ropa cómoda y guantes!',
     fecha: '2026-08-05',
     estado: 'activo',
     organizacionId: 'org_3'
   },
   {
     id: 'evt_4',
-    nombre: 'Campaña Sanitaria Comunitaria',
+    nombre: 'Jornada Comunitaria Castilla',
     categoria: 'Salud',
-    descripcion: 'Charlas preventivas e higiene infantil en centros de acogida locales.',
+    descripcion: 'Campaña de salud básica preventiva y entrega de kits de aseo para adultos mayores del barrio Castilla.',
     fecha: '2026-06-30',
     estado: 'activo',
     organizacionId: 'org_2'
@@ -169,24 +169,24 @@ export const INITIAL_REQUESTS: Solicitud[] = [
   {
     id: 'sol_1',
     beneficiarioId: 'user_ben_1',
-    titulo: 'Caja de alimentos familiares',
-    descripcion: 'Solicito apoyo de alimentos básicos no perecederos para mi núcleo familiar de 4 personas.',
+    titulo: 'Apoyo alimentario en Patio Bonito',
+    descripcion: 'Solicito mercado básico no perecedero para mi núcleo familiar de 4 personas en el barrio Patio Bonito, Kennedy.',
     estado: 'pendiente',
     fecha: '2026-06-20'
   },
   {
     id: 'sol_2',
     beneficiarioId: 'user_ben_2',
-    titulo: 'Libros de texto primaria',
-    descripcion: 'Necesito libros de matemáticas y lengua de 5º de primaria para mis dos hijos.',
+    titulo: 'Útiles escolares en Castilla',
+    descripcion: 'Necesito cuadernos, lápices y útiles escolares para mis dos hijos de primaria en Castilla.',
     estado: 'aprobada',
     fecha: '2026-06-18'
   },
   {
     id: 'sol_3',
     beneficiarioId: 'user_ben_1',
-    titulo: 'Apoyo para pago de servicios',
-    descripcion: 'Solicitud de ayuda económica puntual para abonar el recibo de la luz acumulado.',
+    titulo: 'Kit de medicamentos esenciales',
+    descripcion: 'Solicitud de apoyo para adquirir medicamentos de control diario para un adulto mayor en el barrio Kennedy Central.',
     estado: 'rechazada',
     fecha: '2026-06-10'
   }
@@ -216,7 +216,7 @@ export const INITIAL_DONATIONS_MONETARY: DonacionMonetaria[] = [
     id: 'dm_1',
     metodo: 'tarjeta',
     cuenta: '**** **** **** 4321',
-    valor: 50,
+    valor: 150000,
     donacionId: 'don_1'
   }
 ];
@@ -225,7 +225,7 @@ export const INITIAL_DONATIONS_OBJECTS: DonacionObjeto[] = [
   {
     id: 'do_1',
     categoria: 'Alimentos',
-    descripcion: '10 kg de arroz, 5 kg de legumbres y aceite de oliva',
+    descripcion: '10 kg de arroz, 5 kg de legumbres y aceite vegetal',
     cantidad: 15,
     donacionId: 'don_2'
   }
