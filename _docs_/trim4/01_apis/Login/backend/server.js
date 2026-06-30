@@ -85,8 +85,5 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).send(err.stack);
 });
 
-<<<<<<< HEAD
-console.log('📚 Swagger disponible en: http://192.168.1.8:3000/api-docs');
-=======
->>>>>>> Nicolay_cajamarca
+
 module.exports = app;
