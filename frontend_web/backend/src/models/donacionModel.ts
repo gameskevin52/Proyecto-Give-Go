@@ -201,5 +201,127 @@ export const DonacionModel = {
       db.saveFallbackData();
       return true;
     }
+  },
+
+  async update(
+    id: number,
+    donation: Partial<Omit<DonacionDB, 'id_donacion' | 'tipo' | 'fecha'>>,
+    monetary?: Partial<Omit<DonacionMonetariaDB, 'id' | 'donacion_id'>> | null,
+    objectDetail?: Partial<Omit<DonacionObjetoDB, 'id' | 'donacion_id'>> | null
+  ): Promise<boolean> {
+    if (db.isMySQLConnected()) {
+      // Actualizar la donación principal
+      const updateFields = [];
+      const updateValues = [];
+      
+      if (donation.categoria !== undefined) {
+        updateFields.push('categoria = ?');
+        updateValues.push(donation.categoria);
+      }
+      if (donation.estado !== undefined) {
+        updateFields.push('estado = ?');
+        updateValues.push(donation.estado);
+      }
+      if (donation.observaciones !== undefined) {
+        updateFields.push('observaciones = ?');
+        updateValues.push(donation.observaciones);
+      }
+      
+      if (updateFields.length > 0) {
+        updateValues.push(id);
+        await db.query(
+          `UPDATE donaciones SET ${updateFields.join(', ')} WHERE id_donacion = ?`,
+          updateValues
+        );
+      }
+
+      // Actualizar donación monetaria si existe
+      if (monetary) {
+        const monUpdateFields = [];
+        const monUpdateValues = [];
+        
+        if (monetary.metodo !== undefined) {
+          monUpdateFields.push('metodo = ?');
+          monUpdateValues.push(monetary.metodo);
+        }
+        if (monetary.cuenta !== undefined) {
+          monUpdateFields.push('cuenta = ?');
+          monUpdateValues.push(monetary.cuenta);
+        }
+        if (monetary.valor !== undefined) {
+          monUpdateFields.push('valor = ?');
+          monUpdateValues.push(monetary.valor);
+        }
+        
+        if (monUpdateFields.length > 0) {
+          monUpdateValues.push(id);
+          await db.query(
+            `UPDATE donaciones_monetarias SET ${monUpdateFields.join(', ')} WHERE donacion_id = ?`,
+            monUpdateValues
+          );
+        }
+      }
+
+      // Actualizar donación objeto si existe
+      if (objectDetail) {
+        const objUpdateFields = [];
+        const objUpdateValues = [];
+        
+        if (objectDetail.categoria !== undefined) {
+          objUpdateFields.push('categoria = ?');
+          objUpdateValues.push(objectDetail.categoria);
+        }
+        if (objectDetail.descripcion !== undefined) {
+          objUpdateFields.push('descripcion = ?');
+          objUpdateValues.push(objectDetail.descripcion);
+        }
+        if (objectDetail.cantidad !== undefined) {
+          objUpdateFields.push('cantidad = ?');
+          objUpdateValues.push(objectDetail.cantidad);
+        }
+        
+        if (objUpdateFields.length > 0) {
+          objUpdateValues.push(id);
+          await db.query(
+            `UPDATE donaciones_objetos SET ${objUpdateFields.join(', ')} WHERE donacion_id = ?`,
+            objUpdateValues
+          );
+        }
+      }
+      
+      return true;
+    } else {
+      const fallback = db.getFallbackData();
+      const donIndex = fallback.donaciones.findIndex((d: any) => d.id_donacion === id);
+      if (donIndex === -1) return false;
+
+      // Actualizar donación principal
+      if (donation.categoria !== undefined) fallback.donaciones[donIndex].categoria = donation.categoria;
+      if (donation.estado !== undefined) fallback.donaciones[donIndex].estado = donation.estado;
+      if (donation.observaciones !== undefined) fallback.donaciones[donIndex].observaciones = donation.observaciones;
+
+      // Actualizar donación monetaria
+      if (monetary) {
+        const monIndex = fallback.donaciones_monetarias.findIndex((m: any) => m.donacion_id === id);
+        if (monIndex !== -1) {
+          if (monetary.metodo !== undefined) fallback.donaciones_monetarias[monIndex].metodo = monetary.metodo;
+          if (monetary.cuenta !== undefined) fallback.donaciones_monetarias[monIndex].cuenta = monetary.cuenta;
+          if (monetary.valor !== undefined) fallback.donaciones_monetarias[monIndex].valor = monetary.valor;
+        }
+      }
+
+      // Actualizar donación objeto
+      if (objectDetail) {
+        const objIndex = fallback.donaciones_objetos.findIndex((o: any) => o.donacion_id === id);
+        if (objIndex !== -1) {
+          if (objectDetail.categoria !== undefined) fallback.donaciones_objetos[objIndex].categoria = objectDetail.categoria;
+          if (objectDetail.descripcion !== undefined) fallback.donaciones_objetos[objIndex].descripcion = objectDetail.descripcion;
+          if (objectDetail.cantidad !== undefined) fallback.donaciones_objetos[objIndex].cantidad = objectDetail.cantidad;
+        }
+      }
+
+      db.saveFallbackData();
+      return true;
+    }
   }
 };

@@ -121,6 +121,19 @@
       "telefono": "+57 300 000 0000",
       "estado": 1,
       "fecha_registro": "2026-06-30T06:29:11.386Z"
+    },
+    {
+      "id_usuario": 104,
+      "rol": "Admin",
+      "nombre1": "Zharick",
+      "nombre2": "Sofia",
+      "apellido1": "Rodríguez",
+      "apellido2": "Gutierrez",
+      "telefono": "+52 3223347010",
+      "correo": "HOLA@giveandgo.com",
+      "password": "$2b$10$1aWFK/UYVm1uCPjuqbgdJefg5XLzG6KIvyAYGLdh3CdSSsG3N3hZW",
+      "estado": 1,
+      "fecha_registro": "2026-07-01T02:44:11.399Z"
     }
   ],
   "organizaciones": [
