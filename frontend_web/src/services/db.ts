@@ -2,84 +2,42 @@ import {
   Usuario, 
   Organizacion, 
   Evento, 
-  SeguimientoEvento, 
   Donacion, 
   DonacionMonetaria, 
   DonacionObjeto, 
   Categoria, 
   Solicitud 
 } from '../types';
-import { 
-  INITIAL_USERS, 
-  INITIAL_ORGANIZATIONS, 
-  INITIAL_ORG_USERS,
-  INITIAL_CATEGORIES, 
-  INITIAL_EVENTS, 
-  INITIAL_REQUESTS, 
-  INITIAL_DONATIONS, 
-  INITIAL_DONATIONS_MONETARY, 
-  INITIAL_DONATIONS_OBJECTS 
-} from '../mockData/initialData';
 
-// Claves de LocalStorage
-const KEYS = {
-  USERS: 'co_users',
-  ORGANIZATIONS: 'co_organizations',
-  EVENTS: 'co_events',
-  TRACKING: 'co_tracking',
-  DONATIONS: 'co_donations',
-  DONATIONS_MONETARY: 'co_donations_monetary',
-  DONATIONS_OBJECTS: 'co_donations_objects',
-  CATEGORIES: 'co_categories',
-  REQUESTS: 'co_requests',
-};
-
-// Función de inicialización
-export function initializeDB() {
-  if (!localStorage.getItem(KEYS.USERS)) {
-    // Combinar usuarios normales y usuarios de organizaciones para login simplificado
-    const allUsers = [...INITIAL_USERS, ...INITIAL_ORG_USERS];
-    localStorage.setItem(KEYS.USERS, JSON.stringify(allUsers));
-  }
-  if (!localStorage.getItem(KEYS.ORGANIZATIONS)) {
-    localStorage.setItem(KEYS.ORGANIZATIONS, JSON.stringify(INITIAL_ORGANIZATIONS));
-  }
-  if (!localStorage.getItem(KEYS.EVENTS)) {
-    localStorage.setItem(KEYS.EVENTS, JSON.stringify(INITIAL_EVENTS));
-  }
-  if (!localStorage.getItem(KEYS.TRACKING)) {
-    localStorage.setItem(KEYS.TRACKING, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(KEYS.DONATIONS)) {
-    localStorage.setItem(KEYS.DONATIONS, JSON.stringify(INITIAL_DONATIONS));
-  }
-  if (!localStorage.getItem(KEYS.DONATIONS_MONETARY)) {
-    localStorage.setItem(KEYS.DONATIONS_MONETARY, JSON.stringify(INITIAL_DONATIONS_MONETARY));
-  }
-  if (!localStorage.getItem(KEYS.DONATIONS_OBJECTS)) {
-    localStorage.setItem(KEYS.DONATIONS_OBJECTS, JSON.stringify(INITIAL_DONATIONS_OBJECTS));
-  }
-  if (!localStorage.getItem(KEYS.CATEGORIES)) {
-    localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(INITIAL_CATEGORIES));
-  }
-  if (!localStorage.getItem(KEYS.REQUESTS)) {
-    localStorage.setItem(KEYS.REQUESTS, JSON.stringify(INITIAL_REQUESTS));
-  }
+/**
+ * SERVICIOS DE DONACIÓN (COMPLETA)
+ */
+export interface DonacionCompleta extends Donacion {
+  organizacionNombre?: string;
+  usuarioNombre?: string;
+  monetaria?: DonacionMonetaria;
+  objeto?: DonacionObjeto;
 }
 
-// Ejecutar la inicialización inmediatamente al importar
-initializeDB();
+// Helper central para realizar llamadas HTTP a la API REST de Node.js / Express
+async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const token = sessionStorage.getItem('gg_token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...options.headers,
+  };
 
-// Métodos auxiliares genéricos (simulación de latencia de red)
-const delay = (ms = 150) => new Promise(resolve => setTimeout(resolve, ms));
+  const response = await fetch(endpoint, {
+    ...options,
+    headers,
+  });
 
-function getFromStorage<T>(key: string): T[] {
-  const data = localStorage.getItem(key);
-  return data ? JSON.parse(data) : [];
-}
-
-function saveToStorage<T>(key: string, data: T[]): void {
-  localStorage.setItem(key, JSON.stringify(data));
+  const result = await response.json();
+  if (!result.success) {
+    throw new Error(result.message || 'Error en la petición API');
+  }
+  return result.data;
 }
 
 /**
@@ -87,50 +45,67 @@ function saveToStorage<T>(key: string, data: T[]): void {
  */
 export const UserService = {
   async getAll(): Promise<Usuario[]> {
-    await delay();
-    return getFromStorage<Usuario>(KEYS.USERS);
+    return apiFetch<Usuario[]>('/api/users');
   },
 
   async getById(id: string): Promise<Usuario | undefined> {
-    await delay();
-    const users = getFromStorage<Usuario>(KEYS.USERS);
-    return users.find(u => u.id === id);
+    try {
+      const user = await apiFetch<Usuario>(`/api/users/${id}`);
+      return user || undefined;
+    } catch {
+      return undefined;
+    }
   },
 
   async getByEmail(correo: string): Promise<Usuario | undefined> {
-    await delay();
-    const users = getFromStorage<Usuario>(KEYS.USERS);
-    return users.find(u => u.correo.toLowerCase() === correo.toLowerCase());
+    try {
+      const user = await apiFetch<Usuario | null>(`/api/users/by-email/${encodeURIComponent(correo)}`);
+      return user || undefined;
+    } catch {
+      return undefined;
+    }
+  },
+
+  async getVolunteersCount(): Promise<number> {
+    try {
+      return await apiFetch<number>('/api/users/stats/volunteers-count');
+    } catch {
+      return 0;
+    }
+  },
+
+  async login(correo: string, password: string): Promise<{ user: Usuario; token: string }> {
+    return apiFetch<{ user: Usuario; token: string }>('/api/users/login', {
+      method: 'POST',
+      body: JSON.stringify({ correo, password })
+    });
+  },
+
+  async register(user: Omit<Usuario, 'id' | 'estado'>): Promise<{ user: Usuario; token: string }> {
+    return apiFetch<{ user: Usuario; token: string }>('/api/users/register', {
+      method: 'POST',
+      body: JSON.stringify(user)
+    });
   },
 
   async create(user: Omit<Usuario, 'id'>): Promise<Usuario> {
-    await delay();
-    const users = getFromStorage<Usuario>(KEYS.USERS);
-    const newUser: Usuario = {
-      ...user,
-      id: `usr_${Date.now()}`,
-    };
-    users.push(newUser);
-    saveToStorage(KEYS.USERS, users);
-    return newUser;
+    return apiFetch<Usuario>('/api/users', {
+      method: 'POST',
+      body: JSON.stringify(user)
+    });
   },
 
   async update(id: string, updatedData: Partial<Usuario>): Promise<Usuario> {
-    await delay();
-    const users = getFromStorage<Usuario>(KEYS.USERS);
-    const index = users.findIndex(u => u.id === id);
-    if (index === -1) throw new Error('Usuario no encontrado');
-    
-    users[index] = { ...users[index], ...updatedData };
-    saveToStorage(KEYS.USERS, users);
-    return users[index];
+    return apiFetch<Usuario>(`/api/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updatedData)
+    });
   },
 
   async delete(id: string): Promise<boolean> {
-    await delay();
-    const users = getFromStorage<Usuario>(KEYS.USERS);
-    const filtered = users.filter(u => u.id !== id);
-    saveToStorage(KEYS.USERS, filtered);
+    await apiFetch<any>(`/api/users/${id}`, {
+      method: 'DELETE'
+    });
     return true;
   }
 };
@@ -140,76 +115,36 @@ export const UserService = {
  */
 export const OrganizationService = {
   async getAll(): Promise<Organizacion[]> {
-    await delay();
-    return getFromStorage<Organizacion>(KEYS.ORGANIZATIONS);
+    return apiFetch<Organizacion[]>('/api/organizations');
   },
 
   async getById(id: string): Promise<Organizacion | undefined> {
-    await delay();
-    const orgs = getFromStorage<Organizacion>(KEYS.ORGANIZATIONS);
-    return orgs.find(o => o.id === id);
+    try {
+      const org = await apiFetch<Organizacion>(`/api/organizations/${id}`);
+      return org || undefined;
+    } catch {
+      return undefined;
+    }
   },
 
   async create(org: Omit<Organizacion, 'id'>): Promise<Organizacion> {
-    await delay();
-    const orgs = getFromStorage<Organizacion>(KEYS.ORGANIZATIONS);
-    const newOrg: Organizacion = {
-      ...org,
-      id: `org_${Date.now()}`,
-    };
-    orgs.push(newOrg);
-    saveToStorage(KEYS.ORGANIZATIONS, orgs);
-
-    // Agregar también a usuarios para que puedan hacer login
-    await UserService.create({
-      rol: 'organizacion',
-      nombre1: org.nombre,
-      apellido1: 'Organización',
-      telefono: '+57 300 000 0000',
-      correo: org.correo,
-      password: org.password,
-      estado: 'activo'
+    return apiFetch<Organizacion>('/api/organizations', {
+      method: 'POST',
+      body: JSON.stringify(org)
     });
-
-    return newOrg;
   },
 
   async update(id: string, updatedData: Partial<Organizacion>): Promise<Organizacion> {
-    await delay();
-    const orgs = getFromStorage<Organizacion>(KEYS.ORGANIZATIONS);
-    const index = orgs.findIndex(o => o.id === id);
-    if (index === -1) throw new Error('Organización no encontrada');
-    
-    orgs[index] = { ...orgs[index], ...updatedData };
-    saveToStorage(KEYS.ORGANIZATIONS, orgs);
-
-    // Actualizar también el perfil de usuario asociado por correo
-    const user = await UserService.getByEmail(orgs[index].correo);
-    if (user) {
-      await UserService.update(user.id, {
-        nombre1: orgs[index].nombre,
-        correo: orgs[index].correo,
-        password: orgs[index].password
-      });
-    }
-
-    return orgs[index];
+    return apiFetch<Organizacion>(`/api/organizations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updatedData)
+    });
   },
 
   async delete(id: string): Promise<boolean> {
-    await delay();
-    const orgs = getFromStorage<Organizacion>(KEYS.ORGANIZATIONS);
-    const orgToDelete = orgs.find(o => o.id === id);
-    
-    const filtered = orgs.filter(o => o.id !== id);
-    saveToStorage(KEYS.ORGANIZATIONS, filtered);
-
-    if (orgToDelete) {
-      const user = await UserService.getByEmail(orgToDelete.correo);
-      if (user) {
-        await UserService.delete(user.id);
-      }
-    }
+    await apiFetch<any>(`/api/organizations/${id}`, {
+      method: 'DELETE'
+    });
     return true;
   }
 };
@@ -219,88 +154,65 @@ export const OrganizationService = {
  */
 export const EventService = {
   async getAll(): Promise<Evento[]> {
-    await delay();
-    return getFromStorage<Evento>(KEYS.EVENTS);
+    return apiFetch<Evento[]>('/api/events');
   },
 
   async getById(id: string): Promise<Evento | undefined> {
-    await delay();
-    const evts = getFromStorage<Evento>(KEYS.EVENTS);
-    return evts.find(e => e.id === id);
+    try {
+      const evt = await apiFetch<Evento>(`/api/events/${id}`);
+      return evt || undefined;
+    } catch {
+      return undefined;
+    }
   },
 
   async create(evt: Omit<Evento, 'id'>): Promise<Evento> {
-    await delay();
-    const evts = getFromStorage<Evento>(KEYS.EVENTS);
-    const newEvt: Evento = {
-      ...evt,
-      id: `evt_${Date.now()}`,
-    };
-    evts.push(newEvt);
-    saveToStorage(KEYS.EVENTS, evts);
-    return newEvt;
+    return apiFetch<Evento>('/api/events', {
+      method: 'POST',
+      body: JSON.stringify(evt)
+    });
   },
 
   async update(id: string, updatedData: Partial<Evento>): Promise<Evento> {
-    await delay();
-    const evts = getFromStorage<Evento>(KEYS.EVENTS);
-    const index = evts.findIndex(e => e.id === id);
-    if (index === -1) throw new Error('Evento no encontrado');
-
-    evts[index] = { ...evts[index], ...updatedData };
-    saveToStorage(KEYS.EVENTS, evts);
-    return evts[index];
+    return apiFetch<Evento>(`/api/events/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updatedData)
+    });
   },
 
   async delete(id: string): Promise<boolean> {
-    await delay();
-    const evts = getFromStorage<Evento>(KEYS.EVENTS);
-    const filtered = evts.filter(e => e.id !== id);
-    saveToStorage(KEYS.EVENTS, filtered);
+    await apiFetch<any>(`/api/events/${id}`, {
+      method: 'DELETE'
+    });
     return true;
   },
 
   // Obtener participantes registrados de un evento
   async getParticipants(eventoId: string): Promise<Usuario[]> {
-    await delay();
-    const tracking = getFromStorage<SeguimientoEvento>(KEYS.TRACKING);
-    const userIds = tracking.filter(t => t.eventoId === eventoId).map(t => t.usuarioId);
-    const users = getFromStorage<Usuario>(KEYS.USERS);
-    return users.filter(u => userIds.includes(u.id));
+    return apiFetch<Usuario[]>(`/api/events/${eventoId}/participants`);
   },
 
   // Inscribir voluntario en evento
   async registerParticipant(eventoId: string, usuarioId: string): Promise<boolean> {
-    await delay();
-    const tracking = getFromStorage<SeguimientoEvento>(KEYS.TRACKING);
-    const exists = tracking.some(t => t.eventoId === eventoId && t.usuarioId === usuarioId);
-    if (exists) return false;
-
-    tracking.push({
-      eventoId,
-      usuarioId,
-      fechaRegistro: new Date().toISOString().split('T')[0],
+    const res = await apiFetch<{ inscrito: boolean }>(`/api/events/${eventoId}/register`, {
+      method: 'POST',
+      body: JSON.stringify({ usuarioId })
     });
-    saveToStorage(KEYS.TRACKING, tracking);
-    return true;
+    return res.inscrito;
   },
 
   // Cancelar inscripción de voluntario
   async unregisterParticipant(eventoId: string, usuarioId: string): Promise<boolean> {
-    await delay();
-    const tracking = getFromStorage<SeguimientoEvento>(KEYS.TRACKING);
-    const filtered = tracking.filter(t => !(t.eventoId === eventoId && t.usuarioId === usuarioId));
-    saveToStorage(KEYS.TRACKING, filtered);
+    await apiFetch<any>(`/api/events/${eventoId}/unregister`, {
+      method: 'POST',
+      body: JSON.stringify({ usuarioId })
+    });
     return true;
   },
 
   // Obtener eventos en los que participa un usuario voluntario
   async getEventsByVolunteer(usuarioId: string): Promise<Evento[]> {
-    await delay();
-    const tracking = getFromStorage<SeguimientoEvento>(KEYS.TRACKING);
-    const eventIds = tracking.filter(t => t.usuarioId === usuarioId).map(t => t.eventoId);
-    const evts = getFromStorage<Evento>(KEYS.EVENTS);
-    return evts.filter(e => eventIds.includes(e.id));
+    return apiFetch<Evento[]>(`/api/events/volunteer/${usuarioId}`);
   }
 };
 
@@ -309,44 +221,36 @@ export const EventService = {
  */
 export const CategoryService = {
   async getAll(): Promise<Categoria[]> {
-    await delay();
-    return getFromStorage<Categoria>(KEYS.CATEGORIES);
+    return apiFetch<Categoria[]>('/api/categories');
   },
 
   async getById(id: string): Promise<Categoria | undefined> {
-    await delay();
-    const categories = getFromStorage<Categoria>(KEYS.CATEGORIES);
-    return categories.find(c => c.id === id);
+    try {
+      const cat = await apiFetch<Categoria>(`/api/categories/${id}`);
+      return cat || undefined;
+    } catch {
+      return undefined;
+    }
   },
 
   async create(cat: Omit<Categoria, 'id'>): Promise<Categoria> {
-    await delay();
-    const categories = getFromStorage<Categoria>(KEYS.CATEGORIES);
-    const newCat: Categoria = {
-      ...cat,
-      id: `cat_${Date.now()}`,
-    };
-    categories.push(newCat);
-    saveToStorage(KEYS.CATEGORIES, categories);
-    return newCat;
+    return apiFetch<Categoria>('/api/categories', {
+      method: 'POST',
+      body: JSON.stringify(cat)
+    });
   },
 
   async update(id: string, updatedData: Partial<Categoria>): Promise<Categoria> {
-    await delay();
-    const categories = getFromStorage<Categoria>(KEYS.CATEGORIES);
-    const index = categories.findIndex(c => c.id === id);
-    if (index === -1) throw new Error('Categoría no encontrada');
-
-    categories[index] = { ...categories[index], ...updatedData };
-    saveToStorage(KEYS.CATEGORIES, categories);
-    return categories[index];
+    return apiFetch<Categoria>(`/api/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updatedData)
+    });
   },
 
   async delete(id: string): Promise<boolean> {
-    await delay();
-    const categories = getFromStorage<Categoria>(KEYS.CATEGORIES);
-    const filtered = categories.filter(c => c.id !== id);
-    saveToStorage(KEYS.CATEGORIES, filtered);
+    await apiFetch<any>(`/api/categories/${id}`, {
+      method: 'DELETE'
+    });
     return true;
   }
 };
@@ -356,51 +260,40 @@ export const CategoryService = {
  */
 export const RequestService = {
   async getAll(): Promise<Solicitud[]> {
-    await delay();
-    return getFromStorage<Solicitud>(KEYS.REQUESTS);
+    return apiFetch<Solicitud[]>('/api/requests');
   },
 
   async getById(id: string): Promise<Solicitud | undefined> {
-    await delay();
-    const requests = getFromStorage<Solicitud>(KEYS.REQUESTS);
-    return requests.find(r => r.id === id);
+    try {
+      const req = await apiFetch<Solicitud>(`/api/requests/${id}`);
+      return req || undefined;
+    } catch {
+      return undefined;
+    }
   },
 
   async getByBeneficiary(beneficiarioId: string): Promise<Solicitud[]> {
-    await delay();
-    const requests = getFromStorage<Solicitud>(KEYS.REQUESTS);
-    return requests.filter(r => r.beneficiarioId === beneficiarioId);
+    return apiFetch<Solicitud[]>(`/api/requests/beneficiary/${beneficiarioId}`);
   },
 
   async create(req: Omit<Solicitud, 'id' | 'fecha'>): Promise<Solicitud> {
-    await delay();
-    const requests = getFromStorage<Solicitud>(KEYS.REQUESTS);
-    const newReq: Solicitud = {
-      ...req,
-      id: `sol_${Date.now()}`,
-      fecha: new Date().toISOString().split('T')[0],
-    };
-    requests.push(newReq);
-    saveToStorage(KEYS.REQUESTS, requests);
-    return newReq;
+    return apiFetch<Solicitud>('/api/requests', {
+      method: 'POST',
+      body: JSON.stringify(req)
+    });
   },
 
   async update(id: string, updatedData: Partial<Solicitud>): Promise<Solicitud> {
-    await delay();
-    const requests = getFromStorage<Solicitud>(KEYS.REQUESTS);
-    const index = requests.findIndex(r => r.id === id);
-    if (index === -1) throw new Error('Solicitud no encontrada');
-
-    requests[index] = { ...requests[index], ...updatedData };
-    saveToStorage(KEYS.REQUESTS, requests);
-    return requests[index];
+    return apiFetch<Solicitud>(`/api/requests/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updatedData)
+    });
   },
 
   async delete(id: string): Promise<boolean> {
-    await delay();
-    const requests = getFromStorage<Solicitud>(KEYS.REQUESTS);
-    const filtered = requests.filter(r => r.id !== id);
-    saveToStorage(KEYS.REQUESTS, filtered);
+    await apiFetch<any>(`/api/requests/${id}`, {
+      method: 'DELETE'
+    });
     return true;
   }
 };
@@ -408,131 +301,52 @@ export const RequestService = {
 /**
  * SERVICIOS DE DONACIÓN
  */
-export interface DonacionCompleta extends Donacion {
-  organizacionNombre?: string;
-  usuarioNombre?: string;
-  monetaria?: DonacionMonetaria;
-  objeto?: DonacionObjeto;
-}
-
 export const DonationService = {
   async getAll(): Promise<DonacionCompleta[]> {
-    await delay();
-    const donations = getFromStorage<Donacion>(KEYS.DONATIONS);
-    const monetary = getFromStorage<DonacionMonetaria>(KEYS.DONATIONS_MONETARY);
-    const objects = getFromStorage<DonacionObjeto>(KEYS.DONATIONS_OBJECTS);
-    const orgs = getFromStorage<Organizacion>(KEYS.ORGANIZATIONS);
-    const users = getFromStorage<Usuario>(KEYS.USERS);
-
-    return donations.map(d => {
-      const org = orgs.find(o => o.id === d.organizacionId);
-      const user = users.find(u => u.id === d.usuarioId);
-      const m = monetary.find(mon => mon.donacionId === d.id);
-      const o = objects.find(obj => obj.donacionId === d.id);
-
-      return {
-        ...d,
-        organizacionNombre: org ? org.nombre : 'Organización General',
-        usuarioNombre: user ? `${user.nombre1} ${user.apellido1}` : 'Donante Anónimo',
-        monetaria: m,
-        objeto: o,
-      };
-    });
+    return apiFetch<DonacionCompleta[]>('/api/donations');
   },
 
   async getById(id: string): Promise<DonacionCompleta | undefined> {
-    const list = await this.getAll();
-    return list.find(d => d.id === id);
+    try {
+      const d = await apiFetch<DonacionCompleta>(`/api/donations/${id}`);
+      return d || undefined;
+    } catch {
+      return undefined;
+    }
   },
 
   async getByVolunteer(usuarioId: string): Promise<DonacionCompleta[]> {
-    const list = await this.getAll();
-    return list.filter(d => d.usuarioId === usuarioId);
+    return apiFetch<DonacionCompleta[]>(`/api/donations/volunteer/${usuarioId}`);
   },
 
   async getByOrganization(organizacionId: string): Promise<DonacionCompleta[]> {
-    const list = await this.getAll();
-    return list.filter(d => d.organizacionId === organizacionId);
+    return apiFetch<DonacionCompleta[]>(`/api/donations/organization/${organizacionId}`);
   },
 
   async createMonetary(
     donation: Omit<Donacion, 'id' | 'fecha' | 'tipo'>,
     monetary: Omit<DonacionMonetaria, 'id' | 'donacionId'>
   ): Promise<DonacionCompleta> {
-    await delay();
-    const donations = getFromStorage<Donacion>(KEYS.DONATIONS);
-    const monetaryList = getFromStorage<DonacionMonetaria>(KEYS.DONATIONS_MONETARY);
-
-    const donationId = `don_${Date.now()}`;
-    const newDonation: Donacion = {
-      ...donation,
-      id: donationId,
-      tipo: 'monetaria',
-      fecha: new Date().toISOString().split('T')[0],
-    };
-
-    const newMonetary: DonacionMonetaria = {
-      ...monetary,
-      id: `dm_${Date.now()}`,
-      donacionId: donationId,
-    };
-
-    donations.push(newDonation);
-    monetaryList.push(newMonetary);
-
-    saveToStorage(KEYS.DONATIONS, donations);
-    saveToStorage(KEYS.DONATIONS_MONETARY, monetaryList);
-
-    return {
-      ...newDonation,
-      monetaria: newMonetary,
-    };
+    return apiFetch<DonacionCompleta>('/api/donations/monetary', {
+      method: 'POST',
+      body: JSON.stringify({ donation, monetary })
+    });
   },
 
   async createObject(
     donation: Omit<Donacion, 'id' | 'fecha' | 'tipo'>,
     objectDetail: Omit<DonacionObjeto, 'id' | 'donacionId'>
   ): Promise<DonacionCompleta> {
-    await delay();
-    const donations = getFromStorage<Donacion>(KEYS.DONATIONS);
-    const objectsList = getFromStorage<DonacionObjeto>(KEYS.DONATIONS_OBJECTS);
-
-    const donationId = `don_${Date.now()}`;
-    const newDonation: Donacion = {
-      ...donation,
-      id: donationId,
-      tipo: 'objeto',
-      fecha: new Date().toISOString().split('T')[0],
-    };
-
-    const newObject: DonacionObjeto = {
-      ...objectDetail,
-      id: `do_${Date.now()}`,
-      donacionId: donationId,
-    };
-
-    donations.push(newDonation);
-    objectsList.push(newObject);
-
-    saveToStorage(KEYS.DONATIONS, donations);
-    saveToStorage(KEYS.DONATIONS_OBJECTS, objectsList);
-
-    return {
-      ...newDonation,
-      objeto: newObject,
-    };
+    return apiFetch<DonacionCompleta>('/api/donations/object', {
+      method: 'POST',
+      body: JSON.stringify({ donation, objectDetail })
+    });
   },
 
   async delete(id: string): Promise<boolean> {
-    await delay();
-    const donations = getFromStorage<Donacion>(KEYS.DONATIONS);
-    const monetary = getFromStorage<DonacionMonetaria>(KEYS.DONATIONS_MONETARY);
-    const objects = getFromStorage<DonacionObjeto>(KEYS.DONATIONS_OBJECTS);
-
-    saveToStorage(KEYS.DONATIONS, donations.filter(d => d.id !== id));
-    saveToStorage(KEYS.DONATIONS_MONETARY, monetary.filter(m => m.donacionId !== id));
-    saveToStorage(KEYS.DONATIONS_OBJECTS, objects.filter(o => o.donacionId !== id));
-
+    await apiFetch<any>(`/api/donations/${id}`, {
+      method: 'DELETE'
+    });
     return true;
   }
 };

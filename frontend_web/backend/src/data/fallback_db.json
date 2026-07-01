@@ -1,0 +1,274 @@
+{
+  "categorias": [
+    {
+      "id_categoria": 1,
+      "nombre": "Alimentos",
+      "descripcion": "Donaciones de alimentos",
+      "estado": 1
+    },
+    {
+      "id_categoria": 2,
+      "nombre": "Educación",
+      "descripcion": "Apoyo educativo",
+      "estado": 1
+    },
+    {
+      "id_categoria": 3,
+      "nombre": "Salud",
+      "descripcion": "Campañas de salud",
+      "estado": 1
+    },
+    {
+      "id_categoria": 4,
+      "nombre": "Medio Ambiente",
+      "descripcion": "Reforestación de zonas verdes",
+      "estado": 1
+    },
+    {
+      "id_categoria": 5,
+      "nombre": "Económico",
+      "descripcion": "Aportaciones monetarias",
+      "estado": 1
+    }
+  ],
+  "usuarios": [
+    {
+      "id_usuario": 1,
+      "rol": "Admin",
+      "nombre1": "Administrador",
+      "apellido1": "General",
+      "correo": "admin@giveandgo.com",
+      "password": "$2b$10$nn4oWCmrKQwwU6ICafVkTO6nVDLtKpS26U0p/ThvCDQOyt9wEgZ6a",
+      "telefono": "+57 300 123 4567",
+      "estado": 1,
+      "fecha_registro": "2026-06-30T06:29:11.384Z"
+    },
+    {
+      "id_usuario": 2,
+      "rol": "Voluntario",
+      "nombre1": "Carlos",
+      "nombre2": "Andrés",
+      "apellido1": "Mendoza",
+      "apellido2": "Castro",
+      "correo": "carlos@volunteer.com",
+      "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
+      "telefono": "+57 310 987 6543",
+      "estado": 1,
+      "fecha_registro": "2026-06-30T06:29:11.385Z"
+    },
+    {
+      "id_usuario": 3,
+      "rol": "Voluntario",
+      "nombre1": "Sofía",
+      "apellido1": "Pérez",
+      "correo": "sofia@volunteer.com",
+      "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
+      "telefono": "+57 315 222 3333",
+      "estado": 1,
+      "fecha_registro": "2026-06-30T06:29:11.385Z"
+    },
+    {
+      "id_usuario": 4,
+      "rol": "Beneficiario",
+      "nombre1": "Juan",
+      "apellido1": "Gómez",
+      "correo": "juan@beneficiary.com",
+      "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
+      "telefono": "+57 320 444 5555",
+      "estado": 1,
+      "fecha_registro": "2026-06-30T06:29:11.385Z"
+    },
+    {
+      "id_usuario": 5,
+      "rol": "Beneficiario",
+      "nombre1": "María",
+      "apellido1": "Rodríguez",
+      "correo": "maria@beneficiary.com",
+      "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
+      "telefono": "+57 301 555 6666",
+      "estado": 1,
+      "fecha_registro": "2026-06-30T06:29:11.385Z"
+    },
+    {
+      "id_usuario": 101,
+      "rol": "Organizacion",
+      "nombre1": "Fundación Manos por Kennedy",
+      "apellido1": "Organización",
+      "correo": "contacto@manosporkennedy.org",
+      "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
+      "telefono": "+57 300 000 0000",
+      "estado": 1,
+      "fecha_registro": "2026-06-30T06:29:11.385Z"
+    },
+    {
+      "id_usuario": 102,
+      "rol": "Organizacion",
+      "nombre1": "Fundación Bogotá Solidaria",
+      "apellido1": "Organización",
+      "correo": "info@bogotasolidaria.org",
+      "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
+      "telefono": "+57 300 000 0000",
+      "estado": 1,
+      "fecha_registro": "2026-06-30T06:29:11.385Z"
+    },
+    {
+      "id_usuario": 103,
+      "rol": "Organizacion",
+      "nombre1": "Asociación Social Ciudad Kennedy",
+      "apellido1": "Organización",
+      "correo": "hola@ciudadkennedy.org",
+      "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
+      "telefono": "+57 300 000 0000",
+      "estado": 1,
+      "fecha_registro": "2026-06-30T06:29:11.386Z"
+    }
+  ],
+  "organizaciones": [
+    {
+      "id_organizacion": 1,
+      "nombre": "Fundación Manos por Kennedy",
+      "direccion": "Calle 38 Sur # 78-45, Kennedy Central, Bogotá D.C.",
+      "correo": "contacto@manosporkennedy.org",
+      "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
+      "telefono": "+57 300 000 0000",
+      "descripcion": "Institución comunitaria enfocada en brindar seguridad alimentaria en Kennedy.",
+      "estado": 1,
+      "fecha_registro": "2026-06-30T06:29:11.386Z"
+    },
+    {
+      "id_organizacion": 2,
+      "nombre": "Fundación Bogotá Solidaria",
+      "direccion": "Carrera 80 # 40B Sur-12, Castilla, Bogotá D.C.",
+      "correo": "info@bogotasolidaria.org",
+      "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
+      "telefono": "+57 300 000 0000",
+      "descripcion": "Fundación sin ánimo de lucro enfocada en desarrollo y asistencia a adultos mayores.",
+      "estado": 1,
+      "fecha_registro": "2026-06-30T06:29:11.386Z"
+    },
+    {
+      "id_organizacion": 3,
+      "nombre": "Asociación Social Ciudad Kennedy",
+      "direccion": "Avenida Ciudad de Cali # 13-08, Patio Bonito, Bogotá D.C.",
+      "correo": "hola@ciudadkennedy.org",
+      "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
+      "telefono": "+57 300 000 0000",
+      "descripcion": "Organización para la recuperación ambiental y el apoyo pedagógico.",
+      "estado": 1,
+      "fecha_registro": "2026-06-30T06:29:11.386Z"
+    }
+  ],
+  "eventos": [
+    {
+      "id_evento": 1,
+      "nombre": "Jornada de Donación en Kennedy Central",
+      "id_categoria": 1,
+      "descripcion": "Ayúdanos a clasificar y empaquetar alimentos recibidos para las familias vulnerables de la localidad de Kennedy en nuestro centro comunitario.",
+      "direccion": "Calle 38 Sur # 78-45, Kennedy Central",
+      "fecha": "2026-07-15T09:00:00Z",
+      "cupo": 50,
+      "estado": 1,
+      "organizacion_id": 1
+    },
+    {
+      "id_evento": 2,
+      "nombre": "Campaña Solidaria Patio Bonito",
+      "id_categoria": 2,
+      "descripcion": "Buscamos voluntarios para apoyar en el reforzamiento escolar y tutorías los fines de semana para niños del sector de Patio Bonito.",
+      "direccion": "Avenida Ciudad de Cali # 13-08",
+      "fecha": "2026-07-20T08:00:00Z",
+      "cupo": 20,
+      "estado": 1,
+      "organizacion_id": 1
+    },
+    {
+      "id_evento": 3,
+      "nombre": "Reforestación del Humedal El Burro",
+      "id_categoria": 4,
+      "descripcion": "Jornada de siembra de especies nativas y limpieza en el Humedal El Burro de Kennedy. ¡Trae ropa cómoda y guantes!",
+      "direccion": "Calle 8A con Carrera 82, Humedal El Burro",
+      "fecha": "2026-08-05T07:00:00Z",
+      "cupo": 100,
+      "estado": 1,
+      "organizacion_id": 3
+    },
+    {
+      "id_evento": 4,
+      "nombre": "Jornada Comunitaria Castilla",
+      "id_categoria": 3,
+      "descripcion": "Campaña de salud básica preventiva y entrega de kits de aseo para adultos mayores del barrio Castilla.",
+      "direccion": "Carrera 80 # 40B Sur-12, Castilla",
+      "fecha": "2026-06-30T09:00:00Z",
+      "cupo": 30,
+      "estado": 1,
+      "organizacion_id": 2
+    }
+  ],
+  "seguimiento_eventos": [],
+  "donaciones": [
+    {
+      "id_donacion": 1,
+      "categoria": "Económico",
+      "tipo": "Monetaria",
+      "fecha": "2026-06-22T10:00:00Z",
+      "usuario_id": 2,
+      "organizacion_id": 1,
+      "estado": 1,
+      "observaciones": "Donación para la compra de suministros alimentarios."
+    },
+    {
+      "id_donacion": 2,
+      "categoria": "Alimentos",
+      "tipo": "Objeto",
+      "fecha": "2026-06-24T15:30:00Z",
+      "usuario_id": 3,
+      "organizacion_id": 2,
+      "estado": 1,
+      "observaciones": "Aporte en especie para el asilo de Castilla."
+    }
+  ],
+  "donaciones_monetarias": [
+    {
+      "id": 1,
+      "metodo": "tarjeta",
+      "cuenta": "**** **** **** 4321",
+      "valor": 150000,
+      "donacion_id": 1
+    }
+  ],
+  "donaciones_objetos": [
+    {
+      "id": 1,
+      "categoria": "Alimentos",
+      "descripcion": "10 kg de arroz, 5 kg de legumbres y aceite vegetal",
+      "cantidad": 15,
+      "donacion_id": 2
+    }
+  ],
+  "solicitudes": [
+    {
+      "id_solicitud": 1,
+      "usuario_id": 4,
+      "titulo": "Apoyo alimentario en Patio Bonito",
+      "descripcion": "Solicito mercado básico no perecedero para mi núcleo familiar de 4 personas en el barrio Patio Bonito, Kennedy.",
+      "estado": "Pendiente",
+      "fecha": "2026-06-20T12:00:00Z"
+    },
+    {
+      "id_solicitud": 2,
+      "usuario_id": 5,
+      "titulo": "Útiles escolares en Castilla",
+      "descripcion": "Necesito cuadernos, lápices y útiles escolares para mis dos hijos de primaria en Castilla.",
+      "estado": "Aprobada",
+      "fecha": "2026-06-18T10:00:00Z"
+    },
+    {
+      "id_solicitud": 3,
+      "usuario_id": 4,
+      "titulo": "Kit de medicamentos esenciales",
+      "descripcion": "Solicitud de apoyo para adquirir medicamentos de control diario para un adulto mayor en el barrio Kennedy Central.",
+      "estado": "Rechazada",
+      "fecha": "2026-06-10T09:00:00Z"
+    }
+  ]
+}

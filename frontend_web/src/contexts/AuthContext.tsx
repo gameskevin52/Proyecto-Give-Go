@@ -28,6 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (e) {
         console.error('Error restaurando sesión', e);
         sessionStorage.removeItem('gg_session');
+        sessionStorage.removeItem('gg_token');
       }
     }
     setLoading(false);
@@ -36,23 +37,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (correo: string, password: string) => {
     try {
       setLoading(true);
-      const matchedUser = await UserService.getByEmail(correo);
+      const res = await UserService.login(correo, password);
 
-      if (!matchedUser) {
-        return { success: false, error: 'El correo electrónico no está registrado.' };
-      }
-
-      if (matchedUser.password !== password) {
-        return { success: false, error: 'La contraseña es incorrecta.' };
-      }
-
-      if (matchedUser.estado === 'inactivo') {
+      if (res.user.estado === 'inactivo') {
         return { success: false, error: 'Su cuenta está inactiva. Contacte al administrador.' };
       }
 
       // Guardar sesión en sessionStorage
-      sessionStorage.setItem('gg_session', JSON.stringify(matchedUser));
-      setUser(matchedUser);
+      sessionStorage.setItem('gg_session', JSON.stringify(res.user));
+      sessionStorage.setItem('gg_token', res.token);
+      setUser(res.user);
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message || 'Error al iniciar sesión' };
@@ -63,6 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     sessionStorage.removeItem('gg_session');
+    sessionStorage.removeItem('gg_token');
     setUser(null);
   };
 
@@ -74,14 +69,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: 'El correo ya está registrado por otro usuario.' };
       }
 
-      const newUser = await UserService.create({
-        ...userData,
-        estado: 'activo'
-      });
+      const res = await UserService.register(userData);
 
-      // Iniciar sesión automáticamente
-      sessionStorage.setItem('gg_session', JSON.stringify(newUser));
-      setUser(newUser);
+      // Iniciar sesión automáticamente con el token y el usuario devuelto
+      sessionStorage.setItem('gg_session', JSON.stringify(res.user));
+      sessionStorage.setItem('gg_token', res.token);
+      setUser(res.user);
       return { success: true };
     } catch (err: any) {
       return { success: false, error: err.message || 'Error al registrarse' };
@@ -106,11 +99,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password
       });
 
-      // Obtener el usuario que se acaba de crear automáticamente por detrás
-      const matchedUser = await UserService.getByEmail(correo);
-      if (matchedUser) {
-        sessionStorage.setItem('gg_session', JSON.stringify(matchedUser));
-        setUser(matchedUser);
+      // Iniciar sesión automáticamente
+      const loginRes = await login(correo, password);
+      if (!loginRes.success) {
+        return { success: false, error: 'Organización creada, pero falló el inicio de sesión automático: ' + loginRes.error };
       }
 
       return { success: true };

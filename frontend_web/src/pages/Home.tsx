@@ -17,29 +17,53 @@ export const Home: React.FC = () => {
 
   useEffect(() => {
     async function loadHomeData() {
-      const allUsers = await UserService.getAll();
-      const volunteers = allUsers.filter(u => u.rol === 'voluntario').length;
-      
-      const allOrgs = await OrganizationService.getAll();
-      const orgsCount = allOrgs.length;
+      try {
+        let volunteers = 0;
+        try {
+          volunteers = await UserService.getVolunteersCount();
+        } catch (e) {
+          console.error("Error fetching volunteers count:", e);
+        }
+        
+        let orgsCount = 0;
+        try {
+          const allOrgs = await OrganizationService.getAll();
+          orgsCount = allOrgs.length;
+        } catch (e) {
+          console.error("Error fetching organizations:", e);
+        }
 
-      const allEvents = await EventService.getAll();
-      const activeEvents = allEvents.filter(e => e.estado === 'activo').length;
+        let activeEvents = 0;
+        let allEvents: Evento[] = [];
+        try {
+          allEvents = await EventService.getAll();
+          activeEvents = allEvents.filter(e => e.estado === 'activo').length;
+        } catch (e) {
+          console.error("Error fetching events:", e);
+        }
 
-      const allDonations = await DonationService.getAll();
-      const totalMonetary = allDonations
-        .filter(d => d.tipo === 'monetaria' && d.monetaria)
-        .reduce((sum, d) => sum + (d.monetaria?.valor || 0), 0);
+        let totalMonetary = 0;
+        try {
+          const allDonations = await DonationService.getAll();
+          totalMonetary = allDonations
+            .filter(d => d.tipo === 'monetaria' && d.monetaria)
+            .reduce((sum, d) => sum + (d.monetaria?.valor || 0), 0);
+        } catch (e) {
+          console.error("Error fetching donations:", e);
+        }
 
-      setStats({
-        volunteers: volunteers + 15, // agregar algunos ficticios para volumen visual
-        organizations: orgsCount,
-        events: activeEvents,
-        donationsVal: totalMonetary + 5000000, // base visual + real
-      });
+        setStats({
+          volunteers: volunteers + 15, // agregar algunos ficticios para volumen visual
+          organizations: orgsCount,
+          events: activeEvents,
+          donationsVal: totalMonetary + 5000000, // base visual + real
+        });
 
-      // Primeros 3 eventos activos
-      setFeaturedEvents(allEvents.filter(e => e.estado === 'activo').slice(0, 3));
+        // Primeros 3 eventos activos
+        setFeaturedEvents(allEvents.filter(e => e.estado === 'activo').slice(0, 3));
+      } catch (err) {
+        console.error("Error loading home data:", err);
+      }
     }
     loadHomeData();
   }, []);
