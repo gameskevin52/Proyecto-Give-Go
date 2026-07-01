@@ -18,10 +18,10 @@ router.get('/by-email/:email', UserController.getByEmail);
 router.get('/stats/volunteers-count', UserController.getVolunteersCount);
 
 // CRUD de Usuarios Administrativos (Admin)
-router.get('/', authenticateJWT, authorizeRoles('Admin'), UserController.getAll);
+router.get('/', authenticateJWT, UserController.getAll);
 router.get('/:id', authenticateJWT, UserController.getById);
 router.post('/', authenticateJWT, authorizeRoles('Admin'), UserController.create);
 router.put('/:id', authenticateJWT, UserController.update);
-router.delete('/:id', authenticateJWT, authorizeRoles('Admin'), UserController.delete);
+router.delete('/:id', authenticateJWT, UserController.delete);
 
 export default router;

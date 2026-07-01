@@ -348,5 +348,27 @@ export const DonationService = {
       method: 'DELETE'
     });
     return true;
+  },
+
+  async updateMonetary(
+    id: string,
+    donation?: Partial<Donacion>,
+    monetary?: Partial<DonacionMonetaria>
+  ): Promise<DonacionCompleta> {
+    return apiFetch<DonacionCompleta>(`/api/donations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ donation, monetary })
+    });
+  },
+
+  async updateObject(
+    id: string,
+    donation?: Partial<Donacion>,
+    objectDetail?: Partial<DonacionObjeto>
+  ): Promise<DonacionCompleta> {
+    return apiFetch<DonacionCompleta>(`/api/donations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ donation, objectDetail })
+    });
   }
 };

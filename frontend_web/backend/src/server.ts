@@ -5,6 +5,7 @@ import { initDB } from './config/db';
 import { createServer as createViteServer } from 'vite';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
+const HOST = process.env.HOST || '0.0.0.0';
 
 async function startServer() {
   // 1. Inicializar Base de Datos (con auto-fallback si no se detecta MySQL activo)
@@ -28,11 +29,13 @@ async function startServer() {
     });
   }
 
-  // 3. Escuchar en Host 0.0.0.0 y puerto 3000 (obligatorio en Cloud Run / contenedores sandboxed)
-  app.listen(PORT, '0.0.0.0', () => {
+  // 3. Escuchar en el host y puerto configurados para desarrollo o contenedores
+  app.listen(PORT, HOST, () => {
+    const displayHost = HOST === '0.0.0.0' ? 'localhost' : HOST;
     console.log(`🚀 Servidor Give&Go iniciado correctamente.`);
-    console.log(`👉 Backend API: http://localhost:${PORT}/api`);
-    console.log(`👉 Frontend App: http://localhost:${PORT}`);
+    console.log(`👉 Backend API: http://${displayHost}:${PORT}/api`);
+    console.log(`👉 Frontend App: http://${displayHost}:${PORT}`);
+    console.log(`👉 Para Postman usa: http://${displayHost}:${PORT}/api/health`);
   });
 }
 

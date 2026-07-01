@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { OrganizacionModel, OrganizacionDB } from '../models/organizacionModel';
 import { UsuarioModel } from '../models/usuarioModel';
-import { hashPassword } from '../utils/auth';
+import { comparePassword, generateToken, hashPassword } from '../utils/auth';
 
 const mapOrgToFrontend = (org: OrganizacionDB) => {
   return {
@@ -15,6 +15,73 @@ const mapOrgToFrontend = (org: OrganizacionDB) => {
 };
 
 export const OrganizationController = {
+  async login(req: Request, res: Response) {
+    try {
+      const { correo, password } = req.body;
+
+      if (!correo || !password) {
+        return res.status(400).json({
+          success: false,
+          message: 'El correo y la contraseña son obligatorios.',
+          errors: []
+        });
+      }
+
+      const org = await OrganizacionModel.getByEmail(correo);
+      if (!org) {
+        return res.status(404).json({
+          success: false,
+          message: 'El correo electrónico no está registrado como organización.',
+          errors: []
+        });
+      }
+
+      if (org.estado === 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'La organización está inactiva.',
+          errors: []
+        });
+      }
+
+      const isMatch = await comparePassword(password, org.password || '');
+      if (!isMatch) {
+        return res.status(401).json({
+          success: false,
+          message: 'La contraseña es incorrecta.',
+          errors: []
+        });
+      }
+
+      const token = generateToken({
+        id: org.id_organizacion,
+        rol: 'Organizacion',
+        correo: org.correo
+      });
+
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Sesión iniciada correctamente.',
+        data: {
+          organization: mapOrgToFrontend(org),
+          token
+        }
+      });
+    } catch (err: any) {
+      return res.status(500).json({
+        success: false,
+        message: err.message || 'Error al iniciar sesión.',
+        errors: []
+      });
+    }
+  },
+
   async getAll(req: Request, res: Response) {
     try {
       const orgs = await OrganizacionModel.getAll();
