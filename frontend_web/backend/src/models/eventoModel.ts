@@ -8,8 +8,21 @@ export interface EventoDB {
   direccion?: string;
   fecha: string;
   cupo?: number;
+  vacantes_voluntarios?: number;
+  vacantes_beneficiarios?: number;
+  ayuda_ofrecida?: string;
   estado: number; // 1 = activo, 2 = finalizado, 0 = cancelado
   organizacion_id: number;
+  barrio?: string;
+  localidad?: string;
+  ciudad?: string;
+  departamento?: string;
+  pais?: string;
+  punto_referencia?: string;
+  nombre_lugar?: string;
+  latitud?: number;
+  longitud?: number;
+  imagen?: string;
 }
 
 export const EventoModel = {
@@ -66,9 +79,33 @@ export const EventoModel = {
     const estado = data.estado !== undefined ? data.estado : 1;
     if (db.isMySQLConnected()) {
       const [result] = await db.query(
-        `INSERT INTO eventos (nombre, id_categoria, descripcion, direccion, fecha, cupo, estado, organizacion_id) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [data.nombre, data.id_categoria, data.descripcion || null, data.direccion || null, data.fecha, data.cupo || 0, estado, data.organizacion_id]
+        `INSERT INTO eventos (
+          nombre, id_categoria, descripcion, direccion, fecha, cupo, vacantes_voluntarios, vacantes_beneficiarios, ayuda_ofrecida, estado, organizacion_id,
+          barrio, localidad, ciudad, departamento, pais, punto_referencia, nombre_lugar, latitud, longitud, imagen
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          data.nombre,
+          data.id_categoria,
+          data.descripcion || null,
+          data.direccion || null,
+          data.fecha,
+          data.cupo || 0,
+          data.vacantes_voluntarios || 0,
+          data.vacantes_beneficiarios || 0,
+          data.ayuda_ofrecida || null,
+          estado,
+          data.organizacion_id,
+          data.barrio || null,
+          data.localidad || null,
+          data.ciudad || 'Bogotá',
+          data.departamento || 'Bogotá D.C.',
+          data.pais || 'Colombia',
+          data.punto_referencia || null,
+          data.nombre_lugar || null,
+          data.latitud !== undefined ? data.latitud : null,
+          data.longitud !== undefined ? data.longitud : null,
+          data.imagen || null
+        ]
       );
       return (result as any).insertId;
     } else {
@@ -82,8 +119,21 @@ export const EventoModel = {
         direccion: data.direccion || '',
         fecha: data.fecha,
         cupo: data.cupo || 0,
+        vacantes_voluntarios: data.vacantes_voluntarios || 0,
+        vacantes_beneficiarios: data.vacantes_beneficiarios || 0,
+        ayuda_ofrecida: data.ayuda_ofrecida || '',
         estado,
-        organizacion_id: data.organizacion_id
+        organizacion_id: data.organizacion_id,
+        barrio: data.barrio || '',
+        localidad: data.localidad || '',
+        ciudad: data.ciudad || 'Bogotá',
+        departamento: data.departamento || 'Bogotá D.C.',
+        pais: data.pais || 'Colombia',
+        punto_referencia: data.punto_referencia || '',
+        nombre_lugar: data.nombre_lugar || '',
+        latitud: data.latitud !== undefined ? data.latitud : null,
+        longitud: data.longitud !== undefined ? data.longitud : null,
+        imagen: data.imagen || ''
       };
       evts.push(newEvt);
       db.saveFallbackData();

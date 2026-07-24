@@ -6,7 +6,9 @@ import {
   DonacionMonetaria, 
   DonacionObjeto, 
   Categoria, 
-  Solicitud 
+  Solicitud,
+  Postulacion,
+  SolicitudVerificacion
 } from '../types';
 
 /**
@@ -34,16 +36,25 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
   });
 
   const result = await response.json();
-  if (!result.success) {
-    throw new Error(result.message || 'Error en la petición API');
+  if (!result || !result.success) {
+    throw new Error(result?.message || 'Error en la petición API');
   }
-  return result.data;
+  return result.data !== undefined ? result.data : result;
 }
 
 /**
  * SERVICIOS DE USUARIO
  */
 export const UserService = {
+  async getPublicProfile(id: string): Promise<import('../types').PublicProfileData | undefined> {
+    try {
+      return await apiFetch<import('../types').PublicProfileData>(`/api/users/public/${id}`);
+    } catch (e) {
+      console.error('Error fetching public profile:', e);
+      return undefined;
+    }
+  },
+
   async getAll(): Promise<Usuario[]> {
     return apiFetch<Usuario[]>('/api/users');
   },
@@ -107,6 +118,13 @@ export const UserService = {
       method: 'DELETE'
     });
     return true;
+  },
+
+  async forgotPassword(correo: string, nuevaPassword?: string): Promise<{ correo: string; verified?: boolean }> {
+    return apiFetch<{ correo: string; verified?: boolean }>('/api/users/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ correo, nuevaPassword })
+    });
   }
 };
 
@@ -146,6 +164,46 @@ export const OrganizationService = {
       method: 'DELETE'
     });
     return true;
+  }
+};
+
+/**
+ * SERVICIOS DE VERIFICACIÓN DE ORGANIZACIONES
+ */
+export const VerificationService = {
+  async getAllRequests(): Promise<SolicitudVerificacion[]> {
+    return apiFetch<SolicitudVerificacion[]>('/api/verifications');
+  },
+
+  async getOrgStatus(orgId: string): Promise<{
+    verificada: boolean;
+    estadoVerificacion: 'no_solicitado' | 'pendiente' | 'aprobada' | 'rechazada';
+    activeRequest?: SolicitudVerificacion;
+  }> {
+    return apiFetch<{
+      verificada: boolean;
+      estadoVerificacion: 'no_solicitado' | 'pendiente' | 'aprobada' | 'rechazada';
+      activeRequest?: SolicitudVerificacion;
+    }>(`/api/verifications/org/${orgId}`);
+  },
+
+  async requestVerification(data: {
+    organizacionId: string;
+    nit?: string;
+    mensaje?: string;
+    documentos?: string;
+  }): Promise<SolicitudVerificacion> {
+    return apiFetch<SolicitudVerificacion>('/api/verifications/request', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async respondRequest(id: string, estado: 'aprobada' | 'rechazada', respuestaAdmin?: string): Promise<SolicitudVerificacion> {
+    return apiFetch<SolicitudVerificacion>(`/api/verifications/${id}/respond`, {
+      method: 'PUT',
+      body: JSON.stringify({ estado, respuestaAdmin })
+    });
   }
 };
 
@@ -348,27 +406,112 @@ export const DonationService = {
       method: 'DELETE'
     });
     return true;
-  },
-
-  async updateMonetary(
-    id: string,
-    donation?: Partial<Donacion>,
-    monetary?: Partial<DonacionMonetaria>
-  ): Promise<DonacionCompleta> {
-    return apiFetch<DonacionCompleta>(`/api/donations/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ donation, monetary })
-    });
-  },
-
-  async updateObject(
-    id: string,
-    donation?: Partial<Donacion>,
-    objectDetail?: Partial<DonacionObjeto>
-  ): Promise<DonacionCompleta> {
-    return apiFetch<DonacionCompleta>(`/api/donations/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ donation, objectDetail })
-    });
   }
 };
+
+/**
+ * SERVICIOS DE AUDITORÍA (AUDIT LOGS)
+ */
+export interface AuditLog {
+  id_audit?: number;
+  fecha: string;
+  accion: string;
+  id_usuario: number;
+  nombre_usuario: string;
+  rol_usuario: string;
+}
+
+export const AuditService = {
+  async getAll(): Promise<AuditLog[]> {
+    try {
+      return await apiFetch<AuditLog[]>('/api/audits');
+    } catch (e) {
+      console.error('Error fetching audit logs:', e);
+      return [];
+    }
+  }
+};
+
+/**
+ * SERVICIOS DE POSTULACIONES A EVENTOS (NUEVO MODELO DE EVENTOS Y BENEFICIARIOS)
+ */
+export const PostulacionService = {
+  async getAll(): Promise<Postulacion[]> {
+    return apiFetch<Postulacion[]>('/api/postulaciones');
+  },
+
+  async getByUser(usuarioId: string, tipo?: 'voluntario' | 'beneficiario'): Promise<Postulacion[]> {
+    const cleanId = String(usuarioId).replace('usr_', '').replace('org_', '');
+    const url = `/api/postulaciones/usuario/${cleanId}${tipo ? `?tipo=${tipo}` : ''}`;
+    return apiFetch<Postulacion[]>(url);
+  },
+
+  async getByEvent(eventoId: string, tipo?: 'voluntario' | 'beneficiario'): Promise<Postulacion[]> {
+    const cleanId = String(eventoId).replace('evt_', '');
+    const url = `/api/postulaciones/evento/${cleanId}${tipo ? `?tipo=${tipo}` : ''}`;
+    return apiFetch<Postulacion[]>(url);
+  },
+
+  async getByOrganization(organizacionId: string, tipo?: 'voluntario' | 'beneficiario'): Promise<Postulacion[]> {
+    const cleanId = String(organizacionId).replace('org_', '');
+    const url = `/api/postulaciones/organizacion/${cleanId}${tipo ? `?tipo=${tipo}` : ''}`;
+    return apiFetch<Postulacion[]>(url);
+  },
+
+  async create(data: {
+    id_evento: number | string;
+    id_usuario: number | string;
+    tipo_postulacion: 'voluntario' | 'beneficiario';
+    observaciones?: string;
+  }): Promise<{ success: boolean; id?: number; message?: string }> {
+    try {
+      const cleanData = {
+        ...data,
+        id_evento: String(data.id_evento).replace('evt_', ''),
+        id_usuario: String(data.id_usuario).replace('usr_', '').replace('org_', '')
+      };
+      const res = await apiFetch<any>('/api/postulaciones', {
+        method: 'POST',
+        body: JSON.stringify(cleanData)
+      });
+      return {
+        success: true,
+        id: res?.id || res?.data?.id,
+        message: 'Postulación registrada exitosamente.'
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err.message || 'Error al registrar la postulación.'
+      };
+    }
+  },
+
+  async updateStatus(
+    id: number | string,
+    estado_postulacion: 'pendiente' | 'aprobado' | 'rechazado' | 'confirmado' | 'cancelado',
+    observaciones?: string
+  ): Promise<boolean> {
+    try {
+      await apiFetch<any>(`/api/postulaciones/${id}/estado`, {
+        method: 'PUT',
+        body: JSON.stringify({ estado_postulacion, observaciones })
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async delete(id: number | string): Promise<boolean> {
+    try {
+      await apiFetch<any>(`/api/postulaciones/${id}`, {
+        method: 'DELETE'
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+};
+

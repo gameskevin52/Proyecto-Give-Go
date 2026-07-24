@@ -40,7 +40,7 @@ export const formatDate = (dateStr: string): string => {
  * ==========================================
  */
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost' | 'white';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
 }
@@ -54,20 +54,21 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const baseStyle = 'inline-flex items-center justify-center font-bold uppercase tracking-wider rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs cursor-pointer';
+  const baseStyle = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
   
   const variants = {
-    primary: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-sm shadow-red-100',
-    secondary: 'bg-neutral-900 hover:bg-black text-white focus:ring-neutral-900',
-    danger: 'bg-red-700 hover:bg-red-800 text-white focus:ring-red-700',
-    outline: 'border border-neutral-250 hover:bg-neutral-50 text-neutral-800 focus:ring-neutral-500 bg-white',
-    ghost: 'hover:bg-neutral-50 text-neutral-700 focus:ring-neutral-500',
+    primary: 'bg-brand hover:bg-brand-hover text-white focus:ring-brand shadow-xs shadow-brand/25',
+    secondary: 'bg-neutral-900 hover:bg-neutral-950 text-white focus:ring-neutral-900 shadow-xs',
+    danger: 'bg-brand-error hover:bg-red-600 text-white focus:ring-brand-error shadow-xs',
+    outline: 'border border-neutral-200 hover:bg-neutral-50 hover:border-neutral-300 text-neutral-800 focus:ring-neutral-500 bg-white shadow-xs',
+    ghost: 'hover:bg-neutral-100 text-neutral-700 focus:ring-neutral-500',
+    white: 'bg-white hover:bg-neutral-100 text-neutral-950 focus:ring-white shadow-xs border border-neutral-200/80',
   };
 
   const sizes = {
-    sm: 'px-3.5 py-1.5 text-[10px]',
+    sm: 'px-4 py-2 text-xs',
     md: 'px-5 py-2.5 text-xs',
-    lg: 'px-7 py-3 text-sm',
+    lg: 'px-6 py-3.5 text-sm',
   };
 
   return (
@@ -76,7 +77,7 @@ export const Button: React.FC<ButtonProps> = ({
       className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
-      {isLoading && <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin shrink-0" />}
+      {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />}
       {children}
     </button>
   );
@@ -97,19 +98,19 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full mb-4">
         {label && (
-          <label className="block text-[10px] font-extrabold text-neutral-500 uppercase tracking-widest mb-1.5 select-none">
+          <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5 select-none">
             {label}
           </label>
         )}
         <input
           ref={ref}
           type={type}
-          className={`w-full px-4 py-2.5 border text-sm rounded-lg bg-white text-neutral-950 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 transition-all duration-150 ${
-            error ? 'border-red-600 focus:ring-red-600' : 'border-neutral-250'
+          className={`w-full px-4 py-3 border text-sm rounded-xl bg-white text-neutral-950 placeholder-neutral-400 focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all duration-150 ${
+            error ? 'border-brand-error focus:ring-brand-error/10' : 'border-neutral-200 hover:border-neutral-300'
           } ${className}`}
           {...props}
         />
-        {error && <p className="mt-1.5 text-xs text-red-600 font-bold">{error}</p>}
+        {error && <p className="mt-1.5 text-xs text-brand-error font-medium">{error}</p>}
       </div>
     );
   }
@@ -132,19 +133,19 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full mb-4">
         {label && (
-          <label className="block text-[10px] font-extrabold text-neutral-500 uppercase tracking-widest mb-1.5 select-none">
+          <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5 select-none">
             {label}
           </label>
         )}
         <textarea
           ref={ref}
           rows={rows}
-          className={`w-full px-4 py-2.5 border text-sm rounded-lg bg-white text-neutral-950 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 transition-all duration-150 ${
-            error ? 'border-red-600 focus:ring-red-600' : 'border-neutral-250'
+          className={`w-full px-4 py-3 border text-sm rounded-xl bg-white text-neutral-950 placeholder-neutral-400 focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all duration-150 ${
+            error ? 'border-brand-error focus:ring-brand-error/10' : 'border-neutral-200 hover:border-neutral-300'
           } ${className}`}
           {...props}
         />
-        {error && <p className="mt-1.5 text-xs text-red-600 font-bold">{error}</p>}
+        {error && <p className="mt-1.5 text-xs text-brand-error font-medium">{error}</p>}
       </div>
     );
   }
@@ -168,14 +169,14 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="w-full mb-4">
         {label && (
-          <label className="block text-[10px] font-extrabold text-neutral-500 uppercase tracking-widest mb-1.5 select-none">
+          <label className="block text-xs font-semibold text-neutral-700 uppercase tracking-wider mb-1.5 select-none">
             {label}
           </label>
         )}
         <select
           ref={ref}
-          className={`w-full px-4 py-2.5 border text-sm rounded-lg bg-white text-neutral-950 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 transition-all duration-150 cursor-pointer ${
-            error ? 'border-red-600 focus:ring-red-600' : 'border-neutral-250'
+          className={`w-full px-4 py-3 border text-sm rounded-xl bg-white text-neutral-950 focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all duration-150 cursor-pointer ${
+            error ? 'border-brand-error focus:ring-brand-error/10' : 'border-neutral-200 hover:border-neutral-300'
           } ${className}`}
           {...props}
         >
@@ -185,7 +186,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             </option>
           ))}
         </select>
-        {error && <p className="mt-1.5 text-xs text-red-600 font-bold">{error}</p>}
+        {error && <p className="mt-1.5 text-xs text-brand-error font-medium">{error}</p>}
       </div>
     );
   }
@@ -211,12 +212,12 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           <input
             ref={ref}
             type="checkbox"
-            className={`w-4 h-4 text-red-600 border-neutral-300 rounded focus:ring-red-500/20 cursor-pointer ${className}`}
+            className={`w-4 h-4 text-brand border-neutral-300 rounded focus:ring-brand/20 cursor-pointer accent-brand ${className}`}
             {...props}
           />
-          <span className="ml-2.5 text-xs text-neutral-700 font-semibold">{label}</span>
+          <span className="ml-2.5 text-xs text-neutral-700 font-medium">{label}</span>
         </label>
-        {error && <p className="mt-1 text-xs text-red-600 font-bold">{error}</p>}
+        {error && <p className="mt-1 text-xs text-brand-error font-medium">{error}</p>}
       </div>
     );
   }
@@ -242,12 +243,12 @@ export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
           <input
             ref={ref}
             type="radio"
-            className={`w-4 h-4 text-red-600 border-neutral-300 focus:ring-red-500/20 cursor-pointer ${className}`}
+            className={`w-4 h-4 text-brand border-neutral-300 focus:ring-brand/20 cursor-pointer accent-brand ${className}`}
             {...props}
           />
-          <span className="ml-2.5 text-xs text-neutral-700 font-semibold">{label}</span>
+          <span className="ml-2.5 text-xs text-neutral-700 font-medium">{label}</span>
         </label>
-        {error && <p className="mt-1 text-xs text-red-600 font-bold">{error}</p>}
+        {error && <p className="mt-1 text-xs text-brand-error font-medium">{error}</p>}
       </div>
     );
   }
@@ -278,18 +279,18 @@ export const Card: React.FC<CardProps> = ({
   footer,
 }) => {
   return (
-    <div className={`bg-white border border-neutral-200/80 rounded-xl shadow-xs overflow-hidden ${className}`}>
+    <div className={`bg-white border border-neutral-200/60 rounded-[18px] shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden ${className}`}>
       {(title || subtitle || headerAction) && (
-        <div className="px-6 py-4.5 border-b border-neutral-100 flex items-center justify-between bg-white">
+        <div className="px-6 py-5 border-b border-neutral-100 flex items-center justify-between bg-white">
           <div>
-            {title && <h3 className="text-xs font-black uppercase tracking-widest text-neutral-900">{title}</h3>}
-            {subtitle && <p className="text-[10px] text-neutral-500 font-medium uppercase mt-0.5">{subtitle}</p>}
+            {title && <h3 className="text-sm font-bold text-neutral-900 tracking-tight">{title}</h3>}
+            {subtitle && <p className="text-xs text-neutral-500 font-medium mt-0.5">{subtitle}</p>}
           </div>
           {headerAction && <div className="shrink-0">{headerAction}</div>}
         </div>
       )}
-      <div className="px-6 py-5">{children}</div>
-      {footer && <div className="px-6 py-3.5 bg-neutral-50/50 border-t border-neutral-100 flex justify-end gap-2">{footer}</div>}
+      <div className="px-6 py-6">{children}</div>
+      {footer && <div className="px-6 py-4 bg-neutral-50/40 border-t border-neutral-100 flex justify-end items-center gap-2">{footer}</div>}
     </div>
   );
 };
@@ -327,18 +328,18 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-neutral-900/40 backdrop-blur-xs" onClick={onClose} />
+      <div className="absolute inset-0 bg-neutral-900/50 backdrop-blur-md" onClick={onClose} />
       
       {/* Content */}
-      <div className={`relative bg-white border border-neutral-200 rounded-xl shadow-xl w-full ${sizeClasses[size]} z-10 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in-50 zoom-in-95 duration-150`}>
-        <div className="px-6 py-4.5 border-b border-neutral-100 flex items-center justify-between">
-          <h3 className="text-xs font-black uppercase tracking-widest text-neutral-900">{title}</h3>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700 transition-colors">
+      <div className={`relative bg-white border border-neutral-200 rounded-[20px] shadow-xl w-full ${sizeClasses[size]} z-10 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in-50 zoom-in-95 duration-200`}>
+        <div className="px-6 py-5 border-b border-neutral-100 flex items-center justify-between bg-white">
+          <h3 className="text-sm font-bold text-neutral-900">{title}</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-neutral-150 text-neutral-400 hover:text-neutral-700 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="px-6 py-5 overflow-y-auto flex-1">{children}</div>
-        {footer && <div className="px-6 py-3.5 bg-neutral-50 border-t border-neutral-100 flex justify-end gap-2">{footer}</div>}
+        <div className="px-6 py-6 overflow-y-auto flex-1 bg-white">{children}</div>
+        {footer && <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-100 flex justify-end gap-2">{footer}</div>}
       </div>
     </div>
   );
@@ -352,14 +353,14 @@ export const Modal: React.FC<ModalProps> = ({
 export const Loader: React.FC<{ fullScreen?: boolean }> = ({ fullScreen = false }) => {
   const content = (
     <div className="flex flex-col items-center justify-center p-8 select-none">
-      <Loader2 className="w-9 h-9 text-red-600 animate-spin" />
-      <span className="mt-3 text-[10px] font-extrabold uppercase tracking-widest text-neutral-500">Cargando Give&amp;Go...</span>
+      <Loader2 className="w-9 h-9 text-brand animate-spin" />
+      <span className="mt-3 text-[11px] font-bold uppercase tracking-wider text-neutral-500">Cargando Give&amp;Go...</span>
     </div>
   );
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-white/90 backdrop-blur-xs flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-white/95 backdrop-blur-md flex items-center justify-center z-50">
         {content}
       </div>
     );
@@ -381,21 +382,21 @@ interface AlertProps {
 
 export const Alert: React.FC<AlertProps> = ({ type = 'info', message, className = '' }) => {
   const styles = {
-    success: 'bg-green-50 border-green-150 text-green-800 rounded-lg',
-    danger: 'bg-red-50 border-red-150 text-red-800 rounded-lg',
-    info: 'bg-neutral-50 border-neutral-150 text-neutral-800 rounded-lg',
+    success: 'bg-green-50 border-green-200 text-green-800 rounded-xl',
+    danger: 'bg-red-50 border-red-200 text-brand-error rounded-xl',
+    info: 'bg-neutral-50 border-neutral-200 text-neutral-800 rounded-xl',
   };
 
   const icons = {
-    success: <CheckCircle className="w-4 h-4 text-green-600 mr-2.5 shrink-0" />,
-    danger: <AlertCircle className="w-4 h-4 text-red-600 mr-2.5 shrink-0" />,
+    success: <CheckCircle className="w-4 h-4 text-brand-success mr-2.5 shrink-0" />,
+    danger: <AlertCircle className="w-4 h-4 text-brand-error mr-2.5 shrink-0" />,
     info: <Info className="w-4 h-4 text-neutral-500 mr-2.5 shrink-0" />,
   };
 
   return (
     <div className={`p-4 border flex items-start ${styles[type]} ${className}`}>
       <div className="mt-0.5">{icons[type]}</div>
-      <span className="text-xs font-semibold leading-relaxed">{message}</span>
+      <span className="text-xs font-medium leading-relaxed">{message}</span>
     </div>
   );
 };
@@ -430,10 +431,10 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-neutral-900/40 backdrop-blur-xs" onClick={onClose} />
-      <div className="relative bg-white border border-neutral-200 rounded-xl shadow-xl w-full max-w-sm z-10 p-6 animate-in fade-in-50 zoom-in-95 duration-150">
-        <h3 className="text-xs font-black uppercase tracking-widest text-neutral-900 mb-2">{title}</h3>
-        <p className="text-xs font-semibold text-neutral-500 leading-relaxed mb-6">{message}</p>
+      <div className="absolute inset-0 bg-neutral-900/50 backdrop-blur-md" onClick={onClose} />
+      <div className="relative bg-white border border-neutral-200 rounded-2xl shadow-xl w-full max-w-sm z-10 p-6 animate-in fade-in-50 zoom-in-95 duration-200">
+        <h3 className="text-sm font-bold text-neutral-900 mb-2">{title}</h3>
+        <p className="text-xs text-neutral-500 leading-relaxed mb-6 font-medium">{message}</p>
         <div className="flex justify-end gap-2.5">
           <Button variant="outline" size="sm" onClick={onClose}>
             {cancelText}
@@ -475,7 +476,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       >
         Anterior
       </Button>
-      <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider px-3 bg-neutral-100 py-1.5 rounded-md">
+      <span className="text-xs font-semibold text-neutral-600 px-3 bg-neutral-100 py-1.5 rounded-lg">
         Pág {currentPage} de {totalPages}
       </span>
       <Button
@@ -516,7 +517,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="block w-full pl-10 pr-4 py-2.5 border border-neutral-250 rounded-lg text-sm bg-white text-neutral-950 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 transition-all duration-150"
+        className="block w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-xl text-sm bg-white text-neutral-950 placeholder-neutral-400 focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all duration-150"
       />
     </div>
   );
@@ -535,12 +536,12 @@ interface TableProps<T> {
 
 export const Table = <T,>({ headers, data, renderRow }: TableProps<T>) => {
   return (
-    <div className="w-full overflow-x-auto border border-neutral-200/80 rounded-xl shadow-xs bg-white">
+    <div className="w-full overflow-x-auto border border-neutral-200/60 rounded-2xl shadow-xs bg-white">
       <table className="min-w-full divide-y divide-neutral-150 text-left text-xs text-neutral-700 bg-white">
-        <thead className="bg-neutral-50/75 text-[10px] font-extrabold text-neutral-500 uppercase tracking-widest">
+        <thead className="bg-neutral-50/75 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
           <tr>
             {headers.map((h, i) => (
-              <th key={i} className="px-6 py-4 font-extrabold select-none">
+              <th key={i} className="px-6 py-4 font-semibold select-none">
                 {h}
               </th>
             ))}
@@ -549,7 +550,7 @@ export const Table = <T,>({ headers, data, renderRow }: TableProps<T>) => {
         <tbody className="divide-y divide-neutral-150 text-neutral-800">
           {data.length === 0 ? (
             <tr>
-              <td colSpan={headers.length} className="px-6 py-10 text-center text-neutral-400 font-semibold select-none uppercase tracking-wider text-[10px]">
+              <td colSpan={headers.length} className="px-6 py-10 text-center text-neutral-400 font-medium select-none uppercase tracking-wider text-[11px]">
                 No hay registros disponibles.
               </td>
             </tr>
@@ -575,14 +576,14 @@ interface BadgeProps {
 export const Badge: React.FC<BadgeProps> = ({ children, variant = 'neutral' }) => {
   const styles = {
     success: 'bg-green-50 text-green-700 border-green-200',
-    danger: 'bg-red-50 text-red-700 border-red-200',
+    danger: 'bg-red-50 text-brand border-red-200',
     info: 'bg-blue-50 text-blue-700 border-blue-200',
     warning: 'bg-amber-50 text-amber-700 border-amber-200',
-    neutral: 'bg-neutral-50 text-neutral-600 border-neutral-200',
+    neutral: 'bg-neutral-100 text-neutral-600 border-neutral-200',
   };
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-widest border ${styles[variant]} select-none`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${styles[variant]} select-none`}>
       {children}
     </span>
   );
@@ -609,14 +610,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   icon,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed border-neutral-200 rounded-xl bg-white select-none">
+    <div className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed border-neutral-200 rounded-2xl bg-white select-none">
       {icon ? (
         <div className="mb-4 text-neutral-400">{icon}</div>
       ) : (
         <AlertCircle className="w-10 h-10 text-neutral-300 mb-4" />
       )}
-      <h3 className="text-xs font-black uppercase tracking-widest text-neutral-900">{title}</h3>
-      <p className="text-xs text-neutral-500 font-semibold max-w-xs mt-2 mb-6 leading-relaxed">{description}</p>
+      <h3 className="text-sm font-bold text-neutral-900 tracking-tight">{title}</h3>
+      <p className="text-xs text-neutral-500 font-medium max-w-xs mt-2 mb-6 leading-relaxed">{description}</p>
       {actionText && onAction && (
         <Button variant="primary" size="sm" onClick={onAction}>
           {actionText}
@@ -625,3 +626,4 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     </div>
   );
 };
+

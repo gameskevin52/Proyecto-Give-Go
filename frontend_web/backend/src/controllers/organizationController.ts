@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { OrganizacionModel, OrganizacionDB } from '../models/organizacionModel';
 import { UsuarioModel } from '../models/usuarioModel';
-import { comparePassword, generateToken, hashPassword } from '../utils/auth';
+import { hashPassword } from '../utils/auth';
 
 const mapOrgToFrontend = (org: OrganizacionDB) => {
   return {
@@ -10,78 +10,24 @@ const mapOrgToFrontend = (org: OrganizacionDB) => {
     direccion: org.direccion || '',
     telefono: org.telefono || '',
     correo: org.correo,
-    descripcion: org.descripcion || ''
+    descripcion: org.descripcion || '',
+    nit: org.nit || '',
+    representante_legal: org.representante_legal || '',
+    barrio: org.barrio || '',
+    localidad: org.localidad || '',
+    ciudad: org.ciudad || '',
+    departamento: org.departamento || '',
+    pais: org.pais || '',
+    categoria: org.categoria || '',
+    logo: org.logo || '',
+    latitud: org.latitud !== undefined ? org.latitud : null,
+    longitud: org.longitud !== undefined ? org.longitud : null,
+    verificada: Boolean(org.verificada),
+    estadoVerificacion: org.estado_verificacion || (org.verificada ? 'aprobada' : 'no_solicitado')
   };
 };
 
 export const OrganizationController = {
-  async login(req: Request, res: Response) {
-    try {
-      const { correo, password } = req.body;
-
-      if (!correo || !password) {
-        return res.status(400).json({
-          success: false,
-          message: 'El correo y la contraseña son obligatorios.',
-          errors: []
-        });
-      }
-
-      const org = await OrganizacionModel.getByEmail(correo);
-      if (!org) {
-        return res.status(404).json({
-          success: false,
-          message: 'El correo electrónico no está registrado como organización.',
-          errors: []
-        });
-      }
-
-      if (org.estado === 0) {
-        return res.status(403).json({
-          success: false,
-          message: 'La organización está inactiva.',
-          errors: []
-        });
-      }
-
-      const isMatch = await comparePassword(password, org.password || '');
-      if (!isMatch) {
-        return res.status(401).json({
-          success: false,
-          message: 'La contraseña es incorrecta.',
-          errors: []
-        });
-      }
-
-      const token = generateToken({
-        id: org.id_organizacion,
-        rol: 'Organizacion',
-        correo: org.correo
-      });
-
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 7 * 24 * 60 * 60 * 1000
-      });
-
-      return res.status(200).json({
-        success: true,
-        message: 'Sesión iniciada correctamente.',
-        data: {
-          organization: mapOrgToFrontend(org),
-          token
-        }
-      });
-    } catch (err: any) {
-      return res.status(500).json({
-        success: false,
-        message: err.message || 'Error al iniciar sesión.',
-        errors: []
-      });
-    }
-  },
-
   async getAll(req: Request, res: Response) {
     try {
       const orgs = await OrganizacionModel.getAll();
@@ -129,7 +75,10 @@ export const OrganizationController = {
 
   async create(req: Request, res: Response) {
     try {
-      const { nombre, direccion, correo, password, telefono, descripcion } = req.body;
+      const { 
+        nombre, direccion, correo, password, telefono, descripcion,
+        latitud, longitud, barrio, localidad, ciudad, departamento, pais, categoria 
+      } = req.body;
       
       const existingUser = await UsuarioModel.getByEmail(correo);
       if (existingUser) {
@@ -150,7 +99,15 @@ export const OrganizationController = {
         password: hashedPassword,
         telefono: telefono || '+57 300 000 0000',
         descripcion: descripcion || '',
-        estado: 1
+        estado: 1,
+        latitud: latitud !== undefined ? Number(latitud) : null,
+        longitud: longitud !== undefined ? Number(longitud) : null,
+        barrio: barrio || '',
+        localidad: localidad || '',
+        ciudad: ciudad || 'Bogotá',
+        departamento: departamento || 'Bogotá D.C.',
+        pais: pais || 'Colombia',
+        categoria: categoria || ''
       });
 
       // 2. Crear usuario asociado en `usuarios` para el login
@@ -185,7 +142,11 @@ export const OrganizationController = {
     try {
       const rawId = req.params.id;
       const id = parseInt(rawId.replace('org_', ''), 10);
-      const { nombre, direccion, correo, password, telefono, descripcion } = req.body;
+      const {
+        nombre, direccion, correo, password, telefono, descripcion,
+        nit, representante_legal, barrio, localidad, ciudad, departamento, pais, categoria, logo,
+        latitud, longitud
+      } = req.body;
 
       // Recuperar actual para saber el correo y sincronizar con usuario
       const currentOrg = await OrganizacionModel.getById(id);
@@ -203,6 +164,18 @@ export const OrganizationController = {
       if (telefono !== undefined) updateData.telefono = telefono;
       if (correo !== undefined) updateData.correo = correo;
       if (descripcion !== undefined) updateData.descripcion = descripcion;
+      if (nit !== undefined) updateData.nit = nit;
+      if (representante_legal !== undefined) updateData.representante_legal = representante_legal;
+      if (barrio !== undefined) updateData.barrio = barrio;
+      if (localidad !== undefined) updateData.localidad = localidad;
+      if (ciudad !== undefined) updateData.ciudad = ciudad;
+      if (departamento !== undefined) updateData.departamento = departamento;
+      if (pais !== undefined) updateData.pais = pais;
+      if (categoria !== undefined) updateData.categoria = categoria;
+      if (logo !== undefined) updateData.logo = logo;
+      if (latitud !== undefined) updateData.latitud = latitud !== null ? Number(latitud) : null;
+      if (longitud !== undefined) updateData.longitud = longitud !== null ? Number(longitud) : null;
+      
       if (password) {
         updateData.password = await hashPassword(password);
       }

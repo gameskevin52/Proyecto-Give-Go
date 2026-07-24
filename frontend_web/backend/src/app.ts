@@ -11,6 +11,9 @@ import categoryRoutes from './routes/categoryRoutes';
 import eventRoutes from './routes/eventRoutes';
 import requestRoutes from './routes/requestRoutes';
 import donationRoutes from './routes/donationRoutes';
+import auditRoutes from './routes/auditRoutes';
+import postulacionRoutes from './routes/postulacionRoutes';
+import verificationRoutes from './routes/verificationRoutes';
 
 // Importar middleware de error
 import { errorHandler } from './middlewares/errorMiddleware';
@@ -37,6 +40,9 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/donations', donationRoutes);
+app.use('/api/audits', auditRoutes);
+app.use('/api/postulaciones', postulacionRoutes);
+app.use('/api/verifications', verificationRoutes);
 
 // Ruta de estado de la API
 app.get('/api/health', (req, res) => {

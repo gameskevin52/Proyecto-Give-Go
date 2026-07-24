@@ -1,25 +1,30 @@
 import { Request, Response } from 'express';
 import { DonacionModel } from '../models/donacionModel';
+import { AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { logAudit } from '../utils/auditLogger';
 
 const mapDonationToFrontend = (d: any) => {
   const isMonetary = d.tipo.toLowerCase() === 'monetaria';
   const donationId = `don_${d.id_donacion}`;
 
-  // Formatear fecha de forma segura
-  let fecha = new Date().toISOString().split('T')[0];
+  let fechaStr = '';
   if (d.fecha) {
-    if (typeof d.fecha === 'string') {
-      fecha = d.fecha.split('T')[0];
-    } else if (d.fecha instanceof Date) {
-      fecha = d.fecha.toISOString().split('T')[0];
+    if (d.fecha instanceof Date) {
+      fechaStr = d.fecha.toISOString().split('T')[0];
+    } else if (typeof d.fecha === 'string') {
+      fechaStr = d.fecha.split('T')[0];
+    } else {
+      fechaStr = new Date(d.fecha).toISOString().split('T')[0];
     }
+  } else {
+    fechaStr = new Date().toISOString().split('T')[0];
   }
 
   return {
     id: donationId,
     categoria: d.categoria || (isMonetary ? 'Económico' : d.objeto_categoria),
     tipo: isMonetary ? 'monetaria' : 'objeto',
-    fecha: fecha,
+    fecha: fechaStr,
     usuarioId: `usr_${d.usuario_id}`,
     organizacionId: `org_${d.organizacion_id}`,
     organizacionNombre: d.organizacion_nombre || 'Organización',
@@ -130,7 +135,10 @@ export const DonationController = {
     try {
       const { donation, monetary } = req.body;
       
-      const uId = parseInt(String(donation.usuarioId).replace('usr_', ''), 10);
+      let uId = parseInt(String(donation.usuarioId).replace('usr_', ''), 10);
+      if (isNaN(uId)) {
+        uId = 999; // Fallback to Anonymous User
+      }
       const orgId = parseInt(String(donation.organizacionId).replace('org_', ''), 10);
 
       const id_donacion = await DonacionModel.createMonetary({
@@ -147,6 +155,9 @@ export const DonationController = {
 
       const d = await DonacionModel.getById(id_donacion);
       if (!d) throw new Error('Error al recuperar la donación monetaria creada.');
+
+      // Loguear auditoría
+      await logAudit(uId, `Realizó una donación monetaria de $${monetary.valor}.`);
 
       return res.status(201).json({
         success: true,
@@ -166,7 +177,10 @@ export const DonationController = {
     try {
       const { donation, objectDetail } = req.body;
       
-      const uId = parseInt(String(donation.usuarioId).replace('usr_', ''), 10);
+      let uId = parseInt(String(donation.usuarioId).replace('usr_', ''), 10);
+      if (isNaN(uId)) {
+        uId = 999; // Fallback to Anonymous User
+      }
       const orgId = parseInt(String(donation.organizacionId).replace('org_', ''), 10);
 
       const id_donacion = await DonacionModel.createObject({
@@ -183,6 +197,9 @@ export const DonationController = {
 
       const d = await DonacionModel.getById(id_donacion);
       if (!d) throw new Error('Error al recuperar la donación de objeto creada.');
+
+      // Loguear auditoría
+      await logAudit(uId, `Realizó una donación en especie de ${objectDetail.cantidad} x ${objectDetail.categoria}.`);
 
       return res.status(201).json({
         success: true,
@@ -203,6 +220,16 @@ export const DonationController = {
       const rawId = req.params.id;
       const id = parseInt(rawId.replace('don_', ''), 10);
 
+      const don = await DonacionModel.getById(id);
+      let desc = `Donación ID ${id}`;
+      if (don) {
+        if (don.tipo.toLowerCase() === 'monetaria') {
+          desc = `Donación monetaria de $${don.valor}`;
+        } else {
+          desc = `Donación en especie de ${don.cantidad} x ${don.objeto_categoria}`;
+        }
+      }
+
       const ok = await DonacionModel.delete(id);
       if (!ok) {
         return res.status(404).json({
@@ -211,6 +238,10 @@ export const DonationController = {
           errors: []
         });
       }
+
+      // Loguear auditoría
+      const deleterId = (req as AuthenticatedRequest).user?.id || 1;
+      await logAudit(deleterId, `Eliminó el registro de donación: ${desc}.`);
 
       return res.status(200).json({
         success: true,
@@ -221,70 +252,6 @@ export const DonationController = {
       return res.status(500).json({
         success: false,
         message: err.message,
-        errors: []
-      });
-    }
-  },
-
-  async update(req: Request, res: Response) {
-    try {
-      const rawId = req.params.id;
-      const id = parseInt(rawId.replace('don_', ''), 10);
-      const { donation, monetary, objectDetail } = req.body;
-
-      // Obtener la donación antes de actualizar para verificar el tipo
-      const d = await DonacionModel.getById(id);
-      if (!d) {
-        return res.status(404).json({
-          success: false,
-          message: 'Donación no encontrada.',
-          errors: []
-        });
-      }
-
-      const isMonetary = d.tipo.toLowerCase() === 'monetaria';
-
-      // Preparar los datos de actualización
-      const updateDonation: any = {};
-      if (donation) {
-        if (donation.categoria) updateDonation.categoria = donation.categoria;
-        if (donation.observaciones !== undefined) updateDonation.observaciones = donation.observaciones;
-        if (donation.estado !== undefined) updateDonation.estado = donation.estado;
-      }
-
-      const updateMonetary = isMonetary && monetary ? {
-        metodo: monetary.metodo || undefined,
-        cuenta: monetary.cuenta || undefined,
-        valor: monetary.valor ? parseFloat(String(monetary.valor)) : undefined
-      } : null;
-
-      const updateObject = !isMonetary && objectDetail ? {
-        categoria: objectDetail.categoria || undefined,
-        descripcion: objectDetail.descripcion || undefined,
-        cantidad: objectDetail.cantidad ? parseInt(String(objectDetail.cantidad), 10) : undefined
-      } : null;
-
-      // Ejecutar actualización
-      const ok = await DonacionModel.update(id, updateDonation, updateMonetary, updateObject);
-      if (!ok) {
-        return res.status(500).json({
-          success: false,
-          message: 'No se pudo actualizar la donación.',
-          errors: []
-        });
-      }
-
-      // Obtener la donación actualizada
-      const updatedDonation = await DonacionModel.getById(id);
-      return res.status(200).json({
-        success: true,
-        message: 'Donación actualizada con éxito.',
-        data: mapDonationToFrontend(updatedDonation)
-      });
-    } catch (err: any) {
-      return res.status(500).json({
-        success: false,
-        message: err.message || 'Error al actualizar la donación.',
         errors: []
       });
     }

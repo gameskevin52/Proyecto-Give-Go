@@ -1,11 +1,22 @@
 import { Request, Response } from 'express';
 import { EventoModel } from '../models/eventoModel';
 import { CategoriaModel } from '../models/categoriaModel';
+import { OrganizacionModel } from '../models/organizacionModel';
+import { AuthenticatedRequest } from '../middlewares/authMiddleware';
+import { logAudit } from '../utils/auditLogger';
 
 const mapEventToFrontend = (evt: any) => {
   let estadoStr = 'activo';
   if (evt.estado === 2) estadoStr = 'finalizado';
   if (evt.estado === 0) estadoStr = 'cancelado';
+
+  const cupoNum = evt.cupo !== undefined && evt.cupo !== null ? parseInt(String(evt.cupo), 10) : 0;
+  const vacVol = evt.vacantes_voluntarios !== undefined && evt.vacantes_voluntarios !== null
+    ? parseInt(String(evt.vacantes_voluntarios), 10)
+    : (evt.vacantesVoluntarios !== undefined ? parseInt(String(evt.vacantesVoluntarios), 10) : cupoNum);
+  const vacBen = evt.vacantes_beneficiarios !== undefined && evt.vacantes_beneficiarios !== null
+    ? parseInt(String(evt.vacantes_beneficiarios), 10)
+    : (evt.vacantesBeneficiarios !== undefined ? parseInt(String(evt.vacantesBeneficiarios), 10) : 20);
 
   return {
     id: `evt_${evt.id_evento}`,
@@ -14,8 +25,23 @@ const mapEventToFrontend = (evt: any) => {
     descripcion: evt.descripcion || '',
     direccion: evt.direccion || '',
     fecha: evt.fecha,
+    cupo: cupoNum,
+    vacantesVoluntarios: vacVol,
+    vacantesBeneficiarios: vacBen,
+    ayudaOfrecida: evt.ayuda_ofrecida || evt.ayudaOfrecida || '',
     estado: estadoStr,
-    organizacionId: `org_${evt.organizacion_id}`
+    organizacionId: `org_${evt.organizacion_id}`,
+    organizacionNombre: evt.organizacion_nombre || evt.organizacionNombre || '',
+    barrio: evt.barrio || '',
+    localidad: evt.localidad || '',
+    ciudad: evt.ciudad || 'Bogotá',
+    departamento: evt.departamento || 'Bogotá D.C.',
+    pais: evt.pais || 'Colombia',
+    punto_referencia: evt.punto_referencia || '',
+    nombre_lugar: evt.nombre_lugar || '',
+    latitud: evt.latitud !== null && evt.latitud !== undefined ? parseFloat(evt.latitud) : null,
+    longitud: evt.longitud !== null && evt.longitud !== undefined ? parseFloat(evt.longitud) : null,
+    imagen: evt.imagen || ''
   };
 };
 
@@ -80,9 +106,26 @@ export const EventController = {
 
   async create(req: Request, res: Response) {
     try {
-      const { nombre, categoria, descripcion, direccion, fecha, cupo, estado, organizacionId } = req.body;
+      const { 
+        nombre, categoria, descripcion, direccion, fecha, cupo, vacantesVoluntarios, vacantesBeneficiarios, ayudaOfrecida, estado, organizacionId,
+        barrio, localidad, ciudad, departamento, pais, punto_referencia, nombre_lugar, latitud, longitud, imagen
+      } = req.body;
       
-      const orgId = parseInt(String(organizacionId).replace('org_', ''), 10);
+      let orgId = parseInt(String(organizacionId || '').replace('org_', '').replace('usr_', ''), 10);
+      let existingOrg = !isNaN(orgId) ? await OrganizacionModel.getById(orgId) : null;
+      if (!existingOrg) {
+        const userEmail = (req as AuthenticatedRequest).user?.correo;
+        if (userEmail) {
+          existingOrg = await OrganizacionModel.getByEmail(userEmail);
+        }
+        if (!existingOrg) {
+          const allOrgs = await OrganizacionModel.getAll();
+          if (allOrgs.length > 0) existingOrg = allOrgs[0];
+        }
+        if (existingOrg) {
+          orgId = existingOrg.id_organizacion;
+        }
+      }
       
       // Intentar buscar la categoría por nombre, si no existe buscar por ID, o crear/usar por defecto 1
       let catId = 1;
@@ -107,12 +150,29 @@ export const EventController = {
         direccion,
         fecha,
         cupo: cupo ? parseInt(String(cupo), 10) : 0,
+        vacantes_voluntarios: vacantesVoluntarios !== undefined ? parseInt(String(vacantesVoluntarios), 10) : (cupo ? parseInt(String(cupo), 10) : 0),
+        vacantes_beneficiarios: vacantesBeneficiarios !== undefined ? parseInt(String(vacantesBeneficiarios), 10) : 20,
+        ayuda_ofrecida: ayudaOfrecida || '',
         estado: estadoInt,
-        organizacion_id: orgId
+        organizacion_id: orgId,
+        barrio,
+        localidad,
+        ciudad: ciudad || 'Bogotá',
+        departamento: departamento || 'Bogotá D.C.',
+        pais: pais || 'Colombia',
+        punto_referencia,
+        nombre_lugar,
+        latitud: latitud !== undefined && latitud !== null ? parseFloat(String(latitud)) : undefined,
+        longitud: longitud !== undefined && longitud !== null ? parseFloat(String(longitud)) : undefined,
+        imagen: imagen || ''
       });
 
       const evt = await EventoModel.getById(insertId);
       if (!evt) throw new Error('Error al recuperar el evento creado.');
+
+      // Loguear auditoría
+      const creatorId = (req as AuthenticatedRequest).user?.id || 1;
+      await logAudit(creatorId, `Creó el evento solidario: "${evt.nombre}".`);
 
       return res.status(201).json({
         success: true,
@@ -132,7 +192,10 @@ export const EventController = {
     try {
       const rawId = req.params.id;
       const id = parseInt(rawId.replace('evt_', ''), 10);
-      const { nombre, categoria, descripcion, direccion, fecha, cupo, estado, organizacionId } = req.body;
+      const { 
+        nombre, categoria, descripcion, direccion, fecha, cupo, vacantesVoluntarios, vacantesBeneficiarios, ayudaOfrecida, estado, organizacionId,
+        barrio, localidad, ciudad, departamento, pais, punto_referencia, nombre_lugar, latitud, longitud, imagen
+      } = req.body;
 
       const updateData: any = {};
       if (nombre !== undefined) updateData.nombre = nombre;
@@ -140,6 +203,19 @@ export const EventController = {
       if (direccion !== undefined) updateData.direccion = direccion;
       if (fecha !== undefined) updateData.fecha = fecha;
       if (cupo !== undefined) updateData.cupo = parseInt(String(cupo), 10);
+      if (vacantesVoluntarios !== undefined) updateData.vacantes_voluntarios = parseInt(String(vacantesVoluntarios), 10);
+      if (vacantesBeneficiarios !== undefined) updateData.vacantes_beneficiarios = parseInt(String(vacantesBeneficiarios), 10);
+      if (ayudaOfrecida !== undefined) updateData.ayuda_ofrecida = ayudaOfrecida;
+      if (barrio !== undefined) updateData.barrio = barrio;
+      if (localidad !== undefined) updateData.localidad = localidad;
+      if (ciudad !== undefined) updateData.ciudad = ciudad;
+      if (departamento !== undefined) updateData.departamento = departamento;
+      if (pais !== undefined) updateData.pais = pais;
+      if (punto_referencia !== undefined) updateData.punto_referencia = punto_referencia;
+      if (nombre_lugar !== undefined) updateData.nombre_lugar = nombre_lugar;
+      if (latitud !== undefined) updateData.latitud = latitud !== null ? parseFloat(String(latitud)) : null;
+      if (longitud !== undefined) updateData.longitud = longitud !== null ? parseFloat(String(longitud)) : null;
+      if (imagen !== undefined) updateData.imagen = imagen;
       
       if (organizacionId !== undefined) {
         updateData.organizacion_id = parseInt(String(organizacionId).replace('org_', ''), 10);
@@ -176,6 +252,10 @@ export const EventController = {
       const evt = await EventoModel.getById(id);
       if (!evt) throw new Error('Evento no encontrado.');
 
+      // Loguear auditoría
+      const editorId = (req as AuthenticatedRequest).user?.id || 1;
+      await logAudit(editorId, `Actualizó el evento solidario: "${evt.nombre}".`);
+
       return res.status(200).json({
         success: true,
         message: 'Evento actualizado con éxito.',
@@ -195,6 +275,9 @@ export const EventController = {
       const rawId = req.params.id;
       const id = parseInt(rawId.replace('evt_', ''), 10);
 
+      const evt = await EventoModel.getById(id);
+      const targetName = evt ? evt.nombre : `ID ${id}`;
+
       const ok = await EventoModel.delete(id);
       if (!ok) {
         return res.status(404).json({
@@ -203,6 +286,10 @@ export const EventController = {
           errors: []
         });
       }
+
+      // Loguear auditoría
+      const deleterId = (req as AuthenticatedRequest).user?.id || 1;
+      await logAudit(deleterId, `Eliminó el evento solidario: "${targetName}".`);
 
       return res.status(200).json({
         success: true,

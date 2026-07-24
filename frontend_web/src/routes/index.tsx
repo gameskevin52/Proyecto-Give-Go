@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { DashboardLayout } from '../layouts/DashboardLayout';
+import { PublicLayout } from '../layouts/PublicLayout';
 
 // Páginas Públicas
 import { Home } from '../pages/Home';
@@ -10,6 +11,8 @@ import { Donations } from '../pages/Donations';
 import { Map } from '../pages/Map';
 import { Login } from '../pages/Login';
 import { Register } from '../pages/Register';
+import { ForgotPassword } from '../pages/ForgotPassword';
+import { PublicProfile } from '../pages/PublicProfile';
 import { NotFound } from '../pages/NotFound';
 
 // Páginas de Administración
@@ -17,6 +20,7 @@ import {
   AdminDashboard, 
   AdminUsers, 
   AdminOrganizations, 
+  AdminVerifications,
   AdminEvents, 
   AdminDonations, 
   AdminCategories 
@@ -32,6 +36,9 @@ import {
 
 // Páginas de Beneficiarios
 import { BeneficiaryDashboard } from '../pages/beneficiary/BeneficiaryDashboard';
+
+// Perfil Unificado
+import { Profile } from '../pages/Profile';
 
 // Páginas de Organizaciones
 import { 
@@ -81,11 +88,12 @@ export const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      {/* RUTAS PÚBLICAS (Envueltas en DashboardLayout que actuará como Navbar/Footer público si es visitante) */}
-      <Route path="/" element={<DashboardLayout><Home /></DashboardLayout>} />
-      <Route path="/events" element={<DashboardLayout><Events /></DashboardLayout>} />
-      <Route path="/donations" element={<DashboardLayout><Donations /></DashboardLayout>} />
-      <Route path="/map" element={<DashboardLayout><Map /></DashboardLayout>} />
+      {/* RUTAS PÚBLICAS (Envueltas en PublicLayout) */}
+      <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+      <Route path="/events" element={<PublicLayout><Events /></PublicLayout>} />
+      <Route path="/donations" element={<PublicLayout><Donations /></PublicLayout>} />
+      <Route path="/map" element={<PublicLayout><Map /></PublicLayout>} />
+      <Route path="/perfil/:id" element={<PublicLayout><PublicProfile /></PublicLayout>} />
       
       {/* RUTAS DE ACCESO (Si ya está logueado, redirige a su panel) */}
       <Route 
@@ -99,7 +107,7 @@ export const AppRoutes: React.FC = () => {
               '/org/dashboard'
             } replace />
           ) : (
-            <DashboardLayout><Login /></DashboardLayout>
+            <PublicLayout><Login /></PublicLayout>
           )
         } 
       />
@@ -114,7 +122,22 @@ export const AppRoutes: React.FC = () => {
               '/org/dashboard'
             } replace />
           ) : (
-            <DashboardLayout><Register /></DashboardLayout>
+            <PublicLayout><Register /></PublicLayout>
+          )
+        } 
+      />
+      <Route 
+        path="/forgot-password" 
+        element={
+          user ? (
+            <Navigate to={
+              user.rol === 'admin' ? '/admin/dashboard' :
+              user.rol === 'voluntario' ? '/volunteer/dashboard' :
+              user.rol === 'beneficiario' ? '/beneficiary/dashboard' :
+              '/org/dashboard'
+            } replace />
+          ) : (
+            <PublicLayout><ForgotPassword /></PublicLayout>
           )
         } 
       />
@@ -141,6 +164,14 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute allowedRoles={['admin']}>
             <DashboardLayout><AdminOrganizations /></DashboardLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/admin/verifications" 
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DashboardLayout><AdminVerifications /></DashboardLayout>
           </ProtectedRoute>
         } 
       />
@@ -182,7 +213,15 @@ export const AppRoutes: React.FC = () => {
         path="/volunteer/profile" 
         element={
           <ProtectedRoute allowedRoles={['voluntario']}>
-            <DashboardLayout><VolunteerProfile /></DashboardLayout>
+            <DashboardLayout><Profile /></DashboardLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/profile" 
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'voluntario', 'beneficiario', 'organizacion']}>
+            <DashboardLayout><Profile /></DashboardLayout>
           </ProtectedRoute>
         } 
       />
@@ -248,7 +287,7 @@ export const AppRoutes: React.FC = () => {
       />
 
       {/* FALLBACK 404 */}
-      <Route path="/404" element={<DashboardLayout><NotFound /></DashboardLayout>} />
+      <Route path="/404" element={<PublicLayout><NotFound /></PublicLayout>} />
       <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>
   );

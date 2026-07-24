@@ -2,13 +2,26 @@ import { Request, Response } from 'express';
 import { SolicitudModel } from '../models/solicitudModel';
 
 const mapRequestToFrontend = (req: any) => {
+  let fechaStr = '';
+  if (req.fecha) {
+    if (req.fecha instanceof Date) {
+      fechaStr = req.fecha.toISOString().split('T')[0];
+    } else if (typeof req.fecha === 'string') {
+      fechaStr = req.fecha.split('T')[0];
+    } else {
+      fechaStr = new Date(req.fecha).toISOString().split('T')[0];
+    }
+  } else {
+    fechaStr = new Date().toISOString().split('T')[0];
+  }
+
   return {
     id: `sol_${req.id_solicitud}`,
     beneficiarioId: String(req.usuario_id),
     titulo: req.titulo || '',
     descripcion: req.descripcion || '',
     estado: req.estado.toLowerCase(), // 'pendiente' | 'aprobada' | 'rechazada'
-    fecha: req.fecha ? req.fecha.split('T')[0] : new Date().toISOString().split('T')[0]
+    fecha: fechaStr
   };
 };
 

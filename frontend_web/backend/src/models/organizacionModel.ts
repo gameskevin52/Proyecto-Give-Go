@@ -10,6 +10,19 @@ export interface OrganizacionDB {
   descripcion?: string;
   estado: number; // 1 = activo, 0 = inactivo
   fecha_registro?: string;
+  nit?: string;
+  representante_legal?: string;
+  barrio?: string;
+  localidad?: string;
+  ciudad?: string;
+  departamento?: string;
+  pais?: string;
+  categoria?: string;
+  logo?: string;
+  latitud?: number | null;
+  longitud?: number | null;
+  verificada?: number; // 0 = No, 1 = Si
+  estado_verificacion?: string; // 'no_solicitado', 'pendiente', 'aprobada', 'rechazada'
 }
 
 export const OrganizacionModel = {
@@ -48,9 +61,15 @@ export const OrganizacionModel = {
     const estado = data.estado !== undefined ? data.estado : 1;
     if (db.isMySQLConnected()) {
       const [result] = await db.query(
-        `INSERT INTO organizaciones (nombre, direccion, telefono, correo, password, descripcion, estado) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [data.nombre, data.direccion || null, data.telefono || null, data.correo, data.password, data.descripcion || null, estado]
+        `INSERT INTO organizaciones (
+          nombre, direccion, telefono, correo, password, descripcion, estado,
+          nit, representante_legal, barrio, localidad, ciudad, departamento, pais, categoria, logo, latitud, longitud
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          data.nombre, data.direccion || null, data.telefono || null, data.correo, data.password, data.descripcion || null, estado,
+          data.nit || null, data.representante_legal || null, data.barrio || null, data.localidad || null, data.ciudad || null, data.departamento || null, data.pais || null, data.categoria || null, data.logo || null,
+          data.latitud !== undefined ? data.latitud : null, data.longitud !== undefined ? data.longitud : null
+        ]
       );
       return (result as any).insertId;
     } else {
@@ -65,7 +84,18 @@ export const OrganizacionModel = {
         password: data.password,
         descripcion: data.descripcion || '',
         estado,
-        fecha_registro: new Date().toISOString()
+        fecha_registro: new Date().toISOString(),
+        nit: data.nit || '',
+        representante_legal: data.representante_legal || '',
+        barrio: data.barrio || '',
+        localidad: data.localidad || '',
+        ciudad: data.ciudad || '',
+        departamento: data.departamento || '',
+        pais: data.pais || '',
+        categoria: data.categoria || '',
+        logo: data.logo || '',
+        latitud: data.latitud !== undefined ? data.latitud : null,
+        longitud: data.longitud !== undefined ? data.longitud : null
       };
       orgs.push(newOrg);
       db.saveFallbackData();

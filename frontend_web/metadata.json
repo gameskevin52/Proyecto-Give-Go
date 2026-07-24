@@ -1,6 +1,6 @@
 {
   "name": "Give&Go",
   "description": "Una plataforma profesional para conectar voluntarios, organizaciones y beneficiarios a través de eventos, campañas y donaciones.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": ["geolocation"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
