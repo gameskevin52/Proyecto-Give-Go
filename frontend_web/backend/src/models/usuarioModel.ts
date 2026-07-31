@@ -12,6 +12,24 @@ export interface UsuarioDB {
   password?: string;
   estado: number; // 1 = activo, 0 = inactivo
   fecha_registro?: string;
+  tipo_documento?: string;
+  num_documento?: string;
+  fecha_nacimiento?: string;
+  direccion?: string;
+  barrio?: string;
+  localidad?: string;
+  ciudad?: string;
+  departamento?: string;
+  pais?: string;
+  codigo_postal?: string;
+  foto?: string;
+  biografia?: string;
+  foto_portada?: string;
+  sitio_web?: string;
+  redes_sociales?: string;
+  privacidad?: string;
+  mision?: string;
+  vision?: string;
 }
 
 export const UsuarioModel = {
@@ -50,9 +68,14 @@ export const UsuarioModel = {
     const estado = data.estado !== undefined ? data.estado : 1;
     if (db.isMySQLConnected()) {
       const [result] = await db.query(
-        `INSERT INTO usuarios (rol, nombre1, nombre2, apellido1, apellido2, telefono, correo, password, estado) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [data.rol, data.nombre1, data.nombre2 || null, data.apellido1, data.apellido2 || null, data.telefono || null, data.correo, data.password, estado]
+        `INSERT INTO usuarios (
+          rol, nombre1, nombre2, apellido1, apellido2, telefono, correo, password, estado,
+          tipo_documento, num_documento, fecha_nacimiento, direccion, barrio, localidad, ciudad, departamento, pais, codigo_postal, foto
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          data.rol, data.nombre1, data.nombre2 || null, data.apellido1, data.apellido2 || null, data.telefono || null, data.correo, data.password, estado,
+          data.tipo_documento || null, data.num_documento || null, data.fecha_nacimiento || null, data.direccion || null, data.barrio || null, data.localidad || null, data.ciudad || null, data.departamento || null, data.pais || null, data.codigo_postal || null, data.foto || null
+        ]
       );
       return (result as any).insertId;
     } else {
@@ -69,7 +92,18 @@ export const UsuarioModel = {
         correo: data.correo,
         password: data.password,
         estado,
-        fecha_registro: new Date().toISOString()
+        fecha_registro: new Date().toISOString(),
+        tipo_documento: data.tipo_documento || '',
+        num_documento: data.num_documento || '',
+        fecha_nacimiento: data.fecha_nacimiento || '',
+        direccion: data.direccion || '',
+        barrio: data.barrio || '',
+        localidad: data.localidad || '',
+        ciudad: data.ciudad || '',
+        departamento: data.departamento || '',
+        pais: data.pais || '',
+        codigo_postal: data.codigo_postal || '',
+        foto: data.foto || ''
       };
       users.push(newUser);
       db.saveFallbackData();

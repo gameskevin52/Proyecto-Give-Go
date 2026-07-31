@@ -42,6 +42,17 @@ const seedFallbackData = () => {
         fecha_registro: new Date().toISOString()
       },
       {
+        id_usuario: 999,
+        rol: 'Voluntario',
+        nombre1: 'Donante',
+        apellido1: 'Anónimo',
+        correo: 'anonimo@giveandgo.com',
+        password: 'none',
+        telefono: '',
+        estado: 1,
+        fecha_registro: new Date().toISOString()
+      },
+      {
         id_usuario: 2,
         rol: 'Voluntario',
         nombre1: 'Carlos',
@@ -132,7 +143,15 @@ const seedFallbackData = () => {
         telefono: '+57 300 000 0000',
         descripcion: 'Institución comunitaria enfocada en brindar seguridad alimentaria en Kennedy.',
         estado: 1,
-        fecha_registro: new Date().toISOString()
+        fecha_registro: new Date().toISOString(),
+        barrio: 'Kennedy Central',
+        localidad: 'Kennedy',
+        ciudad: 'Bogotá',
+        departamento: 'Bogotá D.C.',
+        pais: 'Colombia',
+        categoria: 'Alimentos',
+        latitud: 4.6186,
+        longitud: -74.1481
       },
       {
         id_organizacion: 2,
@@ -143,7 +162,15 @@ const seedFallbackData = () => {
         telefono: '+57 300 000 0000',
         descripcion: 'Fundación sin ánimo de lucro enfocada en desarrollo y asistencia a adultos mayores.',
         estado: 1,
-        fecha_registro: new Date().toISOString()
+        fecha_registro: new Date().toISOString(),
+        barrio: 'Castilla',
+        localidad: 'Kennedy',
+        ciudad: 'Bogotá',
+        departamento: 'Bogotá D.C.',
+        pais: 'Colombia',
+        categoria: 'Salud',
+        latitud: 4.6445,
+        longitud: -74.1412
       },
       {
         id_organizacion: 3,
@@ -154,53 +181,148 @@ const seedFallbackData = () => {
         telefono: '+57 300 000 0000',
         descripcion: 'Organización para la recuperación ambiental y el apoyo pedagógico.',
         estado: 1,
-        fecha_registro: new Date().toISOString()
+        fecha_registro: new Date().toISOString(),
+        barrio: 'Patio Bonito',
+        localidad: 'Kennedy',
+        ciudad: 'Bogotá',
+        departamento: 'Bogotá D.C.',
+        pais: 'Colombia',
+        categoria: 'Medio Ambiente',
+        latitud: 4.6288,
+        longitud: -74.1620
       }
     ],
     eventos: [
       {
         id_evento: 1,
         nombre: 'Jornada de Donación en Kennedy Central',
-        id_categoria: 1, // Alimentos
+        id_categoria: 1,
         descripcion: 'Ayúdanos a clasificar y empaquetar alimentos recibidos para las familias vulnerables de la localidad de Kennedy en nuestro centro comunitario.',
         direccion: 'Calle 38 Sur # 78-45, Kennedy Central',
         fecha: '2026-07-15T09:00:00Z',
         cupo: 50,
+        vacantes_voluntarios: 15,
+        vacantes_beneficiarios: 35,
+        ayuda_ofrecida: 'Entrega de paquetes nutricionales y mercados básicos con arroz, legumbres y aceite para núcleos familiares.',
         estado: 1,
-        organizacion_id: 1
+        organizacion_id: 1,
+        barrio: 'Kennedy Central',
+        localidad: 'Kennedy',
+        ciudad: 'Bogotá',
+        departamento: 'Bogotá D.C.',
+        pais: 'Colombia',
+        punto_referencia: 'Frente al parque central',
+        nombre_lugar: 'Sede Principal',
+        latitud: 4.6186,
+        longitud: -74.1481,
+        imagen: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=1000'
       },
       {
         id_evento: 2,
         nombre: 'Campaña Solidaria Patio Bonito',
-        id_categoria: 2, // Educación
+        id_categoria: 2,
         descripcion: 'Buscamos voluntarios para apoyar en el reforzamiento escolar y tutorías los fines de semana para niños del sector de Patio Bonito.',
         direccion: 'Avenida Ciudad de Cali # 13-08',
         fecha: '2026-07-20T08:00:00Z',
         cupo: 20,
+        vacantes_voluntarios: 8,
+        vacantes_beneficiarios: 25,
+        ayuda_ofrecida: 'Kits completos de útiles escolares (cuadernos, cartuchera, colores) y tutorías de nivelación académica.',
         estado: 1,
-        organizacion_id: 1
+        organizacion_id: 1,
+        barrio: 'Patio Bonito',
+        localidad: 'Kennedy',
+        ciudad: 'Bogotá',
+        departamento: 'Bogotá D.C.',
+        pais: 'Colombia',
+        punto_referencia: 'Sede comunal',
+        nombre_lugar: 'Salón Comunal Patio Bonito',
+        latitud: 4.6288,
+        longitud: -74.1620,
+        imagen: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=1000'
       },
       {
         id_evento: 3,
         nombre: 'Reforestación del Humedal El Burro',
-        id_categoria: 4, // Medio Ambiente
+        id_categoria: 4,
         descripcion: 'Jornada de siembra de especies nativas y limpieza en el Humedal El Burro de Kennedy. ¡Trae ropa cómoda y guantes!',
         direccion: 'Calle 8A con Carrera 82, Humedal El Burro',
         fecha: '2026-08-05T07:00:00Z',
         cupo: 100,
+        vacantes_voluntarios: 40,
+        vacantes_beneficiarios: 60,
+        ayuda_ofrecida: 'Capacitación ambiental, refrigerios y entrega de plantas nativas ornamentales para la comunidad.',
         estado: 1,
-        organizacion_id: 3
+        organizacion_id: 3,
+        barrio: 'El Burro',
+        localidad: 'Kennedy',
+        ciudad: 'Bogotá',
+        departamento: 'Bogotá D.C.',
+        pais: 'Colombia',
+        punto_referencia: 'Entrada por la avenida Cali',
+        nombre_lugar: 'Reserva Humedal El Burro',
+        latitud: 4.6421,
+        longitud: -74.1485,
+        imagen: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&q=80&w=1000'
       },
       {
         id_evento: 4,
         nombre: 'Jornada Comunitaria Castilla',
-        id_categoria: 3, // Salud
+        id_categoria: 3,
         descripcion: 'Campaña de salud básica preventiva y entrega de kits de aseo para adultos mayores del barrio Castilla.',
         direccion: 'Carrera 80 # 40B Sur-12, Castilla',
         fecha: '2026-06-30T09:00:00Z',
         cupo: 30,
+        vacantes_voluntarios: 10,
+        vacantes_beneficiarios: 20,
+        ayuda_ofrecida: 'Valoración médica básica preventiva, kits de aseo personal y orientación en hábitos de vida saludable.',
         estado: 1,
-        organizacion_id: 2
+        organizacion_id: 2,
+        barrio: 'Castilla',
+        localidad: 'Kennedy',
+        ciudad: 'Bogotá',
+        departamento: 'Bogotá D.C.',
+        pais: 'Colombia',
+        punto_referencia: 'Diagonal a la iglesia de Castilla',
+        nombre_lugar: 'Centro de Adulto Mayor Castilla',
+        latitud: 4.6445,
+        longitud: -74.1412,
+        imagen: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1000'
+      }
+    ],
+    tabla_postulaciones: [
+      {
+        id_postulacion: 1,
+        id_evento: 1,
+        id_usuario: 4, // Juan (Beneficiario)
+        tipo_postulacion: 'beneficiario',
+        estado_postulacion: 'aprobado',
+        fecha_postulacion: '2026-06-21T10:00:00Z',
+        fecha_aprobacion: '2026-06-22T08:30:00Z',
+        fecha_confirmacion: null,
+        observaciones: 'Aprobado para recibir kit nutricional familiar.'
+      },
+      {
+        id_postulacion: 2,
+        id_evento: 2,
+        id_usuario: 5, // María (Beneficiaria)
+        tipo_postulacion: 'beneficiario',
+        estado_postulacion: 'pendiente',
+        fecha_postulacion: '2026-06-25T14:15:00Z',
+        fecha_aprobacion: null,
+        fecha_confirmacion: null,
+        observaciones: 'Postulante registrada para kits escolares.'
+      },
+      {
+        id_postulacion: 3,
+        id_evento: 3,
+        id_usuario: 2, // Carlos (Voluntario)
+        tipo_postulacion: 'voluntario',
+        estado_postulacion: 'confirmado',
+        fecha_postulacion: '2026-06-20T09:00:00Z',
+        fecha_aprobacion: '2026-06-20T11:00:00Z',
+        fecha_confirmacion: '2026-06-21T12:00:00Z',
+        observaciones: 'Voluntario confirmado para apoyo logístico.'
       }
     ],
     seguimiento_eventos: [],
@@ -268,6 +390,32 @@ const seedFallbackData = () => {
         descripcion: 'Solicitud de apoyo para adquirir medicamentos de control diario para un adulto mayor en el barrio Kennedy Central.',
         estado: 'Rechazada',
         fecha: '2026-06-10T09:00:00Z'
+      }
+    ],
+    auditorias: [
+      {
+        id_audit: 1,
+        fecha: '2026-07-16T10:00:00.000Z',
+        accion: 'Inicio de sesión exitoso del Administrador',
+        id_usuario: 1,
+        nombre_usuario: 'Administrador General',
+        rol_usuario: 'Admin'
+      },
+      {
+        id_audit: 2,
+        fecha: '2026-07-16T11:15:00.000Z',
+        accion: 'Creación de convocatoria exitosa: Reforestación del Humedal El Burro',
+        id_usuario: 1,
+        nombre_usuario: 'Administrador General',
+        rol_usuario: 'Admin'
+      },
+      {
+        id_audit: 3,
+        fecha: '2026-07-16T12:30:00.000Z',
+        accion: 'Inscripción de voluntario en el evento de Reforestación',
+        id_usuario: 2,
+        nombre_usuario: 'Carlos Mendoza',
+        rol_usuario: 'Voluntario'
       }
     ]
   };
@@ -380,7 +528,148 @@ export const initDB = async () => {
       pool = mysql.createPool(dbConfig);
       // Validar conexión con un simple ping
       const connection = await pool.getConnection();
-      console.log('✔ Base de datos MySQL 8 conectada con éxito.');
+      console.log('✔ Base de datos MySQL 8 conectada con éxito. Ejecutando migraciones de columnas...');
+      
+      // Asegurar columnas en usuarios
+      const userColumns = [
+        "tipo_documento VARCHAR(50) NULL",
+        "num_documento VARCHAR(50) NULL",
+        "fecha_nacimiento VARCHAR(50) NULL",
+        "direccion VARCHAR(255) NULL",
+        "barrio VARCHAR(100) NULL",
+        "localidad VARCHAR(100) NULL",
+        "ciudad VARCHAR(100) NULL",
+        "departamento VARCHAR(100) NULL",
+        "pais VARCHAR(100) NULL",
+        "codigo_postal VARCHAR(50) NULL",
+        "foto TEXT NULL"
+      ];
+      for (const col of userColumns) {
+        try {
+          const colName = col.split(' ')[0];
+          await connection.query(`ALTER TABLE usuarios ADD COLUMN ${colName} ${col.replace(colName, '')}`);
+        } catch (e: any) {
+          // Ignorar error de columna duplicada
+        }
+      }
+
+      // Asegurar columnas en organizaciones
+      const orgColumns = [
+        "nit VARCHAR(50) NULL",
+        "representante_legal VARCHAR(150) NULL",
+        "barrio VARCHAR(100) NULL",
+        "localidad VARCHAR(100) NULL",
+        "ciudad VARCHAR(100) NULL",
+        "departamento VARCHAR(100) NULL",
+        "pais VARCHAR(100) NULL",
+        "categoria VARCHAR(100) NULL",
+        "logo TEXT NULL",
+        "latitud DOUBLE NULL",
+        "longitud DOUBLE NULL"
+      ];
+      for (const col of orgColumns) {
+        try {
+          const colName = col.split(' ')[0];
+          await connection.query(`ALTER TABLE organizaciones ADD COLUMN ${colName} ${col.replace(colName, '')}`);
+        } catch (e: any) {
+          // Ignorar error de columna duplicada
+        }
+      }
+
+      // Asegurar columnas en eventos
+      const eventColumns = [
+        "barrio VARCHAR(100) NULL",
+        "localidad VARCHAR(100) NULL",
+        "ciudad VARCHAR(100) NULL DEFAULT 'Bogotá'",
+        "departamento VARCHAR(100) NULL DEFAULT 'Bogotá D.C.'",
+        "pais VARCHAR(100) NULL DEFAULT 'Colombia'",
+        "punto_referencia VARCHAR(255) NULL",
+        "nombre_lugar VARCHAR(255) NULL",
+        "latitud DOUBLE NULL",
+        "longitud DOUBLE NULL",
+        "imagen TEXT NULL",
+        "vacantes_voluntarios INT DEFAULT 10",
+        "vacantes_beneficiarios INT DEFAULT 25",
+        "ayuda_ofrecida TEXT NULL"
+      ];
+      for (const col of eventColumns) {
+        try {
+          const colName = col.split(' ')[0];
+          await connection.query(`ALTER TABLE eventos ADD COLUMN ${colName} ${col.replace(colName, '')}`);
+        } catch (e: any) {
+          // Ignorar error de columna duplicada
+        }
+      }
+
+      // Asegurar que la tabla_postulaciones existe en MySQL
+      try {
+        await connection.query(`
+          CREATE TABLE IF NOT EXISTS tabla_postulaciones (
+            id_postulacion INT AUTO_INCREMENT PRIMARY KEY,
+            id_evento INT NOT NULL,
+            id_usuario INT NOT NULL,
+            tipo_postulacion ENUM('voluntario', 'beneficiario') NOT NULL,
+            estado_postulacion ENUM('pendiente', 'aprobado', 'rechazado', 'confirmado', 'cancelado') DEFAULT 'pendiente',
+            fecha_postulacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            fecha_aprobacion DATETIME DEFAULT NULL,
+            fecha_confirmacion DATETIME DEFAULT NULL,
+            observaciones TEXT DEFAULT NULL,
+            UNIQUE KEY unique_postulacion (id_evento, id_usuario, tipo_postulacion),
+            FOREIGN KEY (id_evento) REFERENCES eventos(id_evento) ON DELETE CASCADE,
+            FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+      } catch (e: any) {
+        console.warn('⚠ Advertencia: No se pudo verificar/crear la tabla_postulaciones en MySQL:', e.message);
+      }
+
+      // Asegurar que la tabla seguimiento_eventos existe en MySQL
+      try {
+        await connection.query(`
+          CREATE TABLE IF NOT EXISTS seguimiento_eventos (
+            id_seguimiento INT AUTO_INCREMENT PRIMARY KEY,
+            evento_id INT NOT NULL,
+            usuario_id INT NOT NULL,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_seguimiento (evento_id, usuario_id),
+            FOREIGN KEY (evento_id) REFERENCES eventos(id_evento) ON DELETE CASCADE,
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+      } catch (e: any) {
+        console.warn('⚠ Advertencia: No se pudo verificar/crear la tabla seguimiento_eventos en MySQL:', e.message);
+      }
+
+      // Asegurar que la tabla de auditorías existe en MySQL
+      try {
+        await connection.query(`
+          CREATE TABLE IF NOT EXISTS auditorias (
+            id_audit INT AUTO_INCREMENT PRIMARY KEY,
+            fecha VARCHAR(50) NOT NULL,
+            accion VARCHAR(255) NOT NULL,
+            id_usuario INT NOT NULL,
+            nombre_usuario VARCHAR(150) NOT NULL,
+            rol_usuario VARCHAR(50) NOT NULL,
+            FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        `);
+
+        // Seed if empty
+        const [auditCountRows] = await connection.query('SELECT COUNT(*) as count FROM auditorias');
+        if (auditCountRows && (auditCountRows as any)[0] && (auditCountRows as any)[0].count === 0) {
+          const nowStr = new Date().toISOString();
+          await connection.query(`
+            INSERT INTO auditorias (fecha, accion, id_usuario, nombre_usuario, rol_usuario) VALUES
+            (?, 'Inicio y puesta en marcha del sistema Give&Go', 1, 'Administrador General', 'Admin'),
+            (?, 'Sincronización de base de datos relacional completada', 1, 'Administrador General', 'Admin'),
+            (?, 'Configuración de categorías y organizaciones semilla', 1, 'Administrador General', 'Admin')
+          `, [nowStr, nowStr, nowStr]);
+          console.log('✅ Semilla de auditorías cargada con éxito en MySQL.');
+        }
+      } catch (e: any) {
+        console.warn('⚠ Advertencia: No se pudo crear/verificar/semillar la tabla de auditorías en MySQL:', e.message);
+      }
+
       connection.release();
       useFallback = false;
     } catch (err: any) {
@@ -474,6 +763,13 @@ function handleFallbackQuery(sql: string, params: any[]): any {
       result = result.filter(s => s.usuario_id === uId);
     }
     return [result, []];
+  }
+
+  // 5.5 SELECT auditorias
+  if (queryNormalized.startsWith('select * from auditorias')) {
+    const audits = fallbackData.auditorias || [];
+    const sortedAudits = [...audits].sort((a, b) => (b.id_audit || 0) - (a.id_audit || 0));
+    return [sortedAudits, []];
   }
 
   // 6. SELECT donaciones, donaciones_monetarias, donaciones_objetos

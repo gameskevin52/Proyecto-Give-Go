@@ -8,7 +8,19 @@ interface AuthContextType {
   login: (correo: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   register: (userData: Omit<Usuario, 'id' | 'estado'>) => Promise<{ success: boolean; error?: string }>;
-  registerOrg: (nombre: string, direccion: string, correo: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  registerOrg: (
+    nombre: string,
+    direccion: string,
+    correo: string,
+    password: string,
+    latitud?: number | null,
+    longitud?: number | null,
+    barrio?: string,
+    localidad?: string,
+    ciudad?: string,
+    departamento?: string,
+    pais?: string
+  ) => Promise<{ success: boolean; error?: string }>;
   updateProfile: (updatedData: Partial<Usuario>) => Promise<{ success: boolean; error?: string }>;
 }
 
@@ -83,7 +95,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const registerOrg = async (nombre: string, direccion: string, correo: string, password: string) => {
+  const registerOrg = async (
+    nombre: string,
+    direccion: string,
+    correo: string,
+    password: string,
+    latitud?: number | null,
+    longitud?: number | null,
+    barrio?: string,
+    localidad?: string,
+    ciudad?: string,
+    departamento?: string,
+    pais?: string
+  ) => {
     try {
       setLoading(true);
       const existing = await UserService.getByEmail(correo);
@@ -96,8 +120,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         nombre,
         direccion,
         correo,
-        password
-      });
+        password,
+        latitud,
+        longitud,
+        barrio,
+        localidad,
+        ciudad,
+        departamento,
+        pais
+      } as any);
 
       // Iniciar sesión automáticamente
       const loginRes = await login(correo, password);

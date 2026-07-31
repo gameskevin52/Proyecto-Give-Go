@@ -1,188 +1,587 @@
-import React, { useState, useEffect } from 'react';
-import { OrganizationService, EventService } from '../services/db';
-import { Organizacion, Evento } from '../types';
-import { Card, Badge, Button, formatDate } from '../components/UI';
-import { MapPin, Building2, Phone, Mail, Navigation, Heart } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import L from 'leaflet';
+import { OrganizationService, EventService, CategoryService } from '../services/db';
+import { Organizacion, Evento, Categoria } from '../types';
+import { Card, Badge, Button, formatDate, Select, SearchBar } from '../components/UI';
+import { MapPin, Building2, Phone, Mail, Navigation, Heart, Calendar, Eye, Layers, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-interface MapOrg extends Organizacion {
-  x: number; // Coordenada X relativa (%)
-  y: number; // Coordenada Y relativa (%)
-  color: string;
-}
+// Haversine formula to calculate distance between two coordinates in km
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371; // Radius of the Earth in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
 export const Map: React.FC = () => {
-  const [organizations, setOrganizations] = useState<MapOrg[]>([]);
-  const [selectedOrg, setSelectedOrg] = useState<MapOrg | null>(null);
-  const [orgEvents, setOrgEvents] = useState<Evento[]>([]);
+  const [organizations, setOrganizations] = useState<Organizacion[]>([]);
+  const [events, setEvents] = useState<Evento[]>([]);
+  const [categories, setCategories] = useState<Categoria[]>([]);
+
+  // Selected item on map (can be an organization or an event)
+  const [selectedItem, setSelectedItem] = useState<{
+    type: 'organization' | 'event';
+    data: any;
+  } | null>(null);
+
+  // User location and filters
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [maxDistance, setMaxDistance] = useState<number>(0); // 0 means all, otherwise radius in km
+
+  // Filters
+  const [filterType, setFilterType] = useState<'all' | 'org' | 'event'>('all');
+  const [filterCat, setFilterCat] = useState<string>('todos');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
+  // Map refs
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersGroupRef = useRef<L.LayerGroup | null>(null);
+
+  // Kennedy default position
+  const centerLat = 4.6215;
+  const centerLng = -74.1280;
+
+  const requestUserLocation = () => {
+    if (!navigator.geolocation) {
+      console.warn('Geolocation is not supported by this browser.');
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setUserLocation(coords);
+        setIsLocating(false);
+        if (mapRef.current) {
+          mapRef.current.setView([coords.lat, coords.lng], 14);
+        }
+      },
+      (error) => {
+        console.error('Error getting geolocation', error);
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   useEffect(() => {
-    async function loadMapData() {
+    async function loadData() {
       const orgs = await OrganizationService.getAll();
-      
-      // Coordenadas fijas para representarlas en el mapa interactivo
-      const mapPositions = [
-        { x: 30, y: 40, color: 'text-red-600' },
-        { x: 65, y: 30, color: 'text-neutral-900' },
-        { x: 50, y: 70, color: 'text-red-700' },
-      ];
+      const evts = await EventService.getAll();
+      const cats = await CategoryService.getAll();
 
-      const enriched: MapOrg[] = orgs.map((org, idx) => {
-        const pos = mapPositions[idx % mapPositions.length];
-        return {
-          ...org,
-          x: pos.x,
-          y: pos.y,
-          color: pos.color,
-        };
-      });
+      setOrganizations(orgs);
+      setEvents(evts.filter(e => e.estado === 'activo'));
+      setCategories(cats);
 
-      setOrganizations(enriched);
-      if (enriched.length > 0) {
-        setSelectedOrg(enriched[0]);
+      // Select first organization as default detail
+      if (orgs.length > 0) {
+        setSelectedItem({ type: 'organization', data: orgs[0] });
       }
     }
-    loadMapData();
+    loadData();
+    requestUserLocation();
   }, []);
 
+  // Map initialization
   useEffect(() => {
-    if (!selectedOrg) return;
-    async function getEvents() {
-      const evts = await EventService.getAll();
-      setOrgEvents(evts.filter(e => e.organizacionId === selectedOrg.id && e.estado === 'activo'));
+    if (!mapContainerRef.current) return;
+    if (mapRef.current) return;
+
+    const map = L.map(mapContainerRef.current).setView([centerLat, centerLng], 13);
+    mapRef.current = map;
+
+    // Tile Layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
+
+    // Layer Group for dynamic marker updates
+    const group = L.layerGroup().addTo(map);
+    markersGroupRef.current = group;
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        markersGroupRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update Markers when data, filters, or user position changes
+  useEffect(() => {
+    if (!mapRef.current || !markersGroupRef.current) return;
+
+    // Clear previous markers
+    markersGroupRef.current.clearLayers();
+
+    const bounds: L.LatLngExpression[] = [];
+
+    // Helper for fallbacks to avoid stacking on exact same spot if lat/lng is missing
+    const getFallbackCoords = (index: number) => {
+      // Small offsets around Kennedy center
+      const offsetLat = [0, -0.005, 0.006, -0.003, 0.004, -0.006];
+      const offsetLng = [0, 0.007, -0.004, -0.007, 0.005, 0.003];
+      const i = index % offsetLat.length;
+      return {
+        lat: centerLat + offsetLat[i],
+        lng: centerLng + offsetLng[i]
+      };
+    };
+
+    // 0. Add User Current Location Marker
+    if (userLocation) {
+      const userIcon = L.divIcon({
+        className: 'custom-user-location-marker',
+        html: `<div class="relative flex items-center justify-center">
+                 <div class="absolute w-8 h-8 rounded-full bg-indigo-500 animate-ping opacity-35"></div>
+                 <div class="absolute w-5 h-5 rounded-full bg-indigo-600 border-2 border-white shadow-lg flex items-center justify-center text-white">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                 </div>
+               </div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+
+      const userMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon });
+      userMarker.bindPopup(`
+        <div class="text-neutral-900 font-sans p-1.5 text-center">
+          <span class="text-[9px] font-extrabold uppercase tracking-widest text-indigo-600">Tu Ubicación</span>
+          <h4 class="font-bold text-xs leading-tight m-0 text-neutral-950">Estás aquí</h4>
+          <p class="text-[9px] text-neutral-500 m-0">Descubriendo causas cercanas</p>
+        </div>
+      `);
+      userMarker.addTo(markersGroupRef.current);
+      bounds.push([userLocation.lat, userLocation.lng]);
     }
-    getEvents();
-  }, [selectedOrg]);
+
+    // 1. Add Organizations
+    if (filterType === 'all' || filterType === 'org') {
+      organizations.forEach((org, idx) => {
+        // Matches search term
+        if (searchTerm && !org.nombre.toLowerCase().includes(searchTerm.toLowerCase()) && !org.direccion.toLowerCase().includes(searchTerm.toLowerCase())) {
+          return;
+        }
+
+        const orgLat = org.latitud ? Number(org.latitud) : getFallbackCoords(idx).lat;
+        const orgLng = org.longitud ? Number(org.longitud) : getFallbackCoords(idx).lng;
+
+        // Proximity Filtering
+        let distance: number | null = null;
+        if (userLocation) {
+          distance = calculateDistance(userLocation.lat, userLocation.lng, orgLat, orgLng);
+          if (maxDistance > 0 && distance > maxDistance) {
+            return;
+          }
+        }
+
+        // Custom divIcon for Organizacion using blue theme
+        const orgIcon = L.divIcon({
+          className: 'custom-org-marker',
+          html: `<div class="w-9 h-9 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all cursor-pointer">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="18" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="16"/><line x1="15" y1="22" x2="15" y2="16"/><line x1="9" y1="16" x2="15" y2="16"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M9 14h.01"/><path d="M15 14h.01"/><path d="M9 6h.01"/><path d="M15 6h.01"/></svg>
+                 </div>`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18],
+        });
+
+        const marker = L.marker([orgLat, orgLng], { icon: orgIcon });
+        
+        // Popup with distance info
+        const distanceStr = distance !== null 
+          ? `<p class="text-[9px] font-bold text-indigo-600 m-0 bg-indigo-50 px-1.5 py-0.5 rounded w-fit">A ${distance.toFixed(2)} km de ti</p>`
+          : '';
+
+        marker.bindPopup(`
+          <div class="text-neutral-900 font-sans p-1.5 space-y-1">
+            <span class="text-[9px] font-extrabold uppercase tracking-widest text-blue-600">Sede de Organización</span>
+            <h4 class="font-bold text-xs leading-tight m-0 text-neutral-950">${org.nombre}</h4>
+            <p class="text-[10px] text-neutral-500 m-0">${org.direccion || ''}</p>
+            ${distanceStr}
+            <div class="pt-1.5 flex gap-1">
+              <button id="btn-select-org-${org.id}" class="bg-blue-600 text-white text-[9px] font-bold px-2 py-1 rounded hover:bg-blue-700 transition-colors cursor-pointer border-none w-full">
+                Ver Detalles
+              </button>
+            </div>
+          </div>
+        `);
+
+        marker.on('popupopen', () => {
+          const btn = document.getElementById(`btn-select-org-${org.id}`);
+          if (btn) {
+            btn.addEventListener('click', () => {
+              setSelectedItem({ type: 'organization', data: org });
+            });
+          }
+        });
+
+        marker.addTo(markersGroupRef.current!);
+        bounds.push([orgLat, orgLng]);
+      });
+    }
+
+    // 2. Add Events
+    if (filterType === 'all' || filterType === 'event') {
+      events.forEach((evt, idx) => {
+        // Matches search term
+        if (searchTerm && !evt.nombre.toLowerCase().includes(searchTerm.toLowerCase()) && !evt.descripcion.toLowerCase().includes(searchTerm.toLowerCase())) {
+          return;
+        }
+
+        // Matches category
+        if (filterCat !== 'todos' && evt.categoria !== filterCat) {
+          return;
+        }
+
+        const evtLat = evt.latitud ? Number(evt.latitud) : getFallbackCoords(idx + 10).lat;
+        const evtLng = evt.longitud ? Number(evt.longitud) : getFallbackCoords(idx + 10).lng;
+
+        // Proximity Filtering
+        let distance: number | null = null;
+        if (userLocation) {
+          distance = calculateDistance(userLocation.lat, userLocation.lng, evtLat, evtLng);
+          if (maxDistance > 0 && distance > maxDistance) {
+            return;
+          }
+        }
+
+        // Custom divIcon for Event using brand/emerald theme based on category
+        const isReforestacion = evt.categoria.toLowerCase().includes('medio') || evt.categoria.toLowerCase().includes('reforest');
+        const colorClass = isReforestacion ? 'bg-emerald-600' : 'bg-brand';
+
+        const evtIcon = L.divIcon({
+          className: 'custom-evt-marker',
+          html: `<div class="w-9 h-9 rounded-full ${colorClass} border-2 border-white flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all cursor-pointer animate-pulse">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                 </div>`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18],
+        });
+
+        const marker = L.marker([evtLat, evtLng], { icon: evtIcon });
+
+        // Popup with distance info
+        const distanceStr = distance !== null 
+          ? `<p class="text-[9px] font-bold text-indigo-600 m-0 bg-indigo-50 px-1.5 py-0.5 rounded w-fit">A ${distance.toFixed(2)} km de ti</p>`
+          : '';
+
+        marker.bindPopup(`
+          <div class="text-neutral-900 font-sans p-1.5 space-y-1">
+            <span class="text-[9px] font-extrabold uppercase tracking-widest text-emerald-600">Convocatoria Solidaria</span>
+            <h4 class="font-bold text-xs leading-tight m-0 text-neutral-950">${evt.nombre}</h4>
+            <p class="text-[10px] text-neutral-500 m-0">${evt.direccion || ''}</p>
+            ${distanceStr}
+            <div class="pt-1.5 flex gap-1">
+              <button id="btn-select-evt-${evt.id}" class="bg-emerald-600 text-white text-[9px] font-bold px-2 py-1 rounded hover:bg-emerald-700 transition-colors cursor-pointer border-none w-full">
+                Ver Detalles
+              </button>
+            </div>
+          </div>
+        `);
+
+        marker.on('popupopen', () => {
+          const btn = document.getElementById(`btn-select-evt-${evt.id}`);
+          if (btn) {
+            btn.addEventListener('click', () => {
+              setSelectedItem({ type: 'event', data: evt });
+            });
+          }
+        });
+
+        marker.addTo(markersGroupRef.current!);
+        bounds.push([evtLat, evtLng]);
+      });
+    }
+
+    // Pan map to encompass filtered markers if any exist
+    if (bounds.length > 0 && mapRef.current) {
+      mapRef.current.fitBounds(L.latLngBounds(bounds), { padding: [40, 40], maxZoom: 14 });
+    }
+  }, [organizations, events, filterType, filterCat, searchTerm, userLocation, maxDistance]);
+
+  // Center Map on selected sidebar item
+  const handleCenterOnMap = () => {
+    if (!selectedItem || !mapRef.current) return;
+    const item = selectedItem.data;
+    if (item.latitud && item.longitud) {
+      mapRef.current.setView([Number(item.latitud), Number(item.longitud)], 16);
+    }
+  };
+
+  const getOrgName = (orgId: string) => {
+    return organizations.find(o => o.id === orgId)?.nombre || 'Organización';
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black text-neutral-900 uppercase tracking-wider">Mapa Solidario de Kennedy</h1>
+        <h1 className="text-3xl font-black text-neutral-900 uppercase tracking-wider">Mapa Solidario Interactivo</h1>
         <p className="text-xs text-neutral-500 mt-1">
-          Visualiza la distribución geográfica de nuestras organizaciones asociadas en la localidad de Kennedy, Bogotá D.C. y descubre los puntos de acción benéfica.
+          Explora la distribución geográfica de organizaciones benéficas y eventos de voluntariado en tiempo real sobre Kennedy y Bogotá.
         </p>
       </div>
 
+      {/* Controladores de Filtro */}
+      <div className="bg-white border border-neutral-200 p-4 rounded shadow-xs grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+        <div className="md:col-span-3">
+          <label className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500 mb-1.5 flex items-center gap-1">
+            <Layers className="w-3.5 h-3.5" />
+            Tipo de Marcador
+          </label>
+          <select
+            value={filterType}
+            onChange={(e: any) => setFilterType(e.target.value)}
+            className="w-full text-xs border border-neutral-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-1 focus:ring-neutral-900 bg-white font-medium"
+          >
+            <option value="all">Todos los marcadores</option>
+            <option value="org">Sedes de Organizaciones</option>
+            <option value="event">Eventos / Convocatorias</option>
+          </select>
+        </div>
+
+        <div className="md:col-span-3">
+          <label className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500 mb-1.5 flex items-center gap-1">
+            <Filter className="w-3.5 h-3.5" />
+            Categoría del Evento
+          </label>
+          <select
+            value={filterCat}
+            onChange={(e: any) => setFilterCat(e.target.value)}
+            disabled={filterType === 'org'}
+            className="w-full text-xs border border-neutral-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-1 focus:ring-neutral-900 bg-white font-medium disabled:opacity-50"
+          >
+            <option value="todos">Todas las categorías</option>
+            {categories.map(c => (
+              <option key={c.id} value={c.nombre}>{c.nombre}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="md:col-span-3">
+          <label className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500 mb-1.5 flex items-center gap-1">
+            <Navigation className="w-3.5 h-3.5" />
+            Rango de Cercanía
+          </label>
+          <select
+            value={maxDistance}
+            onChange={(e: any) => setMaxDistance(Number(e.target.value))}
+            disabled={!userLocation}
+            className="w-full text-xs border border-neutral-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-1 focus:ring-neutral-900 bg-white font-medium disabled:opacity-50"
+          >
+            <option value={0}>{userLocation ? "Mostrar todo (Sin límite)" : "Activar GPS para filtrar"}</option>
+            <option value={2}>Cercanos (A menos de 2 km)</option>
+            <option value={5}>Cercanos (A menos de 5 km)</option>
+            <option value={10}>Cercanos (A menos de 10 km)</option>
+            <option value={20}>Cercanos (A menos de 20 km)</option>
+          </select>
+        </div>
+
+        <div className="md:col-span-3">
+          <button
+            type="button"
+            onClick={requestUserLocation}
+            disabled={isLocating}
+            className="w-full bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-bold px-3 py-2 rounded-lg border border-neutral-300 transition-colors flex items-center justify-center gap-1.5 shrink-0 h-[38px] disabled:opacity-50 cursor-pointer"
+          >
+            <Navigation className={`w-3.5 h-3.5 text-indigo-600 ${isLocating ? 'animate-spin' : ''}`} />
+            <span>{isLocating ? 'Obteniendo GPS...' : 'Mi Ubicación'}</span>
+          </button>
+        </div>
+
+        <div className="md:col-span-12">
+          <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Búsqueda rápida en el mapa..." />
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Mapa Interactivo (SVG) */}
-        <div className="lg:col-span-2 bg-neutral-100 border border-neutral-200 rounded-lg p-6 relative min-h-[400px] flex flex-col justify-between overflow-hidden">
-          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-xs px-3 py-1.5 rounded border border-neutral-200 text-xs font-semibold text-neutral-700 shadow-xs z-10 flex items-center gap-1.5">
-            <Navigation className="w-4 h-4 text-red-600 animate-pulse" />
-            <span>Localidad de Kennedy (Bogotá D.C. - Colombia)</span>
+        {/* Leaflet Map Container */}
+        <div className="lg:col-span-2 border border-neutral-200 rounded-lg overflow-hidden relative shadow-xs">
+          {/* Quick Info header on map */}
+          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-xs px-3 py-1.5 rounded border border-neutral-200 text-xs font-semibold text-neutral-700 shadow-xs z-[1000] flex items-center gap-1.5">
+            <Navigation className="w-4 h-4 text-blue-600 animate-pulse" />
+            <span>Zona de Cobertura Activa: Bogotá D.C.</span>
           </div>
 
-          {/* Grid de fondo y representación abstracta del territorio */}
-          <div className="absolute inset-0 opacity-10 flex flex-wrap">
-            {Array.from({ length: 150 }).map((_, i) => (
-              <div key={i} className="w-12 h-12 border-t border-l border-neutral-400" />
-            ))}
-          </div>
+          <div ref={mapContainerRef} className="w-full h-[500px] z-0" />
 
-          {/* Rutas ficticias (SVG) */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-            {/* Ríos y carreteras abstractas para dar "vida" al mapa */}
-            <path d="M 0,150 Q 250,150 400,300 T 800,200" fill="none" stroke="#E5E7EB" strokeWidth="8" />
-            <path d="M 100,0 Q 150,200 300,400 T 600,600" fill="none" stroke="#E5E7EB" strokeWidth="4" strokeDasharray="5,5" />
-          </svg>
-
-          {/* Render Pins de Organizaciones */}
-          <div className="relative flex-1">
-            {organizations.map((org) => (
-              <button
-                key={org.id}
-                onClick={() => setSelectedOrg(org)}
-                style={{ left: `${org.x}%`, top: `${org.y}%` }}
-                className="absolute -translate-x-1/2 -translate-y-1/2 group focus:outline-none transition-transform active:scale-95"
-              >
-                <div className="relative flex flex-col items-center">
-                  {/* Tooltip rápido en Hover */}
-                  <span className="absolute bottom-full mb-1.5 whitespace-nowrap bg-neutral-900 text-white text-[10px] font-bold px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150">
-                    {org.nombre}
-                  </span>
-                  
-                  {/* Icono del Pin */}
-                  <div className={`w-8 h-8 bg-white border-2 border-red-600 rounded-full flex items-center justify-center shadow-md transition-all group-hover:bg-red-600 group-hover:text-white ${selectedOrg?.id === org.id ? 'bg-red-600 text-white border-black scale-110' : 'text-red-600'}`}>
-                    <Building2 className="w-4 h-4" />
-                  </div>
-                  
-                  {/* Efecto de sonar si está seleccionado */}
-                  {selectedOrg?.id === org.id && (
-                    <span className="absolute -inset-1 rounded-full border-2 border-red-500 animate-ping opacity-25 pointer-events-none" />
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Leyenda del Mapa */}
-          <div className="bg-white/95 backdrop-blur-xs border border-neutral-200 p-3 rounded text-xs text-neutral-600 font-semibold flex gap-4 mt-auto relative z-10 w-fit">
+          {/* Map Legend */}
+          <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-xs border border-neutral-200 p-3 rounded-lg text-xs text-neutral-600 font-bold flex gap-4 shadow-sm z-[1000] flex-wrap">
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-red-600 inline-block border border-white" />
-              <span>Sede de Organización</span>
+              <span className="w-4 h-4 rounded-full bg-blue-600 inline-block border-2 border-white shadow-xs" />
+              <span>Sedes de Organizaciones (ONG)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-white inline-block border-2 border-red-600" />
-              <span>Actividades Vinculadas</span>
+              <span className="w-4 h-4 rounded-full bg-red-500 inline-block border-2 border-white shadow-xs" />
+              <span>Campañas de Soporte Social</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-4 h-4 rounded-full bg-emerald-600 inline-block border-2 border-white shadow-xs" />
+              <span>Campañas de Reforestación / Ambiental</span>
             </div>
           </div>
         </div>
 
-        {/* Panel Lateral con Información Detallada */}
+        {/* Info Sidebar */}
         <div className="lg:col-span-1">
-          {selectedOrg ? (
+          {selectedItem ? (
             <div className="space-y-6">
-              <Card
-                title={selectedOrg.nombre}
-                subtitle="Ficha de la Organización"
-              >
-                <div className="space-y-4">
-                  <div className="space-y-3 text-xs text-neutral-600 font-medium pt-2">
-                    <div className="flex items-start">
-                      <MapPin className="w-4 h-4 mr-2.5 text-neutral-400 shrink-0 mt-0.5" />
-                      <span>{selectedOrg.direccion}</span>
+              {selectedItem.type === 'organization' ? (
+                <Card
+                  title={selectedItem.data.nombre}
+                  subtitle="Información de la ONG"
+                  footer={
+                    <div className="w-full space-y-2">
+                      {selectedItem.data.latitud && selectedItem.data.longitud && (
+                        <Button variant="outline" size="sm" className="w-full" onClick={handleCenterOnMap}>
+                          <Navigation className="w-4 h-4 mr-1.5" />
+                          Centrar en el Mapa
+                        </Button>
+                      )}
+                      <Link to="/events" className="block w-full">
+                        <Button variant="primary" size="sm" className="w-full">
+                          Ver Convocatorias de Voluntariado
+                        </Button>
+                      </Link>
                     </div>
-                    <div className="flex items-center">
-                      <Mail className="w-4 h-4 mr-2.5 text-neutral-400 shrink-0" />
-                      <a href={`mailto:${selectedOrg.correo}`} className="text-neutral-900 hover:underline">{selectedOrg.correo}</a>
-                    </div>
-                  </div>
+                  }
+                >
+                  <div className="space-y-4">
+                    <p className="text-xs text-neutral-600 leading-relaxed bg-neutral-50 p-3 rounded-lg border border-neutral-200">
+                      {selectedItem.data.descripcion || 'Esta organización trabaja en Kennedy impulsando causas de apoyo social.'}
+                    </p>
 
-                  <div className="pt-4 border-t border-neutral-100">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-900 mb-3 flex items-center gap-1.5">
-                      <Heart className="w-4 h-4 text-red-600" />
-                      Campañas de Voluntariado Activas
-                    </h4>
-                    
-                    {orgEvents.length === 0 ? (
-                      <p className="text-xs text-neutral-400 italic">No hay campañas de voluntariado planificadas para esta sede en este momento.</p>
-                    ) : (
-                      <div className="space-y-2.5">
-                        {orgEvents.map((evt) => (
-                          <div key={evt.id} className="p-3 bg-neutral-50 border border-neutral-150 rounded flex flex-col justify-between items-start gap-1">
-                            <span className="text-xs font-semibold text-neutral-800">{evt.nombre}</span>
-                            <div className="flex justify-between items-center w-full mt-1">
-                              <span className="text-[10px] text-neutral-500">Fecha: {formatDate(evt.fecha)}</span>
-                              <Badge variant="success">Abierto</Badge>
-                            </div>
-                          </div>
-                        ))}
+                    {userLocation && selectedItem.data.latitud && selectedItem.data.longitud && (
+                      <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-indigo-900 flex items-center justify-between shadow-2xs">
+                        <div className="flex items-center gap-1.5 font-bold text-xs">
+                          <Navigation className="w-3.5 h-3.5 text-indigo-600 animate-pulse" />
+                          <span>Distancia desde ti:</span>
+                        </div>
+                        <span className="font-extrabold text-xs text-indigo-700 bg-white px-2 py-0.5 rounded border border-indigo-100">
+                          {calculateDistance(userLocation.lat, userLocation.lng, Number(selectedItem.data.latitud), Number(selectedItem.data.longitud)).toFixed(2)} km
+                        </span>
                       </div>
                     )}
-                  </div>
 
-                  <div className="pt-4 flex gap-2">
-                    <Link to="/events" className="w-full">
-                      <Button variant="primary" size="sm" className="w-full">
-                        Inscribirse en Campañas
-                      </Button>
-                    </Link>
+                    <div className="space-y-3 text-xs text-neutral-600 font-medium">
+                      <div className="flex items-start">
+                        <MapPin className="w-4 h-4 mr-2.5 text-neutral-400 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-semibold text-neutral-950">{selectedItem.data.direccion}</p>
+                          <p className="text-[10px] text-neutral-400">
+                            {selectedItem.data.barrio ? `Barrio: ${selectedItem.data.barrio}` : ''}
+                            {selectedItem.data.localidad ? ` | Localidad: ${selectedItem.data.localidad}` : ''}
+                          </p>
+                        </div>
+                      </div>
+
+                      {selectedItem.data.telefono && (
+                        <div className="flex items-center">
+                          <Phone className="w-4 h-4 mr-2.5 text-neutral-400 shrink-0" />
+                          <span>{selectedItem.data.telefono}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center">
+                        <Mail className="w-4 h-4 mr-2.5 text-neutral-400 shrink-0" />
+                        <a href={`mailto:${selectedItem.data.correo}`} className="text-neutral-900 hover:underline">{selectedItem.data.correo}</a>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              ) : (
+                <Card
+                  title={selectedItem.data.nombre}
+                  subtitle={`Convocatoria - ${selectedItem.data.categoria}`}
+                  footer={
+                    <div className="w-full space-y-2">
+                      {selectedItem.data.latitud && selectedItem.data.longitud && (
+                        <Button variant="outline" size="sm" className="w-full" onClick={handleCenterOnMap}>
+                          <Navigation className="w-4 h-4 mr-1.5" />
+                          Centrar en el Mapa
+                        </Button>
+                      )}
+                      <Link to="/events" className="block w-full">
+                        <Button variant="primary" size="sm" className="w-full">
+                          <Eye className="w-4 h-4 mr-1.5" />
+                          Ver Detalles & Registrarme
+                        </Button>
+                      </Link>
+                    </div>
+                  }
+                >
+                  <div className="space-y-4">
+                    <p className="text-xs text-neutral-600 leading-relaxed bg-neutral-50 p-3 rounded-lg border border-neutral-200">
+                      {selectedItem.data.descripcion}
+                    </p>
+
+                    {userLocation && selectedItem.data.latitud && selectedItem.data.longitud && (
+                      <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-indigo-900 flex items-center justify-between shadow-2xs">
+                        <div className="flex items-center gap-1.5 font-bold text-xs">
+                          <Navigation className="w-3.5 h-3.5 text-indigo-600 animate-pulse" />
+                          <span>Distancia desde ti:</span>
+                        </div>
+                        <span className="font-extrabold text-xs text-indigo-700 bg-white px-2 py-0.5 rounded border border-indigo-100">
+                          {calculateDistance(userLocation.lat, userLocation.lng, Number(selectedItem.data.latitud), Number(selectedItem.data.longitud)).toFixed(2)} km
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="space-y-3 text-xs text-neutral-600 font-medium">
+                      <div className="flex items-center">
+                        <Building2 className="w-4 h-4 mr-2.5 text-neutral-400 shrink-0" />
+                        <span>Organiza: <strong className="text-neutral-900">{getOrgName(selectedItem.data.organizacionId)}</strong></span>
+                      </div>
+
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2.5 text-neutral-400 shrink-0" />
+                        <span>Fecha: <strong className="text-neutral-950">{formatDate(selectedItem.data.fecha)}</strong></span>
+                      </div>
+
+                      <div className="flex items-start">
+                        <MapPin className="w-4 h-4 mr-2.5 text-neutral-400 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-semibold text-neutral-950">{selectedItem.data.direccion}</p>
+                          {selectedItem.data.nombre_lugar && (
+                            <p className="text-xs text-neutral-500 font-semibold mt-0.5">
+                              Lugar: <span className="text-neutral-800 font-bold">{selectedItem.data.nombre_lugar}</span>
+                            </p>
+                          )}
+                          <p className="text-[10px] text-neutral-400 mt-0.5">
+                            {selectedItem.data.barrio ? `Barrio: ${selectedItem.data.barrio}` : ''}
+                            {selectedItem.data.localidad ? ` | Localidad: ${selectedItem.data.localidad}` : ''}
+                          </p>
+                          <p className="text-[10px] text-neutral-400">
+                            Bogotá, Colombia
+                          </p>
+                        </div>
+                      </div>
+
+                      {selectedItem.data.punto_referencia && (
+                        <div className="bg-neutral-50 p-3 rounded-xl text-xs border border-neutral-100">
+                          <span className="font-bold text-neutral-700 block mb-0.5">Punto de referencia:</span>
+                          <span className="text-neutral-600">{selectedItem.data.punto_referencia}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              )}
             </div>
           ) : (
             <div className="bg-white border border-neutral-200 rounded p-6 text-center text-xs text-neutral-400">
-              Seleccione una organización en el mapa para consultar su información.
+              Selecciona un marcador en el mapa para consultar su ficha detallada.
             </div>
           )}
         </div>
