@@ -1,0 +1,48 @@
+import { body } from 'express-validator';
+import { validateResults } from './validateHelper';
+
+export const validateLogin = [
+  body('correo')
+    .isEmail().withMessage('Debe proporcionar un correo electrónico válido.')
+    .notEmpty().withMessage('El correo electrónico es obligatorio.'),
+  body('password')
+    .notEmpty().withMessage('La contraseña es obligatoria.'),
+  validateResults
+];
+
+export const validateRegister = [
+  body('rol')
+    .notEmpty().withMessage('El rol es obligatorio.')
+    .isIn(['admin', 'voluntario', 'beneficiario', 'organizacion']).withMessage('Rol inválido.'),
+  body('nombre1')
+    .trim()
+    .notEmpty().withMessage('El primer nombre es obligatorio.')
+    .isLength({ min: 2, max: 50 }).withMessage('El nombre debe tener entre 2 y 50 caracteres.'),
+  body('apellido1')
+    .trim()
+    .notEmpty().withMessage('El primer apellido es obligatorio.')
+    .isLength({ min: 2, max: 50 }).withMessage('El apellido debe tener entre 2 y 50 caracteres.'),
+  body('correo')
+    .isEmail().withMessage('Debe proporcionar un correo electrónico válido.')
+    .notEmpty().withMessage('El correo electrónico es obligatorio.'),
+  body('password')
+    .notEmpty().withMessage('La contraseña es obligatoria.')
+    .isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres.'),
+  validateResults
+];
+
+export const validateOrgRegister = [
+  body('nombre')
+    .trim()
+    .notEmpty().withMessage('El nombre de la organización es obligatorio.')
+    .isLength({ min: 3, max: 150 }).withMessage('El nombre debe tener entre 3 y 150 caracteres.'),
+  body('direccion')
+    .trim()
+    .notEmpty().withMessage('La dirección es obligatoria.'),
+  body('correo')
+    .isEmail().withMessage('Debe proporcionar un correo electrónico válido.'),
+  body('password')
+    .notEmpty().withMessage('La contraseña es obligatoria.')
+    .isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres.'),
+  validateResults
+];

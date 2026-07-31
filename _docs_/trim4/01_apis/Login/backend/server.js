@@ -8,7 +8,7 @@ const eventRoutes = require("./routes/eventRoutes");
 
 const app = express();
 
-// ============================================
+// ============================================ 
 // CONFIGURACIÓN CORS MEJORADA PARA SWAGGER
 // ============================================
 app.use((req, res, next) => {
@@ -56,13 +56,13 @@ try {
     }
   };
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
-  console.log('📚 Swagger disponible en: http://localhost:3000/api-docs');
+  console.log('📚 Swagger disponible en: http://localhost:5000/api-docs');
 } catch (error) {
   console.warn('⚠️ Swagger no disponible:', error.message);
 }
 
 // ============================================
-// RUTAS DE LA API
+// RUTAS DE LA API 
 // ============================================
 app.use("/api/users", usersRoutes);
 app.use("/api/organizations", organizationRoutes);
@@ -84,5 +84,6 @@ app.use((err, req, res, next) => {
   console.log(err);
   res.status(err.status || 500).send(err.stack);
 });
+
 
 module.exports = app;

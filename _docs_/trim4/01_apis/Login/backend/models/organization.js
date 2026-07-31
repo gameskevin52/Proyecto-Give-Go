@@ -4,19 +4,21 @@ const bcrypt = require("bcryptjs");
 const Organization = {};
 
 const publicFields = `
-  id_Organizaciones AS id,
-  nombre_organizaciones AS name,
-  direccion_organizaciones AS address,
-  correo_organizaciones AS email
+  id_organizacion AS id,
+  nombre AS name,
+  direccion AS address,
+  telefono AS phone,
+  correo AS email,
+  descripcion AS description
 `;
 
 const privateFields = `
   ${publicFields},
-  password_organizaciones AS password
+  password AS password
 `;
 
 Organization.findAll = (result) => {
-  const sql = `SELECT ${publicFields} FROM Organizaciones`;
+  const sql = `SELECT ${publicFields} FROM organizaciones`;
 
   db.query(sql, (err, organizations) => {
     if (err) {
@@ -29,7 +31,7 @@ Organization.findAll = (result) => {
 };
 
 Organization.findById = (id, result) => {
-  const sql = `SELECT ${publicFields} FROM Organizaciones WHERE id_Organizaciones = ?`;
+  const sql = `SELECT ${publicFields} FROM organizaciones WHERE id_organizacion = ?`;
 
   db.query(sql, [id], (err, organizations) => {
     if (err) {
@@ -42,7 +44,7 @@ Organization.findById = (id, result) => {
 };
 
 Organization.findByEmail = (email, result) => {
-  const sql = `SELECT ${privateFields} FROM Organizaciones WHERE correo_organizaciones = ?`;
+  const sql = `SELECT ${privateFields} FROM organizaciones WHERE correo = ?`;
 
   db.query(sql, [email], (err, organizations) => {
     if (err) {
@@ -57,17 +59,26 @@ Organization.findByEmail = (email, result) => {
 Organization.create = async (organization, result) => {
   const hash = await bcrypt.hash(organization.password, 10);
   const sql = `
-    INSERT INTO Organizaciones(
-      nombre_organizaciones,
-      direccion_organizaciones,
-      correo_organizaciones,
-      password_organizaciones
-    ) VALUES (?,?,?,?)
+    INSERT INTO organizaciones(
+      nombre,
+      direccion,
+      telefono,
+      correo,
+      password,
+      descripcion
+    ) VALUES (?,?,?,?,?,?)
   `;
 
   db.query(
     sql,
-    [organization.name, organization.address, organization.email, hash],
+    [
+      organization.name,
+      organization.address,
+      organization.phone || null,
+      organization.email,
+      hash,
+      organization.description || null,
+    ],
     (err, res) => {
       if (err) {
         console.log("Error al crear organizacion: ", err);
@@ -78,7 +89,9 @@ Organization.create = async (organization, result) => {
         id: res.insertId,
         name: organization.name,
         address: organization.address,
+        phone: organization.phone || null,
         email: organization.email,
+        description: organization.description || null,
       });
     }
   );
@@ -89,20 +102,28 @@ Organization.update = async (organization, result) => {
   const values = [];
 
   if (organization.name) {
-    fields.push("nombre_organizaciones = ?");
+    fields.push("nombre = ?");
     values.push(organization.name);
   }
   if (organization.address) {
-    fields.push("direccion_organizaciones = ?");
+    fields.push("direccion = ?");
     values.push(organization.address);
   }
   if (organization.email) {
-    fields.push("correo_organizaciones = ?");
+    fields.push("correo = ?");
     values.push(organization.email);
+  }
+  if (organization.phone) {
+    fields.push("telefono = ?");
+    values.push(organization.phone);
+  }
+  if (organization.description !== undefined) {
+    fields.push("descripcion = ?");
+    values.push(organization.description || null);
   }
   if (organization.password) {
     const hash = await bcrypt.hash(organization.password, 10);
-    fields.push("password_organizaciones = ?");
+    fields.push("password = ?");
     values.push(hash);
   }
 
@@ -110,7 +131,7 @@ Organization.update = async (organization, result) => {
     return result(null, { id: organization.id, message: "No hay datos para actualizar" });
   }
 
-  const sql = `UPDATE Organizaciones SET ${fields.join(", ")} WHERE id_Organizaciones = ?`;
+  const sql = `UPDATE organizaciones SET ${fields.join(", ")} WHERE id_organizacion = ?`;
   values.push(organization.id);
 
   db.query(sql, values, (err, res) => {
@@ -124,7 +145,7 @@ Organization.update = async (organization, result) => {
 };
 
 Organization.delete = (id, result) => {
-  const sql = "DELETE FROM Organizaciones WHERE id_Organizaciones = ?";
+  const sql = "DELETE FROM organizaciones WHERE id_organizacion = ?";
 
   db.query(sql, [id], (err, res) => {
     if (err) {
