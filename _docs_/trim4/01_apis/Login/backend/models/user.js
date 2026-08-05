@@ -5,22 +5,22 @@ const User = {};
 
 const publicFields = `
   id_usuario AS id,
-  roles AS role,
-  nombre1_usuario AS first_name,
-  nombre2_usuario AS second_name,
-  apellido1_usuario AS first_lastname,
-  apellido2_usuario AS second_lastname,
-  telefono_usuario AS phone,
-  correo_usuario AS email
+  rol AS role,
+  nombre1 AS first_name,
+  nombre2 AS second_name,
+  apellido1 AS first_lastname,
+  apellido2 AS second_lastname,
+  telefono AS phone,
+  correo AS email
 `;
 
 const privateFields = `
   ${publicFields},
-  password_usuario AS password
+  password AS password
 `;
 
 User.findAll = (result) => {
-  const sql = `SELECT ${publicFields} FROM Usuarios`;
+  const sql = `SELECT ${publicFields} FROM usuarios`;
 
   db.query(sql, (err, users) => {
     if (err) {
@@ -33,7 +33,7 @@ User.findAll = (result) => {
 };
 
 User.findById = (id, result) => {
-  const sql = `SELECT ${publicFields} FROM Usuarios WHERE id_usuario = ?`;
+  const sql = `SELECT ${publicFields} FROM usuarios WHERE id_usuario = ?`;
 
   db.query(sql, [id], (err, users) => {
     if (err) {
@@ -46,7 +46,7 @@ User.findById = (id, result) => {
 };
 
 User.findByEmail = (email, result) => {
-  const sql = `SELECT ${privateFields} FROM Usuarios WHERE correo_usuario = ?`;
+  const sql = `SELECT ${privateFields} FROM usuarios WHERE correo = ?`;
 
   db.query(sql, [email], (err, users) => {
     if (err) {
@@ -61,15 +61,15 @@ User.findByEmail = (email, result) => {
 User.create = async (user, result) => {
   const hash = await bcrypt.hash(user.password, 10);
   const sql = `
-    INSERT INTO Usuarios(
-      roles,
-      nombre1_usuario,
-      nombre2_usuario,
-      apellido1_usuario,
-      apellido2_usuario,
-      telefono_usuario,
-      correo_usuario,
-      password_usuario
+    INSERT INTO usuarios(
+      rol,
+      nombre1,
+      nombre2,
+      apellido1,
+      apellido2,
+      telefono,
+      correo,
+      password
     ) VALUES (?,?,?,?,?,?,?,?)
   `;
 
@@ -110,36 +110,36 @@ User.update = async (user, result) => {
   const values = [];
 
   if (user.role) {
-    fields.push("roles = ?");
+    fields.push("rol = ?");
     values.push(user.role);
   }
   if (user.first_name) {
-    fields.push("nombre1_usuario = ?");
+    fields.push("nombre1 = ?");
     values.push(user.first_name);
   }
   if (user.second_name !== undefined) {
-    fields.push("nombre2_usuario = ?");
+    fields.push("nombre2 = ?");
     values.push(user.second_name || null);
   }
   if (user.first_lastname) {
-    fields.push("apellido1_usuario = ?");
+    fields.push("apellido1 = ?");
     values.push(user.first_lastname);
   }
   if (user.second_lastname !== undefined) {
-    fields.push("apellido2_usuario = ?");
+    fields.push("apellido2 = ?");
     values.push(user.second_lastname || null);
   }
   if (user.phone) {
-    fields.push("telefono_usuario = ?");
+    fields.push("telefono = ?");
     values.push(user.phone);
   }
   if (user.email) {
-    fields.push("correo_usuario = ?");
+    fields.push("correo = ?");
     values.push(user.email);
   }
   if (user.password) {
     const hash = await bcrypt.hash(user.password, 10);
-    fields.push("password_usuario = ?");
+    fields.push("password = ?");
     values.push(hash);
   }
 
@@ -147,7 +147,7 @@ User.update = async (user, result) => {
     return result(null, { id: user.id, message: "No hay datos para actualizar" });
   }
 
-  const sql = `UPDATE Usuarios SET ${fields.join(", ")} WHERE id_usuario = ?`;
+  const sql = `UPDATE usuarios SET ${fields.join(", ")} WHERE id_usuario = ?`;
   values.push(user.id);
 
   db.query(sql, values, (err, res) => {
@@ -161,7 +161,7 @@ User.update = async (user, result) => {
 };
 
 User.delete = (id, result) => {
-  const sql = "DELETE FROM Usuarios WHERE id_usuario = ?";
+  const sql = "DELETE FROM usuarios WHERE id_usuario = ?";
 
   db.query(sql, [id], (err, res) => {
     if (err) {

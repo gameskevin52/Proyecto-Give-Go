@@ -15,56 +15,56 @@ CREATE TABLE Usuarios (
   password_usuario VARCHAR(255) NOT NULL,
   UNIQUE INDEX correo_UNIQUE (correo_usuario ASC),
   PRIMARY KEY (id_usuario),
-  INDEX id_Usuarios (id_usuario ASC))
+  INDEX id_usuarios (id_usuario ASC))
 ENGINE = InnoDB;
 
 
 CREATE TABLE Organizaciones (
-  id_Organizaciones INT NOT NULL AUTO_INCREMENT,
+  id_organizaciones INT NOT NULL AUTO_INCREMENT,
   nombre_organizaciones VARCHAR(100) NOT NULL,
   direccion_organizaciones VARCHAR(90) NOT NULL,
   correo_organizaciones VARCHAR(45) NOT NULL,
   password_organizaciones VARCHAR(255) NOT NULL,
-  PRIMARY KEY (id_Organizaciones),
+  PRIMARY KEY (id_organizaciones),
   UNIQUE INDEX correo_organizaciones_UNIQUE (correo_organizaciones ASC))
 ENGINE = InnoDB;
 
 
 CREATE TABLE Eventos (
-  id_eventos INT NOT NULL AUTO_INCREMENT,
+  id_evento INT NOT NULL AUTO_INCREMENT,
   nombre_eventos VARCHAR(45) NOT NULL,
   categoria_eventos VARCHAR(45) NOT NULL,
   descripcion_eventos VARCHAR(45) NOT NULL,
   fecha_evento DATETIME NOT NULL,
   estado_evento TINYINT NOT NULL COMMENT 'se añade el tipo de dato como boolean, para que este arroje true(1) si un evento esta activo y false(0) si un evento esta finalizado.',
-  id_Organizaciones INT NOT NULL,
-  PRIMARY KEY (id_eventos),
-  INDEX ind_fk_Eventos_Organizaciones (id_Organizaciones ASC),
+  id_organizaciones INT NOT NULL,
+  PRIMARY KEY (id_evento),
+  INDEX ind_fk_Eventos_Organizaciones (id_organizaciones ASC),
   CONSTRAINT fk_Eventos_Organizaciones
-    FOREIGN KEY (id_Organizaciones)
-    REFERENCES Organizaciones (id_Organizaciones)
+    FOREIGN KEY (id_organizaciones)
+    REFERENCES Organizaciones (id_organizaciones)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
 CREATE TABLE Donaciones (
-  id_Donaciones INT NOT NULL AUTO_INCREMENT,
+  id_donaciones INT NOT NULL AUTO_INCREMENT,
   categoria_donaciones VARCHAR(45) NOT NULL,
   tipo_donaciones VARCHAR(45) NOT NULL,
   fecha_donacion DATETIME NOT NULL,
-  id_Organizaciones INT NOT NULL,
-  id_Usuarios INT NOT NULL,
-  PRIMARY KEY (id_Donaciones),
-  INDEX ind_fk_Donaciones_Organizaciones (id_Organizaciones ASC),
-  INDEX ind_fk_Donaciones_usuarios (id_Usuarios ASC),
+  id_organizaciones INT NOT NULL,
+  id_usuario INT NOT NULL,
+  PRIMARY KEY (id_donaciones),
+  INDEX ind_fk_Donaciones_Organizaciones (id_organizaciones ASC),
+  INDEX ind_fk_Donaciones_usuarios (id_usuario ASC),
   CONSTRAINT fk_Donaciones_Organizaciones
-    FOREIGN KEY (id_Organizaciones)
-    REFERENCES Organizaciones (id_Organizaciones)
+    FOREIGN KEY (id_organizaciones)
+    REFERENCES Organizaciones (id_organizaciones)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT fk_Donaciones_Usuarios
-    FOREIGN KEY (id_Usuarios)
+    FOREIGN KEY (id_usuario)
     REFERENCES Usuarios (id_usuario)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
@@ -72,30 +72,30 @@ ENGINE = InnoDB;
 
 
 CREATE TABLE monetarios (
-    id_Donaciones INT(11) NOT NULL,
+    id_donaciones INT(11) NOT NULL,
     tipo_metodo VARCHAR(45),
     num_cuenta VARCHAR(45),
     valor_total DECIMAL(10,0),
-    PRIMARY KEY (id_Donaciones),    
-  INDEX ind_fk_Monetarios_Donaciones (id_Donaciones ASC),
+    PRIMARY KEY (id_donaciones),    
+  INDEX ind_fk_Monetarios_Donaciones (id_donaciones ASC),
   CONSTRAINT fk_Monetarios_Donaciones
-    FOREIGN KEY (id_Donaciones)
-    REFERENCES donaciones(id_Donaciones)
+    FOREIGN KEY (id_donaciones)
+    REFERENCES donaciones(id_donaciones)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
 CREATE TABLE Objetos (
-  id_Donaciones INT NOT NULL,
+  id_donaciones INT NOT NULL,
   categoria_objeto ENUM('Salud', 'Educacion', 'Medio Ambiente', 'Alimentos', 'Vivienda', 'Ropa') NOT NULL,
   descripcion_de_evento VARCHAR(250) NOT NULL,
   cantidad_total VARCHAR(100) NOT NULL,
-  PRIMARY KEY (id_Donaciones),
-  INDEX ind_fk_Objetos_Donaciones (id_Donaciones ASC),
+  PRIMARY KEY (id_donaciones),
+  INDEX ind_fk_Objetos_Donaciones (id_donaciones ASC),
   CONSTRAINT fk_Objetos_Donaciones
-    FOREIGN KEY (id_Donaciones)
-    REFERENCES Donaciones (id_Donaciones)
+    FOREIGN KEY (id_donaciones)
+    REFERENCES Donaciones (id_donaciones)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
@@ -108,7 +108,7 @@ CREATE TABLE Seguimiento_Eventos (
   INDEX ind_fk_Seguimiento_Eventos_Usuarios (id_usuario ASC),
   CONSTRAINT fk_Seguimiento_Eventos_Eventos
     FOREIGN KEY (id_evento)
-    REFERENCES Eventos (id_eventos)
+    REFERENCES Eventos (id_evento)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
   CONSTRAINT fk_Seguimiento_Eventos_Usuarios

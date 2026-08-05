@@ -31,50 +31,66 @@
 -- 1.1.1. Datos Correctos -------------------------------------------------------------- --
 --        INSERT INTO __ VALUES ( __ , __ ) : ------------------------------------------ --
 -- ------------------------------------------------------------------------------------- --
-INSERT INTO Usuarios (roles, nombre1_usuario, nombre2_usuario, apellido1_usuario, apellido2_usuario, telefono_usuario, correo_usuario, password_usuario) VALUES 
-('Admin', 'Edier', 'Alberto', 'Gomez', 'Perez', '3101234567', 'edier.gomez@email.com', '$2y$10$e0myZ4Q./80t515/e8W2OO5x01rO'),
-('Admin', 'Ana', NULL, 'Martinez', 'Rodriguez', '3159876543', 'ana.martinez@email.com', '$2y$10$k1mzX4Q./90t616/f9W3PP6y12sP'),
-('Voluntario', 'Juan', 'David', 'Castro', NULL, '3204567890', 'juan.castro@email.com', '$2y$10$r2nzY5R./01u717/g0X4QQ7z23tQ'),
-('Beneficiario', 'Maria', 'Fernanda', 'Lopez', 'Silva', '3007654321', 'maria.lopez@email.com', '$2y$10$s3ozZ6S./12v818/h1Y5RR8a34uR'),
-('Voluntario', 'Luis', NULL, 'Mejia', 'Torres', '3123456789', 'luis.mejia@email.com', '$2y$10$t4paA7T./23w919/i2Z6SS9b45vS');
+-- 11. Datos Semilla Iniciales
+-- Categorías iniciales
+INSERT INTO categorias (id_categoria, nombre, descripcion, estado) VALUES
+(1, 'Alimentos', 'Donaciones de alimentos', 1),
+(2, 'Educación', 'Apoyo educativo', 1),
+(3, 'Salud', 'Campañas de salud', 1),
+(4, 'Medio Ambiente', 'Reforestación de zonas verdes', 1),
+(5, 'Económico', 'Aportaciones monetarias', 1);
 
--- Inserción en Organizaciones
-INSERT INTO Organizaciones (nombre_organizaciones, direccion_organizaciones, correo_organizaciones, password_organizaciones) VALUES 
-('Fundación Manos Abiertas', 'Calle 45 # 12-34, Bogotá', 'contacto@manosabiertas.org', '$2y$10$e0myZ4Q./80t515/e8W2OO5x01rO'),
-('EcoPlaneta Verde', 'Avenida Siempre Viva 742', 'info@ecoplaneta.org', '$2y$10$k1mzX4Q./90t616/f9W3PP6y12sP'),
-('Banco de Alimentos Solidario', 'Carrera 10 # 5-67, Medellín', 'donaciones@bancosolidario.org', '$2y$10$r2nzY5R./01u717/g0X4QQ7z23tQ'),
-('Asociación Tejiendo Futuro', 'Diagonal 23 # 45-10, Cali', 'proyectos@tejiendofuturo.org', '$2y$10$s3ozZ6S./12v818/h1Y5RR8a34uR'),
-('Red de Apoyo Infantil', 'Calle de la Amargura 123, Cartagena', 'auxilio@redinfantil.org', '$2y$10$t4paA7T./23w919/i2Z6SS9b45vS');
+-- Usuarios iniciales
+-- Contraseña encriptada para 'Admin123*'
+INSERT INTO usuarios (id_usuario, rol, nombre1, nombre2, apellido1, apellido2, telefono, correo, password, estado) VALUES
+(1, 'Admin', 'Administrador', 'General', 'General', NULL, '+57 300 123 4567', 'admin@giveandgo.com', '$2b$10$tZ9C.mJjXNco/e.e2jV9SeAAL68L16S78A9oGv2o62H9R1pW61qE.', 1),
+(999, 'Voluntario', 'Donante', NULL, 'Anónimo', NULL, NULL, 'anonimo@giveandgo.com', 'none', 1),
+-- Contraseña encriptada para 'User123*'
+(2, 'Voluntario', 'Carlos', 'Andrés', 'Mendoza', 'Castro', '+57 310 987 6543', 'carlos@volunteer.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
+(3, 'Voluntario', 'Sofía', NULL, 'Pérez', NULL, '+57 315 222 3333', 'sofia@volunteer.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
+(4, 'Beneficiario', 'Juan', NULL, 'Gómez', NULL, '+57 320 444 5555', 'juan@beneficiary.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
+(5, 'Beneficiario', 'María', NULL, 'Rodríguez', NULL, '+57 301 555 6666', 'maria@beneficiary.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1);
 
--- Inserción en Eventos
-INSERT INTO Eventos (nombre_eventos, categoria_eventos, descripcion_eventos, fecha_evento, estado_evento, id_Organizaciones) VALUES 
-('Colecta Navideña', 'Solidaridad', 'Entrega de regalos a niños', '2026-12-24 10:00:00', 1, 1),
-('Siembra de Árboles', 'Ecológico', 'Reforestación del bosque', '2026-06-15 08:00:00', 1, 2),
-('Comedor Comunitario', 'Alimentos', 'Almuerzos para habitantes de calle', '2026-05-20 12:00:00', 0, 3),
-('Taller de Lectura', 'Educación', 'Clases de lectoescritura', '2026-07-10 14:00:00', 1, 4),
-('Brigada de Salud', 'Salud', 'Atención médica y medicinas', '2026-04-18 07:00:00', 0, 5);
+-- Organizaciones iniciales
+-- Vinculamos también a la tabla 'usuarios' para su login centralizado
+INSERT INTO usuarios (id_usuario, rol, nombre1, nombre2, apellido1, apellido2, telefono, correo, password, estado) VALUES
+(101, 'Organizacion', 'Fundación Manos por Kennedy', NULL, 'Organización', NULL, '+57 300 000 0000', 'contacto@manosporkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
+(102, 'Organizacion', 'Fundación Bogotá Solidaria', NULL, 'Organización', NULL, '+57 300 000 0000', 'info@bogotasolidaria.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
+(103, 'Organizacion', 'Asociación Social Ciudad Kennedy', NULL, 'Organización', NULL, '+57 300 000 0000', 'hola@ciudadkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1);
 
--- Inserción en Donaciones
-INSERT INTO Donaciones (categoria_donaciones, tipo_donaciones, fecha_donacion, id_Organizaciones, id_Usuarios) VALUES 
-('Económico', 'Monetario', '2026-05-24 15:30:00', 1, 1),
-('Económico', 'Monetario', '2026-05-25 09:15:00', 2, 3),
-('Bienes', 'Objetos', '2026-05-22 11:00:00', 1, 2),
-('Bienes', 'Objetos', '2026-05-23 16:45:00', 3, 5);
+INSERT INTO organizaciones (id_organizacion, nombre, direccion, telefono, correo, password, descripcion, estado) VALUES
+(1, 'Fundación Manos por Kennedy', 'Calle 38 Sur # 78-45, Kennedy Central, Bogotá D.C.', '+57 300 000 0000', 'contacto@manosporkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 'Institución comunitaria enfocada en brindar seguridad alimentaria en Kennedy.', 1),
+(2, 'Fundación Bogotá Solidaria', 'Carrera 80 # 40B Sur-12, Castilla, Bogotá D.C.', '+57 300 000 0000', 'info@bogotasolidaria.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 'Fundación sin ánimo de lucro enfocada en desarrollo y asistencia a adultos mayores.', 1),
+(3, 'Asociación Social Ciudad Kennedy', 'Avenida Ciudad de Cali # 13-08, Patio Bonito, Bogotá D.C.', '+57 300 000 0000', 'hola@ciudadkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 'Organización para la recuperación ambiental y el apoyo pedagógico.', 1);
 
--- Inserción en Monetarios
-INSERT INTO Monetarios (tipo_metodo, num_cuenta, valor_total, id_Donaciones) VALUES 
-('Transferencia Bancaria', 'Ahorros-456789123', 150000.00, 1),
-('Tarjeta de Crédito', 'Visa-****-8821', 500000.00, 2);
+-- Eventos iniciales
+INSERT INTO eventos (id_evento, nombre, id_categoria, descripcion, direccion, fecha, cupo, estado, organizacion_id) VALUES
+(1, 'Jornada de Donación en Kennedy Central', 1, 'Ayúdanos a clasificar y empaquetar alimentos recibidos para las familias vulnerables de la localidad de Kennedy en nuestro centro comunitario.', 'Calle 38 Sur # 78-45, Kennedy Central', '2026-07-15 09:00:00', 50, 1, 1),
+(2, 'Campaña Solidaria Patio Bonito', 2, 'Buscamos voluntarios para apoyar en el reforzamiento escolar y tutorías los fines de semana para niños del sector de Patio Bonito.', 'Avenida Ciudad de Cali # 13-08', '2026-07-20 08:00:00', 20, 1, 1),
+(3, 'Reforestación del Humedal El Burro', 4, 'Jornada de siembra de especies nativas y limpieza en el Humedal El Burro de Kennedy. ¡Trae ropa cómoda y guantes!', 'Calle 8A con Carrera 82, Humedal El Burro', '2026-08-05 07:00:00', 100, 1, 3),
+(4, 'Jornada Comunitaria Castilla', 3, 'Campaña de salud básica preventiva y entrega de kits de aseo para adultos mayores del barrio Castilla.', 'Carrera 80 # 40B Sur-12, Castilla', '2026-06-30 09:00:00', 30, 1, 2);
 
--- Inserción en Objetos
-INSERT INTO Objetos (categoria_objeto, descripcion_de_evento, cantidad_total, id_Donaciones) VALUES 
-('Medio Ambiente', 'Herramientas de jardinería y palas para la siembra', '15 kits', 3),
-('Salud', 'Cajas de tapabocas, alcohol antiséptico y gasas', '50 cajas', 4);
+-- Solicitudes iniciales
+INSERT INTO solicitudes (id_solicitud, usuario_id, titulo, descripcion, estado) VALUES
+(1, 4, 'Apoyo alimentario en Patio Bonito', 'Solicito mercado básico no perecedero para mi núcleo familiar de 4 personas en el barrio Patio Bonito, Kennedy.', 'Pendiente'),
+(2, 5, 'Útiles escolares en Castilla', 'Necesito cuadernos, lápices y útiles escolares para mis dos hijos de primaria en Castilla.', 'Aprobada'),
+(3, 4, 'Kit de medicamentos esenciales', 'Solicitud de apoyo para adquirir medicamentos de control diario para un adulto mayor en el barrio Kennedy Central.', 'Rechazada');
 
--- Inserción en Seguimiento_Eventos (Usuarios inscritos a eventos)
-INSERT INTO Seguimiento_Eventos (id_evento, id_usuario) VALUES 
-(1, 3),  -- Juan Castro se unió a Colecta Navideña
-(1, 4),  -- Maria Lopez se unió a Colecta Navideña
-(2, 5),  -- Luis Mejia se unió a Siembra de Árboles
-(3, 4),  -- Maria Lopez asistió al Comedor Comunitario
-(5, 5);  -- Luis Mejia asistió a la Brigada de Salud
+-- Donación 1
+INSERT INTO donaciones (id_donacion, categoria, tipo, usuario_id, organizacion_id, estado, observaciones) VALUES
+(1, 'Económico', 'Monetaria', 2, 1, 1, 'Donación para la compra de suministros alimentarios.');
+INSERT INTO donaciones_monetarias (id, metodo, cuenta, valor, donacion_id) VALUES
+(1, 'tarjeta', '**** **** **** 4321', 150000.00, 1);
+
+-- Donación 2
+INSERT INTO donaciones (id_donacion, categoria, tipo, usuario_id, organizacion_id, estado, observaciones) VALUES
+(2, 'Alimentos', 'Objeto', 3, 2, 1, 'Aporte en especie para el asilo de Castilla.');
+INSERT INTO donaciones_objetos (id, categoria, descripcion, cantidad, donacion_id) VALUES
+(1, 'Alimentos', '10 kg de arroz, 5 kg de legumbres y aceite vegetal', 15, 2);
+
+-- Auditorías iniciales
+INSERT INTO auditorias (fecha, accion, id_usuario, nombre_usuario, rol_usuario) VALUES
+('2026-07-16T10:00:00.000Z', 'Inicio de sesión exitoso del Administrador', 1, 'Administrador General', 'Admin'),
+('2026-07-16T11:15:00.000Z', 'Creación de convocatoria exitosa: Reforestación del Humedal El Burro', 1, 'Administrador General', 'Admin'),
+('2026-07-16T12:30:00.000Z', 'Inscripción de voluntario en el evento de Reforestación', 2, 'Carlos Mendoza', 'Voluntario'),
+('2026-07-16T13:45:00.000Z', 'Registro de nueva donación monetaria', 2, 'Carlos Mendoza', 'Voluntario');
