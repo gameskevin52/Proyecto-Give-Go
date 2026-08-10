@@ -46,7 +46,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "give_and_go_database"
                 )
                     .addCallback(AppDatabaseCallback(scope))
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                 INSTANCE = instance
                 instance
