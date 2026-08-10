@@ -31,15 +31,22 @@ const COLORS = {
 type ScreenType = 'DASHBOARD' | 'EVENTOS' | 'MAPA' | 'DONAR' | 'REGISTRO';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>('DASHBOARD');
+  // Al exportar el proyecto el registrar aparece de primeras
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>('REGISTRO');
+
+  // Base de datos local en memoria para organizaciones
+  const [organizaciones, setOrganizaciones] = useState<any[]>([]);
+  const [currentOrg, setCurrentOrg] = useState<any>(null);
 
   // Formulario Registro Organización
   const [nombre, setNombre] = useState('');
   const [nit, setNit] = useState('');
   const [direccion, setDireccion] = useState('');
+  const [telefono, setTelefono] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
-  const [categoria, setCategoria] = useState('Alimentación y Comedores');
+  const [categoria, setCategoria] = useState('Alimentos y Bienestar Social');
+  const [barrio, setBarrio] = useState('Kennedy Central');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRegister = () => {
@@ -50,13 +57,47 @@ export default function App() {
 
     setIsSubmitting(true);
     setTimeout(() => {
+      const nuevaOrg = {
+        idOrganizacion: organizaciones.length + 1,
+        nombre: nombre.trim(),
+        nit: nit.trim(),
+        direccion: direccion.trim(),
+        telefono: telefono.trim() || '+57 300 000 0000',
+        correo: correo.trim().toLowerCase(),
+        password: password,
+        categoria: categoria.trim(),
+        barrio: barrio.trim(),
+        localidad: 'Kennedy',
+        ciudad: 'Bogotá',
+        departamento: 'Bogotá D.C.',
+        pais: 'Colombia',
+        fechaRegistro: Date.now(),
+        estadoVerificacion: 'pendiente',
+        verificada: 0,
+      };
+
+      const updatedOrgs = [...organizaciones, nuevaOrg];
+      setOrganizaciones(updatedOrgs);
+      setCurrentOrg(nuevaOrg);
+
+      // Limpiar campos del formulario
+      setNombre('');
+      setNit('');
+      setDireccion('');
+      setTelefono('');
+      setCorreo('');
+      setPassword('');
+
       setIsSubmitting(false);
+
+      // Redirigir al Dashboard inmediatamente tras el registro exitoso
       Alert.alert(
         '¡Registro Exitoso!',
-        `La organización "${nombre}" ha sido registrada satisfactoriamente en Give&Go.`,
-        [{ text: 'Ir al Dashboard', onPress: () => setCurrentScreen('DASHBOARD') }]
+        `La organización "${nuevaOrg.nombre}" se ha guardado correctamente en la base de datos.`,
+        [{ text: 'Ver en Dashboard', onPress: () => setCurrentScreen('DASHBOARD') }]
       );
-    }, 1500);
+      setCurrentScreen('DASHBOARD');
+    }, 1000);
   };
 
   return (
@@ -83,34 +124,40 @@ export default function App() {
           <View style={styles.screenPadding}>
             {/* Banner Bienvenida */}
             <View style={styles.heroCard}>
-              <Text style={styles.heroBadge}>Bogotá Solidaria</Text>
-              <Text style={styles.heroTitle}>Panel de Organizaciones y Voluntariado</Text>
+              <Text style={styles.heroBadge}>
+                {currentOrg ? `ID #${currentOrg.idOrganizacion} • ${currentOrg.barrio}` : 'Bogotá Solidaria'}
+              </Text>
+              <Text style={styles.heroTitle}>
+                {currentOrg ? currentOrg.nombre : 'Panel de Organizaciones Give&Go'}
+              </Text>
               <Text style={styles.heroSubtitle}>
-                Conectamos fundaciones, comedores comunitarios y donantes para maximizar el impacto social.
+                {currentOrg
+                  ? `Organización registrada en ${currentOrg.ciudad}. Correo: ${currentOrg.correo}`
+                  : 'Registra tu primera organización para comenzar a gestionar donaciones, eventos y voluntariado.'}
               </Text>
             </View>
 
             {/* Tarjetas de Métricas */}
-            <Text style={styles.sectionTitle}>Impacto en la Comunidad</Text>
+            <Text style={styles.sectionTitle}>Resumen de la Organización</Text>
             <View style={styles.metricsRow}>
               <View style={[styles.metricCard, { borderLeftColor: COLORS.primary }]}>
-                <Text style={styles.metricNumber}>1,248</Text>
-                <Text style={styles.metricLabel}>Kits Entregados</Text>
+                <Text style={styles.metricNumber}>{organizaciones.length}</Text>
+                <Text style={styles.metricLabel}>Organizaciones</Text>
               </View>
               <View style={[styles.metricCard, { borderLeftColor: '#2563EB' }]}>
-                <Text style={styles.metricNumber}>45</Text>
-                <Text style={styles.metricLabel}>Organizaciones</Text>
+                <Text style={styles.metricNumber}>0</Text>
+                <Text style={styles.metricLabel}>Eventos Activos</Text>
               </View>
             </View>
 
             <View style={styles.metricsRow}>
               <View style={[styles.metricCard, { borderLeftColor: '#059669' }]}>
-                <Text style={styles.metricNumber}>312</Text>
-                <Text style={styles.metricLabel}>Voluntarios Activos</Text>
+                <Text style={styles.metricNumber}>$0</Text>
+                <Text style={styles.metricLabel}>Total Donaciones</Text>
               </View>
               <View style={[styles.metricCard, { borderLeftColor: '#D97706' }]}>
-                <Text style={styles.metricNumber}>18</Text>
-                <Text style={styles.metricLabel}>Localidades</Text>
+                <Text style={styles.metricNumber}>0</Text>
+                <Text style={styles.metricLabel}>Voluntarios</Text>
               </View>
             </View>
 
@@ -129,19 +176,11 @@ export default function App() {
             <Text style={styles.screenTitle}>📅 Próximos Eventos</Text>
             <Text style={styles.screenSubtitle}>Jornadas comunitarias y entregas en Bogotá</Text>
 
-            <View style={styles.cardItem}>
-              <Text style={styles.cardBadge}>Kennedy • Mañana 9:00 AM</Text>
-              <Text style={styles.cardItemTitle}>Jornada de Alimentación y Mercados</Text>
-              <Text style={styles.cardItemDesc}>
-                Distribución de 300 paquetes nutricionales para familias del sector Patio Bonito.
-              </Text>
-            </View>
-
-            <View style={styles.cardItem}>
-              <Text style={styles.cardBadge}>Bosa • Sábado 8:00 AM</Text>
-              <Text style={styles.cardItemTitle}>Campaña de Salud y Ropa Infantil</Text>
-              <Text style={styles.cardItemDesc}>
-                Atención a primera infancia y donación de prendas en excelente estado.
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyIcon}>🗓️</Text>
+              <Text style={styles.emptyTitle}>Sin eventos registrados</Text>
+              <Text style={styles.emptyDesc}>
+                Aún no hay eventos comunitarios programados en la agenda. Los eventos creados aparecerán aquí.
               </Text>
             </View>
           </View>
@@ -151,11 +190,26 @@ export default function App() {
           <View style={styles.screenPadding}>
             <Text style={styles.screenTitle}>🗺️ Mapa de Cobertura</Text>
             <Text style={styles.screenSubtitle}>Puntos de recolección y sedes en Bogotá D.C.</Text>
-            <View style={styles.mapMockCard}>
-              <Text style={styles.mapMockIcon}>📍</Text>
-              <Text style={styles.mapMockText}>18 Puntos de Acopio Activos</Text>
-              <Text style={styles.cardItemDesc}>Kennedy, Bosa, Suba, Engativá, Usme, San Cristóbal y Ciudad Bolívar.</Text>
-            </View>
+
+            {organizaciones.length === 0 ? (
+              <View style={styles.emptyCard}>
+                <Text style={styles.emptyIcon}>📍</Text>
+                <Text style={styles.emptyTitle}>Sin puntos en el mapa</Text>
+                <Text style={styles.emptyDesc}>
+                  Aún no hay puntos ni sedes registradas en el mapa. Se agregarán automáticamente al registrar organizaciones.
+                </Text>
+              </View>
+            ) : (
+              organizaciones.map((org) => (
+                <View key={org.idOrganizacion} style={styles.cardItem}>
+                  <Text style={styles.cardBadge}>{org.barrio} • Bogotá</Text>
+                  <Text style={styles.cardItemTitle}>{org.nombre}</Text>
+                  <Text style={styles.cardItemDesc}>
+                    {org.direccion} • Tel: {org.telefono}
+                  </Text>
+                </View>
+              ))
+            )}
           </View>
         )}
 
@@ -163,13 +217,13 @@ export default function App() {
           <View style={styles.screenPadding}>
             <Text style={styles.screenTitle}>❤️ Donar a Give&Go</Text>
             <Text style={styles.screenSubtitle}>Tu aporte transforma vidas en comedores y comunidades vulnerables.</Text>
-            <View style={styles.cardItem}>
-              <Text style={styles.cardItemTitle}>Donación en Especie</Text>
-              <Text style={styles.cardItemDesc}>Alimentos no perecederos, ropa en buen estado, útiles escolares.</Text>
-            </View>
-            <View style={styles.cardItem}>
-              <Text style={styles.cardItemTitle}>Aporte Económico</Text>
-              <Text style={styles.cardItemDesc}>Canales PSE, Nequi, Daviplata y Bancolombia verificados.</Text>
+
+            <View style={styles.emptyCard}>
+              <Text style={styles.emptyIcon}>🎁</Text>
+              <Text style={styles.emptyTitle}>Sin donaciones registradas</Text>
+              <Text style={styles.emptyDesc}>
+                Aún no hay aportes registrados en el historial de donaciones.
+              </Text>
             </View>
           </View>
         )}
@@ -177,7 +231,7 @@ export default function App() {
         {currentScreen === 'REGISTRO' && (
           <View style={styles.screenPadding}>
             <Text style={styles.screenTitle}>🏢 Registro de Organización</Text>
-            <Text style={styles.screenSubtitle}>Inscribe tu fundación con verificación de correo</Text>
+            <Text style={styles.screenSubtitle}>Inscribe tu fundación y guárdala en la base de datos</Text>
 
             {/* Input Nombre */}
             <Text style={styles.inputLabel}>Nombre de la Organización *</Text>
@@ -209,8 +263,29 @@ export default function App() {
               onChangeText={setDireccion}
             />
 
+            {/* Input Teléfono */}
+            <Text style={styles.inputLabel}>Teléfono de Contacto</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ej. +57 312 456 7890"
+              placeholderTextColor="#94A3B8"
+              keyboardType="phone-pad"
+              value={telefono}
+              onChangeText={setTelefono}
+            />
+
+            {/* Input Barrio */}
+            <Text style={styles.inputLabel}>Barrio / Sector en Bogotá</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ej. Castilla, Kennedy"
+              placeholderTextColor="#94A3B8"
+              value={barrio}
+              onChangeText={setBarrio}
+            />
+
             {/* Input Correo */}
-            <Text style={styles.inputLabel}>Correo Electrónico *</Text>
+            <Text style={styles.inputLabel}>Correo Electrónico Institucional *</Text>
             <TextInput
               style={styles.input}
               placeholder="contacto@organizacion.org"
@@ -233,12 +308,12 @@ export default function App() {
             />
 
             {/* Input Categoría */}
-            <Text style={styles.inputLabel}>Categoría de Acción</Text>
+            <Text style={styles.inputLabel}>Categoría de Acción Social</Text>
             <TextInput
               style={styles.input}
               value={categoria}
               onChangeText={setCategoria}
-              placeholder="Ej. Alimentación, Infancia, Adulto Mayor"
+              placeholder="Ej. Alimentos y Bienestar Social"
               placeholderTextColor="#94A3B8"
             />
 
@@ -251,16 +326,18 @@ export default function App() {
               {isSubmitting ? (
                 <ActivityIndicator color={COLORS.white} />
               ) : (
-                <Text style={styles.submitButtonText}>Confirmar Registro</Text>
+                <Text style={styles.submitButtonText}>Confirmar y Guardar Registro</Text>
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setCurrentScreen('DASHBOARD')}
-            >
-              <Text style={styles.cancelButtonText}>Volver al Dashboard</Text>
-            </TouchableOpacity>
+            {organizaciones.length > 0 && (
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setCurrentScreen('DASHBOARD')}
+              >
+                <Text style={styles.cancelButtonText}>Ir al Dashboard</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
         <View style={{ height: 40 }} />
@@ -469,23 +546,32 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     lineHeight: 18,
   },
-  mapMockCard: {
+  emptyCard: {
     backgroundColor: COLORS.white,
     borderRadius: 16,
-    padding: 24,
+    padding: 32,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
+    marginTop: 12,
   },
-  mapMockIcon: {
-    fontSize: 40,
-    marginBottom: 10,
+  emptyIcon: {
+    fontSize: 44,
+    marginBottom: 12,
   },
-  mapMockText: {
+  emptyTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.textPrimary,
     marginBottom: 6,
+    textAlign: 'center',
+  },
+  emptyDesc: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 18,
   },
   inputLabel: {
     fontSize: 13,

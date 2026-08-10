@@ -162,7 +162,7 @@ fun DonacionesScreen(
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text("Total Recaudado", fontSize = 11.sp, color = GiveTextSecondary)
                             Text(
-                                text = "$${String.format("%,.0f", totalMonto ?: 3050000.0)}",
+                                text = "$${String.format(Locale.getDefault(), "%,.0f", totalMonto ?: 0.0)}",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Black,
                                 color = GiveRedPrimary
@@ -192,7 +192,7 @@ fun DonacionesScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "HISTORIAL DE APORTES RECIBIDOS",
+            text = "HISTORIAL DE APORTES RECIBIDOS (${donaciones.size})",
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = GiveTextMuted,
@@ -201,63 +201,111 @@ fun DonacionesScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(donaciones) { donacion ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        if (donaciones.isEmpty()) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = donacion.donante,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = GiveTextPrimary
-                            )
-                            Text(
-                                text = "$${String.format("%,.0f", donacion.monto)} COP",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Black,
-                                color = GiveAccentGreen
-                            )
-                        }
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(Color(0xFFF1F5F9), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MonetizationOn,
+                            contentDescription = null,
+                            tint = GiveTextMuted,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Text(
+                        text = "Sin donaciones registradas",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        color = GiveTextPrimary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Aún no hay aportes registrados en el historial. Puedes ingresar un nuevo aporte con el botón 'Registrar'.",
+                        fontSize = 12.sp,
+                        color = GiveTextSecondary,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        lineHeight = 16.sp
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(donaciones) { donacion ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = donacion.donante,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = GiveTextPrimary
+                                )
+                                Text(
+                                    text = "$${String.format(Locale.getDefault(), "%,.0f", donacion.monto)} COP",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = GiveAccentGreen
+                                )
+                            }
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(4.dp))
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "Tipo: ${donacion.tipo}",
-                                fontSize = 12.sp,
-                                color = GiveTextSecondary
-                            )
-                            Text(
-                                text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(donacion.fecha)),
-                                fontSize = 11.sp,
-                                color = GiveTextMuted
-                            )
-                        }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Tipo: ${donacion.tipo}",
+                                    fontSize = 12.sp,
+                                    color = GiveTextSecondary
+                                )
+                                Text(
+                                    text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(donacion.fecha)),
+                                    fontSize = 11.sp,
+                                    color = GiveTextMuted
+                                )
+                            }
 
-                        if (donacion.mensaje.isNotBlank()) {
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = "“${donacion.mensaje}”",
-                                fontSize = 12.sp,
-                                color = GiveTextPrimary,
-                                lineHeight = 16.sp
-                            )
+                            if (donacion.mensaje.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "“${donacion.mensaje}”",
+                                    fontSize = 12.sp,
+                                    color = GiveTextPrimary,
+                                    lineHeight = 16.sp
+                                )
+                            }
                         }
                     }
                 }

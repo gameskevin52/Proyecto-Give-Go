@@ -303,11 +303,12 @@ fun DashboardOrganizacionScreen(
             ) { target ->
                 when (target) {
                     DashboardTab.INFORMACION_GENERAL -> {
+                        val vCount = acciones.count { it.tipo == "voluntario" }
                         SeccionInformacionGeneral(
-                            totalMonto = totalMonto ?: 3050000.0,
-                            totalParticipantes = totalParticipantes ?: 519,
-                            voluntariosCount = 34 + acciones.count { it.tipo == "voluntario" },
-                            impactoMensual = "+28% vs mes anterior",
+                            totalMonto = totalMonto ?: 0.0,
+                            totalParticipantes = totalParticipantes ?: 0,
+                            voluntariosCount = vCount,
+                            impactoMensual = if ((totalMonto ?: 0.0) > 0.0) "Activo" else "0%",
                             acciones = acciones,
                             onOpenQuickAction = { showQuickActionDialog = true }
                         )
@@ -338,10 +339,10 @@ fun DashboardOrganizacionScreen(
 
                     DashboardTab.SEGUIMIENTO_EVENTOS -> {
                         SeccionSeguimientoEventos(
-                            totalEventos = if (eventos.isNotEmpty()) eventos.size else totalEventos,
-                            totalParticipantes = totalParticipantes ?: 519,
+                            totalEventos = eventos.size,
+                            totalParticipantes = totalParticipantes ?: 0,
                             eventosEsteMes = eventos.count { it.estado != "Completado" },
-                            tasaExito = "98.5%",
+                            tasaExito = if (eventos.isNotEmpty()) "100%" else "0%",
                             eventos = eventos,
                             onCrearEventoClick = { showCreateEventDialog = true }
                         )

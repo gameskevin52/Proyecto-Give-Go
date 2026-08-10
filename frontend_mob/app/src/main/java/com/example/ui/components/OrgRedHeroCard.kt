@@ -65,7 +65,7 @@ fun OrgRedHeroCard(
 ) {
     var showOrgPicker by remember { mutableStateOf(false) }
 
-    val orgName = organizacion?.nombre ?: "Fundación Solidaridad"
+    val orgName = organizacion?.nombre ?: "Organización Give&Go"
     val localidad = organizacion?.localidad ?: "Kennedy"
     val ciudad = organizacion?.ciudad ?: "Bogotá"
     val estadoVerificacion = organizacion?.estadoVerificacion ?: "pendiente"
