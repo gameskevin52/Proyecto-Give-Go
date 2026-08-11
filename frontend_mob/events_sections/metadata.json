@@ -1,0 +1,6 @@
+{
+  "name": "Give&Go - Gestión de Eventos",
+  "description": "Módulo de creación y gestión de eventos comunitarios para la organización Give&Go según la historia de usuario HU 013.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
