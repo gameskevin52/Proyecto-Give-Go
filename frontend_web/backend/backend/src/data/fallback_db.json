@@ -180,6 +180,30 @@
       "pais": "",
       "codigo_postal": "",
       "foto": ""
+    },
+    {
+      "id_usuario": 1002,
+      "rol": "Voluntario",
+      "nombre1": "Pedro",
+      "nombre2": "",
+      "apellido1": "Perez",
+      "apellido2": "",
+      "telefono": "",
+      "correo": "pedrop@test.com",
+      "password": "$2b$10$6yXRkZvB879klzxyUdX7gu6uJZECs/Huui7JcQiySOYwiZAK6io4O",
+      "estado": 1,
+      "fecha_registro": "2026-08-12T01:32:01.648Z",
+      "tipo_documento": "",
+      "num_documento": "",
+      "fecha_nacimiento": "",
+      "direccion": "",
+      "barrio": "",
+      "localidad": "",
+      "ciudad": "",
+      "departamento": "",
+      "pais": "",
+      "codigo_postal": "",
+      "foto": ""
     }
   ],
   "organizaciones": [
@@ -481,6 +505,14 @@
       "id_usuario": 1001,
       "nombre_usuario": "pepos organizacion",
       "rol_usuario": "Organizacion"
+    },
+    {
+      "id_audit": 6,
+      "fecha": "2026-08-12T01:32:01.665Z",
+      "accion": "Registro de nuevo usuario con rol: Voluntario.",
+      "id_usuario": 1002,
+      "nombre_usuario": "Pedro Perez",
+      "rol_usuario": "Voluntario"
     }
   ]
 }
