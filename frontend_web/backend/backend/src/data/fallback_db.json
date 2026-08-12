@@ -132,6 +132,54 @@
       "telefono": "+57 300 000 0000",
       "estado": 1,
       "fecha_registro": "2026-08-12T00:22:30.848Z"
+    },
+    {
+      "id_usuario": 1000,
+      "rol": "Admin",
+      "nombre1": "Carlos",
+      "nombre2": "",
+      "apellido1": "Ramírez",
+      "apellido2": "",
+      "telefono": "",
+      "correo": "Mat@test.com",
+      "password": "$2b$10$MJqww1RM4881hhkrbA1zd.leNbpQ/DqtBJgVriheuX613WRR.qJbq",
+      "estado": 1,
+      "fecha_registro": "2026-08-12T00:48:29.087Z",
+      "tipo_documento": "",
+      "num_documento": "",
+      "fecha_nacimiento": "",
+      "direccion": "",
+      "barrio": "",
+      "localidad": "",
+      "ciudad": "",
+      "departamento": "",
+      "pais": "",
+      "codigo_postal": "",
+      "foto": ""
+    },
+    {
+      "id_usuario": 1001,
+      "rol": "Organizacion",
+      "nombre1": "pepos",
+      "nombre2": "",
+      "apellido1": "organizacion",
+      "apellido2": "",
+      "telefono": "",
+      "correo": "pepo@test.com",
+      "password": "$2b$10$FBwIibjP6jy3ZeEZ2HOwYOiHVtDeugh/BbzmcBhBshJ2vmNg.QDoC",
+      "estado": 1,
+      "fecha_registro": "2026-08-12T01:01:39.497Z",
+      "tipo_documento": "",
+      "num_documento": "",
+      "fecha_nacimiento": "",
+      "direccion": "",
+      "barrio": "",
+      "localidad": "",
+      "ciudad": "",
+      "departamento": "",
+      "pais": "",
+      "codigo_postal": "",
+      "foto": ""
     }
   ],
   "organizaciones": [
@@ -417,6 +465,22 @@
       "id_usuario": 2,
       "nombre_usuario": "Carlos Mendoza",
       "rol_usuario": "Voluntario"
+    },
+    {
+      "id_audit": 4,
+      "fecha": "2026-08-12T00:48:29.114Z",
+      "accion": "Registro de nuevo usuario con rol: Admin.",
+      "id_usuario": 1000,
+      "nombre_usuario": "Carlos Ramírez",
+      "rol_usuario": "Admin"
+    },
+    {
+      "id_audit": 5,
+      "fecha": "2026-08-12T01:01:39.511Z",
+      "accion": "Registro de nuevo usuario con rol: Organizacion.",
+      "id_usuario": 1001,
+      "nombre_usuario": "pepos organizacion",
+      "rol_usuario": "Organizacion"
     }
   ]
 }
