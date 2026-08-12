@@ -204,6 +204,54 @@
       "pais": "",
       "codigo_postal": "",
       "foto": ""
+    },
+    {
+      "id_usuario": 1003,
+      "rol": "Beneficiario",
+      "nombre1": "Nicol",
+      "nombre2": "",
+      "apellido1": "shtaron",
+      "apellido2": "",
+      "telefono": "",
+      "correo": "nicoli@test.com",
+      "password": "$2b$10$YvGvyAiFH4BA.nofIWJi.uB7zeAj90lDa1Di/CF5lc8t/53W3moo2",
+      "estado": 1,
+      "fecha_registro": "2026-08-12T01:40:11.276Z",
+      "tipo_documento": "",
+      "num_documento": "",
+      "fecha_nacimiento": "",
+      "direccion": "",
+      "barrio": "",
+      "localidad": "",
+      "ciudad": "",
+      "departamento": "",
+      "pais": "",
+      "codigo_postal": "",
+      "foto": ""
+    },
+    {
+      "id_usuario": 1004,
+      "rol": "Organizacion",
+      "nombre1": "Fundación Ejemplo",
+      "nombre2": "",
+      "apellido1": "Organización",
+      "apellido2": "",
+      "telefono": "+57 300 000 0000",
+      "correo": "fundacion@test.com",
+      "password": "$2b$10$oZKPEUUu15dV/qpTNK1LheP1MprQHXXPD7UDO5mTLudJWr.XAHrKC",
+      "estado": 1,
+      "fecha_registro": "2026-08-12T01:42:16.368Z",
+      "tipo_documento": "",
+      "num_documento": "",
+      "fecha_nacimiento": "",
+      "direccion": "",
+      "barrio": "",
+      "localidad": "",
+      "ciudad": "",
+      "departamento": "",
+      "pais": "",
+      "codigo_postal": "",
+      "foto": ""
     }
   ],
   "organizaciones": [
@@ -263,6 +311,28 @@
       "categoria": "Medio Ambiente",
       "latitud": 4.6288,
       "longitud": -74.162
+    },
+    {
+      "id_organizacion": 4,
+      "nombre": "Fundación Ejemplo",
+      "direccion": "Calle 123",
+      "telefono": "+57 300 000 0000",
+      "correo": "fundacion@test.com",
+      "password": "$2b$10$oZKPEUUu15dV/qpTNK1LheP1MprQHXXPD7UDO5mTLudJWr.XAHrKC",
+      "descripcion": "",
+      "estado": 1,
+      "fecha_registro": "2026-08-12T01:42:16.365Z",
+      "nit": "",
+      "representante_legal": "",
+      "barrio": "",
+      "localidad": "",
+      "ciudad": "Bogotá",
+      "departamento": "Bogotá D.C.",
+      "pais": "Colombia",
+      "categoria": "",
+      "logo": "",
+      "latitud": null,
+      "longitud": null
     }
   ],
   "eventos": [
@@ -513,6 +583,14 @@
       "id_usuario": 1002,
       "nombre_usuario": "Pedro Perez",
       "rol_usuario": "Voluntario"
+    },
+    {
+      "id_audit": 7,
+      "fecha": "2026-08-12T01:40:11.291Z",
+      "accion": "Registro de nuevo usuario con rol: Beneficiario.",
+      "id_usuario": 1003,
+      "nombre_usuario": "Nicol shtaron",
+      "rol_usuario": "Beneficiario"
     }
   ]
 }
