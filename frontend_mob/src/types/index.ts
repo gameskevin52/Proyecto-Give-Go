@@ -1,4 +1,4 @@
-export type ScreenType = 'DASHBOARD' | 'EVENTOS' | 'MAPA' | 'DONAR' | 'REGISTRO';
+export type ScreenType = 'DASHBOARD' | 'EVENTOS' | 'MAPA' | 'DONAR' | 'LOGIN';
 
 export interface Organizacion {
   idOrganizacion: number;
@@ -7,6 +7,7 @@ export interface Organizacion {
   direccion: string;
   correo: string;
   password?: string;
+  pinSeguridad?: string;
   localidad: string;
   telefono: string;
   representanteLegal?: string;

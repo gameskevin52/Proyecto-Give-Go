@@ -12,20 +12,19 @@ import { COLORS } from './src/constants/theme';
 import { ScreenType, Organizacion } from './src/types';
 import { Header } from './src/components/Header';
 import { BottomNav } from './src/components/BottomNav';
-import { RegistroScreen } from './src/screens/RegistroScreen';
+import { LoginScreen } from './src/screens/LoginScreen';
 import { DashboardScreen } from './src/screens/DashboardScreen';
 import { EventosScreen } from './src/screens/EventosScreen';
 import { MapaScreen } from './src/screens/MapaScreen';
 import { DonarScreen } from './src/screens/DonarScreen';
 import {
   getOrganizaciones,
-  saveOrganizacion,
   updateOrganizacionInStorage,
 } from './src/services/storage';
 
 export default function App() {
-  // Inicialmente muestra primero el formulario de registro de organización
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>('REGISTRO');
+  // Inicia mostrando la pantalla de Inicio de Sesión Institucional
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>('LOGIN');
   const [organizaciones, setOrganizaciones] = useState<Organizacion[]>([]);
   const [currentOrg, setCurrentOrg] = useState<Organizacion | null>(null);
 
@@ -34,21 +33,18 @@ export default function App() {
     const loadStoredOrgs = async () => {
       const stored = await getOrganizaciones();
       setOrganizaciones(stored);
-      if (stored.length > 0) {
-        setCurrentOrg(stored[0]);
-      }
     };
     loadStoredOrgs();
   }, []);
 
-  const handleRegisterSuccess = async (nuevaOrg: Organizacion) => {
-    // Guardar en almacenamiento local persistente
-    const updatedList = await saveOrganizacion(nuevaOrg);
-    setOrganizaciones(updatedList);
-    setCurrentOrg(nuevaOrg);
-
-    // Redirigir al Dashboard de inmediato
+  const handleLoginSuccess = (org: Organizacion) => {
+    setCurrentOrg(org);
     setCurrentScreen('DASHBOARD');
+  };
+
+  const handleLogout = () => {
+    setCurrentOrg(null);
+    setCurrentScreen('LOGIN');
   };
 
   const handleUpdateOrg = async (updatedOrg: Organizacion) => {
@@ -64,7 +60,9 @@ export default function App() {
       {/* Encabezado Superior */}
       <Header
         currentScreen={currentScreen}
-        onOpenRegistro={() => setCurrentScreen('REGISTRO')}
+        isLoggedIn={currentOrg !== null}
+        onLogout={handleLogout}
+        onOpenLogin={() => setCurrentScreen('LOGIN')}
       />
 
       {/* Área Principal de Contenido Con Scroll */}
@@ -73,11 +71,15 @@ export default function App() {
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
+        {currentScreen === 'LOGIN' && (
+          <LoginScreen onLoginSuccess={handleLoginSuccess} />
+        )}
+
         {currentScreen === 'DASHBOARD' && (
           <DashboardScreen
             currentOrg={currentOrg}
             organizacionesCount={organizaciones.length}
-            onOpenRegistro={() => setCurrentScreen('REGISTRO')}
+            onLogout={handleLogout}
             onUpdateOrg={handleUpdateOrg}
           />
         )}
@@ -88,21 +90,20 @@ export default function App() {
 
         {currentScreen === 'DONAR' && <DonarScreen />}
 
-        {currentScreen === 'REGISTRO' && (
-          <RegistroScreen
-            onRegisterSuccess={handleRegisterSuccess}
-            onCancel={() => setCurrentScreen('DASHBOARD')}
-            hasExistingOrgs={organizaciones.length > 0}
-          />
-        )}
-
         <View style={{ height: 40 }} />
       </ScrollView>
 
       {/* Barra de Navegación Inferior */}
       <BottomNav
         currentScreen={currentScreen}
-        onSelectTab={(tab) => setCurrentScreen(tab)}
+        onSelectTab={(tab) => {
+          // Si el usuario intenta ir al Dashboard sin haber iniciado sesión, le muestra Login
+          if (tab === 'DASHBOARD' && !currentOrg) {
+            setCurrentScreen('LOGIN');
+          } else {
+            setCurrentScreen(tab);
+          }
+        }}
       />
     </SafeAreaView>
   );

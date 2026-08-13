@@ -5,22 +5,36 @@ import { ScreenType } from '../types';
 
 interface HeaderProps {
   currentScreen: ScreenType;
-  onOpenRegistro: () => void;
+  isLoggedIn: boolean;
+  onLogout: () => void;
+  onOpenLogin: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenRegistro }) => {
+export const Header: React.FC<HeaderProps> = ({
+  currentScreen,
+  isLoggedIn,
+  onLogout,
+  onOpenLogin,
+}) => {
   return (
     <View style={styles.header}>
       <View style={styles.brandRow}>
         <Text style={styles.heartIcon}>❤️</Text>
         <Text style={styles.brandTitle}>Give&Go</Text>
       </View>
-      <TouchableOpacity
-        style={styles.registerButtonHeader}
-        onPress={onOpenRegistro}
-      >
-        <Text style={styles.registerButtonHeaderText}>+ Registrar Org</Text>
-      </TouchableOpacity>
+
+      {isLoggedIn ? (
+        <TouchableOpacity style={styles.authButtonHeader} onPress={onLogout}>
+          <Text style={styles.authButtonHeaderText}>🚪 Salir</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={[styles.authButtonHeader, currentScreen === 'LOGIN' && styles.authButtonActive]}
+          onPress={onOpenLogin}
+        >
+          <Text style={styles.authButtonHeaderText}>🔑 Iniciar Sesión</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -50,7 +64,7 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     letterSpacing: -0.5,
   },
-  registerButtonHeader: {
+  authButtonHeader: {
     backgroundColor: COLORS.primarySurface,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -58,7 +72,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FECDD3',
   },
-  registerButtonHeaderText: {
+  authButtonActive: {
+    backgroundColor: '#FFE4E6',
+  },
+  authButtonHeaderText: {
     color: COLORS.primary,
     fontWeight: '700',
     fontSize: 12,

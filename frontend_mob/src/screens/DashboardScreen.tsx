@@ -14,7 +14,7 @@ import { Organizacion } from '../types';
 interface DashboardScreenProps {
   currentOrg: Organizacion | null;
   organizacionesCount: number;
-  onOpenRegistro: () => void;
+  onLogout: () => void;
   onUpdateOrg?: (updatedOrg: Organizacion) => void;
 }
 
@@ -23,7 +23,7 @@ type SubTab = 'INFO_GENERAL' | 'MI_PERFIL' | 'EVENTOS_STATS';
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   currentOrg,
   organizacionesCount,
-  onOpenRegistro,
+  onLogout,
   onUpdateOrg,
 }) => {
   const [activeTab, setActiveTab] = useState<SubTab>('INFO_GENERAL');
@@ -184,9 +184,16 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           {/* Botón Acción Rápida */}
           <TouchableOpacity
             style={styles.primaryActionButton}
-            onPress={onOpenRegistro}
+            onPress={() => setActiveTab('MI_PERFIL')}
           >
-            <Text style={styles.primaryActionButtonText}>📝 Inscribir Nueva Fundación / Organización</Text>
+            <Text style={styles.primaryActionButtonText}>👤 Ver y Editar Mi Perfil Institucional</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.secondaryActionButton}
+            onPress={onLogout}
+          >
+            <Text style={styles.secondaryActionButtonText}>🚪 Cerrar Sesión / Cambiar Organización</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -487,6 +494,20 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  secondaryActionButton: {
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  secondaryActionButtonText: {
+    color: COLORS.textSecondary,
+    fontSize: 13,
+    fontWeight: '600',
   },
   profileCard: {
     backgroundColor: COLORS.white,
