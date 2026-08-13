@@ -17,7 +17,11 @@ import { DashboardScreen } from './src/screens/DashboardScreen';
 import { EventosScreen } from './src/screens/EventosScreen';
 import { MapaScreen } from './src/screens/MapaScreen';
 import { DonarScreen } from './src/screens/DonarScreen';
-import { getOrganizaciones, saveOrganizacion } from './src/services/storage';
+import {
+  getOrganizaciones,
+  saveOrganizacion,
+  updateOrganizacionInStorage,
+} from './src/services/storage';
 
 export default function App() {
   // Inicialmente muestra primero el formulario de registro de organización
@@ -47,6 +51,12 @@ export default function App() {
     setCurrentScreen('DASHBOARD');
   };
 
+  const handleUpdateOrg = async (updatedOrg: Organizacion) => {
+    const updatedList = await updateOrganizacionInStorage(updatedOrg);
+    setOrganizaciones(updatedList);
+    setCurrentOrg(updatedOrg);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ExpoStatusBar style="dark" />
@@ -68,6 +78,7 @@ export default function App() {
             currentOrg={currentOrg}
             organizacionesCount={organizaciones.length}
             onOpenRegistro={() => setCurrentScreen('REGISTRO')}
+            onUpdateOrg={handleUpdateOrg}
           />
         )}
 

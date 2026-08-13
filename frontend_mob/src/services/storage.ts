@@ -15,6 +15,20 @@ export const saveOrganizacion = async (nuevaOrg: Organizacion): Promise<Organiza
   }
 };
 
+export const updateOrganizacionInStorage = async (updatedOrg: Organizacion): Promise<Organizacion[]> => {
+  try {
+    const existing = await getOrganizaciones();
+    const updated = existing.map((o) =>
+      o.idOrganizacion === updatedOrg.idOrganizacion ? updatedOrg : o
+    );
+    await AsyncStorage.setItem(ORGS_STORAGE_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (error) {
+    console.error('Error actualizando organización en AsyncStorage:', error);
+    return [];
+  }
+};
+
 export const getOrganizaciones = async (): Promise<Organizacion[]> => {
   try {
     const jsonValue = await AsyncStorage.getItem(ORGS_STORAGE_KEY);
