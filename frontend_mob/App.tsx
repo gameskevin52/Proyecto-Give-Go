@@ -6,7 +6,7 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
-} from 'react-native';
+} from 'react-native';//define las rutas 
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { COLORS } from './src/constants/theme';
 import { ScreenType, Organizacion } from './src/types';

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
+import {//importaciones desde react-native
+  StyleSheet,//Crear estilos
+  Text,//mostrar texto en pantalla
+  View,//Es como un contenedor pero aqui en movil
+  TextInput,//campos de entrada
+  TouchableOpacity,//es el button en mob
+  Alert,//notificaciones de error (dialogos nativos)
+  ActivityIndicator,//indica que algo esta en porceso
 } from 'react-native';
 import { COLORS } from '../constants/theme';
 import { Organizacion } from '../types';
