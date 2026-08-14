@@ -57,7 +57,7 @@ export const mapDbToOrganizacion = (dbOrg: any): Organizacion => {
     direccion: String(dbOrg.direccion || ''),
     correo: String(dbOrg.correo || ''),
     password: dbOrg.password,
-    pinSeguridad: String(dbOrg.pin_seguridad || dbOrg.pinSeguridad || '2026'),
+    pinSeguridad: String(dbOrg.pin_seguridad || dbOrg.pinSeguridad || ''),
     localidad: String(dbOrg.localidad || 'Kennedy'),
     telefono: String(dbOrg.telefono || ''),
     representanteLegal: String(dbOrg.representante_legal || dbOrg.representanteLegal || ''),
@@ -106,12 +106,11 @@ export const mapOrganizacionToDb = (org: Organizacion): any => {
 };
 
 /**
- * Iniciar sesión consumiendo el Backend Node.js Express sin requerir NIT
+ * Iniciar sesión consumiendo el Backend Node.js Express sin requerir NIT ni PIN
  */
 export const loginOrganizacionApi = async (
   correo: string,
-  password: string,
-  pinSeguridad: string
+  password: string
 ): Promise<{ success: boolean; org?: Organizacion; error?: string; source: 'backend' | 'local' }> => {
   const baseUrl = await getApiBaseUrl();
 
@@ -129,7 +128,6 @@ export const loginOrganizacionApi = async (
       body: JSON.stringify({
         correo: correo.trim().toLowerCase(),
         password: password,
-        pinSeguridad: pinSeguridad.trim(),
       }),
       signal: controller.signal,
     }).catch(() => null);
@@ -206,14 +204,6 @@ export const loginOrganizacionApi = async (
     return {
       success: false,
       error: 'Contraseña institucional incorrecta.',
-      source: 'local',
-    };
-  }
-
-  if (foundOrg.pinSeguridad && foundOrg.pinSeguridad !== pinSeguridad.trim()) {
-    return {
-      success: false,
-      error: 'El PIN de seguridad institucional de 4 dígitos es incorrecto.',
       source: 'local',
     };
   }

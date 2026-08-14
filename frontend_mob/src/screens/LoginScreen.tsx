@@ -25,7 +25,6 @@ interface LoginScreenProps {
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
-  const [pinSeguridad, setPinSeguridad] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,18 +50,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   };
 
   const handleLogin = async () => {
-    if (!correo.trim() || !password.trim() || !pinSeguridad.trim()) {
+    if (!correo.trim() || !password.trim()) {
       Alert.alert(
         'Credenciales Incompletas',
-        'Por favor completa todos los campos de autenticación institucional: Correo Electrónico, Contraseña y PIN de Seguridad (4 dígitos).'
-      );
-      return;
-    }
-
-    if (pinSeguridad.trim().length < 4) {
-      Alert.alert(
-        'PIN Inválido',
-        'El PIN de seguridad institucional debe tener al menos 4 dígitos numéricos.'
+        'Por favor completa todos los campos de autenticación institucional: Correo Electrónico y Contraseña.'
       );
       return;
     }
@@ -70,7 +61,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      const result = await loginOrganizacionApi(correo, password, pinSeguridad);
+      const result = await loginOrganizacionApi(correo, password);
       setIsLoading(false);
 
       if (result.success && result.org) {
@@ -93,7 +84,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const handleFillDemo = (demoOrg: Organizacion) => {
     setCorreo(demoOrg.correo);
     setPassword(demoOrg.password || 'password123');
-    setPinSeguridad(demoOrg.pinSeguridad || '2026');
   };
 
   return (
@@ -113,7 +103,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         </View>
         <Text style={styles.screenTitle}>Iniciar Sesión de Organización</Text>
         <Text style={styles.screenSubtitle}>
-          Ingresa con el correo institucional y el token de verificación de tu fundación
+          Ingresa con las credenciales oficiales de tu fundación u organización comunitaria
         </Text>
       </View>
 
@@ -175,22 +165,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           onChangeText={setPassword}
         />
 
-        {/* Campo PIN de Seguridad 4 Dígitos */}
-        <Text style={styles.inputLabel}>PIN de Seguridad Móvil (4 Dígitos) *</Text>
-        <Text style={styles.inputHelper}>
-          Token único de doble factor asignado a directivos autorizados
-        </Text>
-        <TextInput
-          style={[styles.input, styles.pinInput]}
-          placeholder="••••"
-          placeholderTextColor="#94A3B8"
-          keyboardType="number-pad"
-          maxLength={6}
-          secureTextEntry
-          value={pinSeguridad}
-          onChangeText={setPinSeguridad}
-        />
-
         {/* Botón Ingresar */}
         <TouchableOpacity
           style={styles.submitButton}
@@ -207,9 +181,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
       {/* Tarjeta de Seguridad y Transparencia */}
       <View style={styles.securityInfoCard}>
-        <Text style={styles.securityInfoTitle}>🛡️ ¿Por qué estos requisitos de acceso?</Text>
+        <Text style={styles.securityInfoTitle}>🛡️ Acceso Seguro Give&Go</Text>
         <Text style={styles.securityInfoText}>
-          Para garantizar la <Text style={{ fontWeight: 'bold' }}>seguridad y transparencia</Text> de las actividades comunitarias, Give&Go solicita el <Text style={{ fontWeight: 'bold' }}>correo institucional</Text> y un <Text style={{ fontWeight: 'bold' }}>PIN de seguridad móvil</Text>, evitando accesos no autorizados al panel directivo.
+          Gestiona las actividades, eventos y donaciones comunitarias de tu organización ingresando con tus credenciales registradas.
         </Text>
       </View>
 
@@ -367,11 +341,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.black,
     marginBottom: 6,
-  },
-  pinInput: {
-    letterSpacing: 6,
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   submitButton: {
     backgroundColor: COLORS.primary,

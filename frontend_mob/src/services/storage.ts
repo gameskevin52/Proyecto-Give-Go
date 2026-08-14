@@ -100,8 +100,7 @@ export const getOrganizaciones = async (): Promise<Organizacion[]> => {
 
 export const authenticateOrganizacion = async (
   correo: string,
-  password: string,
-  pinSeguridad: string
+  password: string
 ): Promise<{ success: boolean; org?: Organizacion; error?: string }> => {
   const orgs = await getOrganizaciones();
   const cleanCorreo = correo.trim().toLowerCase();
@@ -122,13 +121,6 @@ export const authenticateOrganizacion = async (
     return {
       success: false,
       error: 'La contraseña institucional ingresada es incorrecta.',
-    };
-  }
-
-  if (foundOrg.pinSeguridad && foundOrg.pinSeguridad !== pinSeguridad.trim()) {
-    return {
-      success: false,
-      error: 'El PIN de seguridad institucional / token de 4 dígitos no coincide con el registrado.',
     };
   }
 
