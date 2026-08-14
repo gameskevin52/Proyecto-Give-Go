@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {//importaciones desde react-native
-  StyleSheet,//Crear estilos
-  Text,//mostrar texto en pantalla
-  View,//Es como un contenedor pero aqui en movil
-  TextInput,//campos de entrada
-  TouchableOpacity,//es el button en mob
-  Alert,//notificaciones de error (dialogos nativos)
-  ActivityIndicator,//indica que algo esta en porceso
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { COLORS } from '../constants/theme';
 import { Organizacion } from '../types';
@@ -23,7 +23,6 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
-  const [nit, setNit] = useState('');
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
   const [pinSeguridad, setPinSeguridad] = useState('');
@@ -52,10 +51,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   };
 
   const handleLogin = async () => {
-    if (!nit.trim() || !correo.trim() || !password.trim() || !pinSeguridad.trim()) {
+    if (!correo.trim() || !password.trim() || !pinSeguridad.trim()) {
       Alert.alert(
         'Credenciales Incompletas',
-        'Por favor completa todos los campos de autenticación institucional: NIT, Correo, Contraseña y PIN de Seguridad (4 dígitos).'
+        'Por favor completa todos los campos de autenticación institucional: Correo Electrónico, Contraseña y PIN de Seguridad (4 dígitos).'
       );
       return;
     }
@@ -71,7 +70,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      const result = await loginOrganizacionApi(nit, correo, password, pinSeguridad);
+      const result = await loginOrganizacionApi(correo, password, pinSeguridad);
       setIsLoading(false);
 
       if (result.success && result.org) {
@@ -92,7 +91,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
   // Ayudante para autocompletar credenciales de prueba en Expo Go
   const handleFillDemo = (demoOrg: Organizacion) => {
-    setNit(demoOrg.nit);
     setCorreo(demoOrg.correo);
     setPassword(demoOrg.password || 'password123');
     setPinSeguridad(demoOrg.pinSeguridad || '2026');
@@ -115,7 +113,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         </View>
         <Text style={styles.screenTitle}>Iniciar Sesión de Organización</Text>
         <Text style={styles.screenSubtitle}>
-          Ingresa con las credenciales oficiales y el token de verificación de tu fundación
+          Ingresa con el correo institucional y el token de verificación de tu fundación
         </Text>
       </View>
 
@@ -146,18 +144,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
       {/* Formulario de Login */}
       <View style={styles.formCard}>
-        {/* Campo NIT */}
-        <Text style={styles.inputLabel}>NIT Institucional *</Text>
-        <Text style={styles.inputHelper}>Identificador fiscal único registrado ante DIAN</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ej. 901.458.789-2"
-          placeholderTextColor="#94A3B8"
-          value={nit}
-          onChangeText={setNit}
-          autoCapitalize="none"
-        />
-
         {/* Campo Correo */}
         <Text style={styles.inputLabel}>Correo Electrónico Institucional *</Text>
         <Text style={styles.inputHelper}>Correo corporativo o del representante legal</Text>
@@ -223,7 +209,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       <View style={styles.securityInfoCard}>
         <Text style={styles.securityInfoTitle}>🛡️ ¿Por qué estos requisitos de acceso?</Text>
         <Text style={styles.securityInfoText}>
-          Para garantizar la <Text style={{ fontWeight: 'bold' }}>transparencia y trazabilidad</Text> de las donaciones y actividades comunitarias, Give&Go solicita el <Text style={{ fontWeight: 'bold' }}>NIT oficial</Text> y un <Text style={{ fontWeight: 'bold' }}>PIN de seguridad institucional</Text>, evitando suplantaciones de organizaciones sin ánimo de lucro.
+          Para garantizar la <Text style={{ fontWeight: 'bold' }}>seguridad y transparencia</Text> de las actividades comunitarias, Give&Go solicita el <Text style={{ fontWeight: 'bold' }}>correo institucional</Text> y un <Text style={{ fontWeight: 'bold' }}>PIN de seguridad móvil</Text>, evitando accesos no autorizados al panel directivo.
         </Text>
       </View>
 
@@ -236,7 +222,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             onPress={() => handleFillDemo(INITIAL_ORGANIZACIONES[0])}
           >
             <Text style={styles.demoButtonText}>Demo: Manos Unidas</Text>
-            <Text style={styles.demoButtonSub}>NIT: 901.458.789-2</Text>
+            <Text style={styles.demoButtonSub}>contacto@manosunidaskennedy.org</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -244,7 +230,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             onPress={() => handleFillDemo(INITIAL_ORGANIZACIONES[1])}
           >
             <Text style={styles.demoButtonText}>Demo: Semillas Esperanza</Text>
-            <Text style={styles.demoButtonSub}>NIT: 900.874.123-5</Text>
+            <Text style={styles.demoButtonSub}>directiva@semillasesperanza.org</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -6,11 +6,6 @@ import { INITIAL_ORGANIZACIONES, saveOrganizacion, updateOrganizacionInStorage }
 const API_URL_STORAGE_KEY = '@give_and_go_api_base_url';
 
 // URL por defecto para el backend de Node.js Express montado en /api
-// Rutas reales vistas en backend/app.ts:
-// app.use('/api/organizations', organizationRoutes);
-// app.use('/api/users', userRoutes);
-// app.use('/api/events', eventRoutes);
-// app.use('/api/donations', donationRoutes);
 export const DEFAULT_API_BASE_URL = 'http://10.0.2.2:3000/api';
 
 /**
@@ -48,7 +43,6 @@ export const setApiBaseUrl = async (url: string): Promise<void> => {
  * a la interfaz TypeScript del frontend móvil
  */
 export const mapDbToOrganizacion = (dbOrg: any): Organizacion => {
-  // Tu backend genera id en formato "org_1" o número directo
   let numericId = Date.now();
   if (typeof dbOrg.id === 'string' && dbOrg.id.startsWith('org_')) {
     numericId = parseInt(dbOrg.id.replace('org_', ''), 10) || Date.now();
@@ -112,12 +106,9 @@ export const mapOrganizacionToDb = (org: Organizacion): any => {
 };
 
 /**
- * Iniciar sesión consumiendo el Backend Node.js Express con las rutas reales:
- * 1. Intenta en `/api/users/login` o `/api/organizations/login`
- * 2. Si no hay ruta login específica en organizations, busca en `/api/organizations` con GetAll
+ * Iniciar sesión consumiendo el Backend Node.js Express sin requerir NIT
  */
 export const loginOrganizacionApi = async (
-  nit: string,
   correo: string,
   password: string,
   pinSeguridad: string
@@ -138,14 +129,12 @@ export const loginOrganizacionApi = async (
       body: JSON.stringify({
         correo: correo.trim().toLowerCase(),
         password: password,
-        nit: nit.trim(),
         pinSeguridad: pinSeguridad.trim(),
       }),
       signal: controller.signal,
     }).catch(() => null);
 
     // 2. Si la ruta /users/login no responde 200, consultar el listado de organizaciones
-    // que tienes en tu controlador OrganizationController.getAll (GET /api/organizations)
     if (!response || !response.ok) {
       const orgListResponse = await fetch(`${baseUrl}/organizations`, {
         method: 'GET',
@@ -157,13 +146,11 @@ export const loginOrganizacionApi = async (
         const orgListData = await orgListResponse.json();
         const rawList = Array.isArray(orgListData) ? orgListData : (orgListData.data || []);
         
-        const cleanNit = nit.trim().toLowerCase().replace(/\s+/g, '');
         const cleanCorreo = correo.trim().toLowerCase();
 
         const match = rawList.find((item: any) => {
-          const itemNit = String(item.nit || '').trim().toLowerCase().replace(/\s+/g, '');
           const itemCorreo = String(item.correo || '').trim().toLowerCase();
-          return itemNit === cleanNit || itemCorreo === cleanCorreo;
+          return itemCorreo === cleanCorreo;
         });
 
         if (match) {
@@ -200,19 +187,17 @@ export const loginOrganizacionApi = async (
   }
 
   // Fallback transparente: autenticación con base de datos local
-  const cleanNit = nit.trim().toLowerCase().replace(/\s+/g, '');
   const cleanCorreo = correo.trim().toLowerCase();
 
   const foundOrg = INITIAL_ORGANIZACIONES.find((org) => {
-    const orgNitClean = org.nit.trim().toLowerCase().replace(/\s+/g, '');
     const orgCorreoClean = org.correo.trim().toLowerCase();
-    return orgNitClean === cleanNit || orgCorreoClean === cleanCorreo;
+    return orgCorreoClean === cleanCorreo;
   });
 
   if (!foundOrg) {
     return {
       success: false,
-      error: 'No se encontró la organización con ese NIT o correo institucional.',
+      error: 'No se encontró la organización con ese correo institucional.',
       source: 'local',
     };
   }
@@ -249,7 +234,6 @@ export const getOrganizacionesApi = async (): Promise<Organizacion[]> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-    // Tu app.ts monta: app.use('/api/organizations', organizationRoutes);
     const response = await fetch(`${baseUrl}/organizations`, {
       method: 'GET',
       headers: { Accept: 'application/json' },
@@ -259,7 +243,6 @@ export const getOrganizacionesApi = async (): Promise<Organizacion[]> => {
 
     if (response.ok) {
       const data = await response.json();
-      // Tu OrganizationController.getAll devuelve { success: true, message: '...', data: [...] }
       const list = Array.isArray(data) ? data : data.data || [];
       return list.map(mapDbToOrganizacion);
     }
@@ -276,7 +259,6 @@ export const updateOrganizacionApi = async (org: Organizacion): Promise<boolean>
   const baseUrl = await getApiBaseUrl();
   try {
     const payload = mapOrganizacionToDb(org);
-    // Tu organizationRoutes.ts tiene: router.put('/:id', authenticateJWT, OrganizationController.update);
     const response = await fetch(`${baseUrl}/organizations/${org.idOrganizacion}`, {
       method: 'PUT',
       headers: {

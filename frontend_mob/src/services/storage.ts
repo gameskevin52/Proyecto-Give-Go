@@ -99,25 +99,22 @@ export const getOrganizaciones = async (): Promise<Organizacion[]> => {
 };
 
 export const authenticateOrganizacion = async (
-  nit: string,
   correo: string,
   password: string,
   pinSeguridad: string
 ): Promise<{ success: boolean; org?: Organizacion; error?: string }> => {
   const orgs = await getOrganizaciones();
-  const cleanNit = nit.trim().toLowerCase().replace(/\s+/g, '');
   const cleanCorreo = correo.trim().toLowerCase();
 
   const foundOrg = orgs.find((org) => {
-    const orgNitClean = org.nit.trim().toLowerCase().replace(/\s+/g, '');
     const orgCorreoClean = org.correo.trim().toLowerCase();
-    return orgNitClean === cleanNit || orgCorreoClean === cleanCorreo;
+    return orgCorreoClean === cleanCorreo;
   });
 
   if (!foundOrg) {
     return {
       success: false,
-      error: 'No se encontró ninguna organización registrada con ese NIT o correo institucional.',
+      error: 'No se encontró ninguna organización registrada con ese correo institucional.',
     };
   }
 
