@@ -17,10 +17,8 @@ import { DashboardScreen } from './src/screens/DashboardScreen';
 import { EventosScreen } from './src/screens/EventosScreen';
 import { MapaScreen } from './src/screens/MapaScreen';
 import { DonarScreen } from './src/screens/DonarScreen';
-import {
-  getOrganizaciones,
-  updateOrganizacionInStorage,
-} from './src/services/storage';
+import { getOrganizaciones } from './src/services/storage';
+import { getOrganizacionesApi, updateOrganizacionApi } from './src/services/api';
 
 export default function App() {
   // Inicia mostrando la pantalla de Inicio de Sesión Institucional
@@ -28,11 +26,16 @@ export default function App() {
   const [organizaciones, setOrganizaciones] = useState<Organizacion[]>([]);
   const [currentOrg, setCurrentOrg] = useState<Organizacion | null>(null);
 
-  // Cargar organizaciones guardadas en AsyncStorage al iniciar
+  // Cargar organizaciones al iniciar (intenta Backend y luego caché local)
   useEffect(() => {
     const loadStoredOrgs = async () => {
-      const stored = await getOrganizaciones();
-      setOrganizaciones(stored);
+      const apiOrgs = await getOrganizacionesApi();
+      if (apiOrgs && apiOrgs.length > 0) {
+        setOrganizaciones(apiOrgs);
+      } else {
+        const stored = await getOrganizaciones();
+        setOrganizaciones(stored);
+      }
     };
     loadStoredOrgs();
   }, []);
@@ -48,8 +51,10 @@ export default function App() {
   };
 
   const handleUpdateOrg = async (updatedOrg: Organizacion) => {
-    const updatedList = await updateOrganizacionInStorage(updatedOrg);
-    setOrganizaciones(updatedList);
+    await updateOrganizacionApi(updatedOrg);
+    setOrganizaciones((prev) =>
+      prev.map((o) => (o.idOrganizacion === updatedOrg.idOrganizacion ? updatedOrg : o))
+    );
     setCurrentOrg(updatedOrg);
   };
 

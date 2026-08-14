@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,7 +10,13 @@ import {
 } from 'react-native';
 import { COLORS } from '../constants/theme';
 import { Organizacion } from '../types';
-import { authenticateOrganizacion, INITIAL_ORGANIZACIONES } from '../services/storage';
+import { INITIAL_ORGANIZACIONES } from '../services/storage';
+import {
+  loginOrganizacionApi,
+  getApiBaseUrl,
+  setApiBaseUrl,
+  DEFAULT_API_BASE_URL,
+} from '../services/api';
 
 interface LoginScreenProps {
   onLoginSuccess: (org: Organizacion) => void;
@@ -23,6 +29,27 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [pinSeguridad, setPinSeguridad] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Configuración de Servidor Backend (Node.js Express)
+  const [serverUrl, setServerUrl] = useState(DEFAULT_API_BASE_URL);
+  const [showServerConfig, setShowServerConfig] = useState(false);
+
+  useEffect(() => {
+    const loadUrl = async () => {
+      const url = await getApiBaseUrl();
+      setServerUrl(url);
+    };
+    loadUrl();
+  }, []);
+
+  const handleSaveServerUrl = async () => {
+    await setApiBaseUrl(serverUrl);
+    Alert.alert(
+      'Servidor Guardado',
+      `La app móvil se conectará a: ${serverUrl}`
+    );
+    setShowServerConfig(false);
+  };
 
   const handleLogin = async () => {
     if (!nit.trim() || !correo.trim() || !password.trim() || !pinSeguridad.trim()) {
@@ -44,13 +71,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      const result = await authenticateOrganizacion(nit, correo, password, pinSeguridad);
+      const result = await loginOrganizacionApi(nit, correo, password, pinSeguridad);
       setIsLoading(false);
 
       if (result.success && result.org) {
+        const fuente = result.source === 'backend' ? 'Servidor Backend Node.js' : 'Modo Offline / Caché Local';
         Alert.alert(
           '¡Bienvenido de Nuevo!',
-          `Has iniciado sesión exitosamente como "${result.org.nombre}".`
+          `Has iniciado sesión exitosamente como "${result.org.nombre}".\n(Conexión: ${fuente})`
         );
         onLoginSuccess(result.org);
       } else {
@@ -74,12 +102,47 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     <View style={styles.container}>
       {/* Header Institucional */}
       <View style={styles.heroBadgeCard}>
-        <Text style={styles.heroBadgeText}>🔒 ACCESO SEGURO INSTITUCIONAL</Text>
+        <View style={styles.badgeTopRow}>
+          <Text style={styles.heroBadgeText}>🔒 ACCESO SEGURO INSTITUCIONAL</Text>
+          <TouchableOpacity
+            style={styles.serverConfigToggle}
+            onPress={() => setShowServerConfig(!showServerConfig)}
+          >
+            <Text style={styles.serverConfigToggleText}>
+              {showServerConfig ? '✕ Cerrar IP' : '⚙️ Config Backend'}
+            </Text>
+          </TouchableOpacity>
+        </View>
         <Text style={styles.screenTitle}>Iniciar Sesión de Organización</Text>
         <Text style={styles.screenSubtitle}>
           Ingresa con las credenciales oficiales y el token de verificación de tu fundación
         </Text>
       </View>
+
+      {/* Configuración rápida de IP del Backend Node.js */}
+      {showServerConfig && (
+        <View style={styles.serverConfigCard}>
+          <Text style={styles.serverConfigTitle}>🔌 Conexión con Backend Node.js / Express</Text>
+          <Text style={styles.serverConfigDesc}>
+            Para Expo Go en tu celular, ingresa la IP local de tu computador (ej. http://192.168.1.15:3000/api):
+          </Text>
+          <TextInput
+            style={styles.serverInput}
+            value={serverUrl}
+            onChangeText={setServerUrl}
+            placeholder="http://192.168.1.X:3000/api"
+            placeholderTextColor="#94A3B8"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <TouchableOpacity
+            style={styles.saveServerBtn}
+            onPress={handleSaveServerUrl}
+          >
+            <Text style={styles.saveServerBtnText}>Guardar URL del Servidor</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Formulario de Login */}
       <View style={styles.formCard}>
@@ -201,12 +264,70 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
+  badgeTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
   heroBadgeText: {
     fontSize: 11,
     fontWeight: '900',
     color: COLORS.primary,
     letterSpacing: 1,
-    marginBottom: 6,
+  },
+  serverConfigToggle: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  serverConfigToggleText: {
+    fontSize: 11,
+    color: '#475569',
+    fontWeight: '700',
+  },
+  serverConfigCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+  },
+  serverConfigTitle: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginBottom: 4,
+  },
+  serverConfigDesc: {
+    fontSize: 11,
+    color: '#64748B',
+    marginBottom: 8,
+    lineHeight: 15,
+  },
+  serverInput: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: '#94A3B8',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 13,
+    color: '#0F172A',
+    marginBottom: 8,
+  },
+  saveServerBtn: {
+    backgroundColor: '#334155',
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  saveServerBtnText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   screenTitle: {
     fontSize: 22,
