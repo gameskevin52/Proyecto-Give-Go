@@ -12,6 +12,8 @@ export const INITIAL_ORGANIZACIONES: Organizacion[] = [
     correo: 'contacto@manosunidaskennedy.org',
     password: 'password123',
     pinSeguridad: '2026',
+    descripcion: 'Organización comunitaria sin ánimo de lucro dedicada a la provisión de alimentos, kits escolares y talleres psicosociales para familias vulnerables del suroccidente de Bogotá.',
+    logo: '🤝',
     localidad: 'Kennedy',
     telefono: '+57 312 456 7890',
     representanteLegal: 'Carolina Gómez Morales',
@@ -36,6 +38,8 @@ export const INITIAL_ORGANIZACIONES: Organizacion[] = [
     correo: 'directiva@semillasesperanza.org',
     password: 'admin2026',
     pinSeguridad: '7890',
+    descripcion: 'Iniciativa ciudadana enfocada en la formación artística, refuerzo escolar y educación inclusiva para niños y adolescentes en sectores populares.',
+    logo: '🌱',
     localidad: 'Kennedy',
     telefono: '+57 301 789 6543',
     representanteLegal: 'Jorge Eliécer Castro',
@@ -57,7 +61,8 @@ export const INITIAL_ORGANIZACIONES: Organizacion[] = [
 export const saveOrganizacion = async (nuevaOrg: Organizacion): Promise<Organizacion[]> => {
   try {
     const existing = await getOrganizaciones();
-    const updated = [nuevaOrg, ...existing];
+    const filtered = existing.filter((o) => o.idOrganizacion !== nuevaOrg.idOrganizacion);
+    const updated = [nuevaOrg, ...filtered];
     await AsyncStorage.setItem(ORGS_STORAGE_KEY, JSON.stringify(updated));
     return updated;
   } catch (error) {

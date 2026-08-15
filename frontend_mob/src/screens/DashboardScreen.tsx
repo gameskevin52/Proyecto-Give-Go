@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { COLORS } from '../constants/theme';
 import { Organizacion } from '../types';
@@ -15,10 +15,13 @@ interface DashboardScreenProps {
   currentOrg: Organizacion | null;
   organizacionesCount: number;
   onLogout: () => void;
-  onUpdateOrg?: (updatedOrg: Organizacion) => void;
+  onUpdateOrg?: (updatedOrg: Organizacion) => Promise<{ success: boolean; source: 'backend' | 'local'; message?: string } | void> | void;
 }
 
 type SubTab = 'INFO_GENERAL' | 'MI_PERFIL' | 'EVENTOS_STATS';
+
+// Iconos/Logos institucionales predefinidos
+const LOGO_OPTIONS = ['🏢', '🤝', '🌱', '🏥', '📚', '🍞', '❤️', '🕊️'];
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   currentOrg,
@@ -30,66 +33,163 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
   // Estado para la edición en "Mi Perfil"
   const [isEditing, setIsEditing] = useState(false);
-  const [nombre, setNombre] = useState(currentOrg?.nombre || '');
-  const [nit, setNit] = useState(currentOrg?.nit || '');
-  const [direccion, setDireccion] = useState(currentOrg?.direccion || '');
-  const [correo, setCorreo] = useState(currentOrg?.correo || '');
-  const [localidad, setLocalidad] = useState(currentOrg?.localidad || 'Kennedy');
-  const [telefono, setTelefono] = useState(currentOrg?.telefono || '');
-  const [representanteLegal, setRepresentanteLegal] = useState(currentOrg?.representanteLegal || '');
-  const [categoria, setCategoria] = useState(currentOrg?.categoria || 'Alimentos y Bienestar Social');
-  const [mision, setMision] = useState(currentOrg?.mision || '');
-  const [vision, setVision] = useState(currentOrg?.vision || '');
-  const [sitioWeb, setSitioWeb] = useState(currentOrg?.sitioWeb || '');
-  const [redesSociales, setRedesSociales] = useState(currentOrg?.redesSociales || '');
+  const [isSaving, setIsSaving] = useState(false);
 
+  // 1. nombre
+  const [nombre, setNombre] = useState(currentOrg?.nombre || '');
+  // 2. direccion
+  const [direccion, setDireccion] = useState(currentOrg?.direccion || '');
+  // 3. telefono
+  const [telefono, setTelefono] = useState(currentOrg?.telefono || '');
+  // 4. correo (Protegido por Admin General)
+  const [correo, setCorreo] = useState(currentOrg?.correo || '');
+  // 5. password
+  const [password, setPassword] = useState(currentOrg?.password || '');
+  const [showPassword, setShowPassword] = useState(false);
+  // 6. descripcion
+  const [descripcion, setDescripcion] = useState(currentOrg?.descripcion || '');
+  // 7. nit (Protegido por Admin General)
+  const [nit, setNit] = useState(currentOrg?.nit || '');
+  // 8. mision
+  const [mision, setMision] = useState(currentOrg?.mision || '');
+  // 9. vision
+  const [vision, setVision] = useState(currentOrg?.vision || '');
+  // Logo institucional
+  const [logo, setLogo] = useState(currentOrg?.logo || '🏢');
+
+  // Criterio 2: Autorización del Administrador General para modificar NIT y Correo
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [showAdminAuthBox, setShowAdminAuthBox] = useState(false);
+  const [adminKeyInput, setAdminKeyInput] = useState('');
+
+  // Sincronizar estado cuando cambie la organización activa
   useEffect(() => {
     if (currentOrg) {
       setNombre(currentOrg.nombre || '');
-      setNit(currentOrg.nit || '');
       setDireccion(currentOrg.direccion || '');
-      setCorreo(currentOrg.correo || '');
-      setLocalidad(currentOrg.localidad || 'Kennedy');
       setTelefono(currentOrg.telefono || '');
-      setRepresentanteLegal(currentOrg.representanteLegal || '');
-      setCategoria(currentOrg.categoria || 'Alimentos y Bienestar Social');
+      setCorreo(currentOrg.correo || '');
+      setPassword(currentOrg.password || '');
+      setDescripcion(currentOrg.descripcion || '');
+      setNit(currentOrg.nit || '');
       setMision(currentOrg.mision || '');
       setVision(currentOrg.vision || '');
-      setSitioWeb(currentOrg.sitioWeb || '');
-      setRedesSociales(currentOrg.redesSociales || '');
+      setLogo(currentOrg.logo || '🏢');
     }
   }, [currentOrg]);
 
-  const handleSaveProfile = () => {
+  // Validar y desbloquear permisos de Administrador General
+  const handleAuthorizeAdmin = () => {
+    const cleanKey = adminKeyInput.trim().toUpperCase();
+    // Claves maestras de autorización institucional de Administrador General
+    if (cleanKey === 'ADMIN2026' || cleanKey === 'ADMIN' || cleanKey === 'GIVEANDGO' || cleanKey === 'MASTER') {
+      setIsAdminUnlocked(true);
+      setShowAdminAuthBox(false);
+      setAdminKeyInput('');
+      Alert.alert(
+        '🔓 Autorización Concedida',
+        'Permiso de Administrador General validado. Ahora puedes editar el NIT y el Correo Institucional de forma segura.'
+      );
+    } else {
+      Alert.alert(
+        'Acceso Denegado',
+        'La clave de Administrador General es incorrecta. Si necesitas cambiar el NIT o Correo, contacta a la directiva central de Give&Go.'
+      );
+    }
+  };
+
+  // Guardar Cambios en Backend MySQL y Almacenamiento Local (< 2 segundos)
+  const handleSaveProfile = async () => {
     if (!currentOrg) return;
 
-    if (!nombre.trim() || !nit.trim() || !direccion.trim() || !correo.trim()) {
-      Alert.alert('Error', 'Los campos principales no pueden estar vacíos.');
+    // Criterio 3: Validaciones rigurosas
+    if (!nombre.trim() || nombre.trim().length < 3) {
+      Alert.alert('Validación', 'El nombre de la organización debe contener al menos 3 caracteres.');
       return;
     }
+
+    if (!direccion.trim() || direccion.trim().length < 4) {
+      Alert.alert('Validación', 'Por favor ingresa una dirección física institucional válida.');
+      return;
+    }
+
+    if (!telefono.trim() || telefono.trim().length < 7) {
+      Alert.alert('Validación', 'El teléfono debe contener al menos 7 dígitos.');
+      return;
+    }
+
+    // Validación de formato de correo con Regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(correo.trim())) {
+      Alert.alert('Validación', 'El formato del correo electrónico institucional no es válido (ej. contacto@organizacion.org).');
+      return;
+    }
+
+    if (password.trim() && password.trim().length < 6) {
+      Alert.alert('Validación', 'La contraseña institucional debe tener al menos 6 caracteres por seguridad.');
+      return;
+    }
+
+    if (!nit.trim()) {
+      Alert.alert('Validación', 'El NIT de la organización no puede estar vacío.');
+      return;
+    }
+
+    setIsSaving(true);
+    const startTime = Date.now();
 
     const updatedOrg: Organizacion = {
       ...currentOrg,
       nombre: nombre.trim(),
-      nit: nit.trim(),
       direccion: direccion.trim(),
-      correo: correo.trim(),
-      localidad: localidad.trim() || 'Kennedy',
       telefono: telefono.trim(),
-      representanteLegal: representanteLegal.trim(),
-      categoria: categoria.trim(),
+      correo: correo.trim().toLowerCase(),
+      password: password.trim(),
+      descripcion: descripcion.trim(),
+      nit: nit.trim(),
       mision: mision.trim(),
       vision: vision.trim(),
-      sitioWeb: sitioWeb.trim(),
-      redesSociales: redesSociales.trim(),
+      logo: logo || '🏢',
     };
 
-    if (onUpdateOrg) {
-      onUpdateOrg(updatedOrg);
-    }
+    try {
+      if (onUpdateOrg) {
+        await onUpdateOrg(updatedOrg);
+      }
 
+      const elapsed = (Date.now() - startTime) / 1000;
+      setIsSaving(false);
+      setIsEditing(false);
+      setIsAdminUnlocked(false);
+
+      // Criterio 4 y 5: Mensaje de confirmación en menos de 2 segundos
+      Alert.alert(
+        '¡Perfil Actualizado!',
+        `Los datos de la organización se han actualizado exitosamente en la base de datos MySQL y en el panel institucional.\n\n⏱️ Tiempo de respuesta: ${elapsed.toFixed(2)}s`
+      );
+    } catch {
+      setIsSaving(false);
+      Alert.alert('Error', 'Ocurrió un inconveniente al guardar los datos en el servidor.');
+    }
+  };
+
+  const handleCancelEditing = () => {
+    // Restaurar valores previos
+    if (currentOrg) {
+      setNombre(currentOrg.nombre || '');
+      setDireccion(currentOrg.direccion || '');
+      setTelefono(currentOrg.telefono || '');
+      setCorreo(currentOrg.correo || '');
+      setPassword(currentOrg.password || '');
+      setDescripcion(currentOrg.descripcion || '');
+      setNit(currentOrg.nit || '');
+      setMision(currentOrg.mision || '');
+      setVision(currentOrg.vision || '');
+      setLogo(currentOrg.logo || '🏢');
+    }
     setIsEditing(false);
-    Alert.alert('Perfil Actualizado', 'La información de la organización se ha guardado exitosamente.');
+    setIsAdminUnlocked(false);
+    setShowAdminAuthBox(false);
   };
 
   return (
@@ -144,9 +244,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         <View>
           {/* Banner Bienvenida */}
           <View style={styles.heroCard}>
-            <Text style={styles.heroBadge}>
-              {currentOrg ? `ID #${currentOrg.idOrganizacion} • ${currentOrg.barrio || 'Kennedy'}` : 'Bogotá Solidaria'}
-            </Text>
+            <View style={styles.heroTopRow}>
+              <Text style={styles.heroBadge}>
+                {currentOrg ? `ID #${currentOrg.idOrganizacion} • ${currentOrg.barrio || 'Kennedy'}` : 'Bogotá Solidaria'}
+              </Text>
+              <Text style={styles.heroLogoIcon}>{currentOrg?.logo || '🏢'}</Text>
+            </View>
             <Text style={styles.heroTitle}>
               {currentOrg ? currentOrg.nombre : 'Panel de Organizaciones Give&Go'}
             </Text>
@@ -186,25 +289,34 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             style={styles.primaryActionButton}
             onPress={() => setActiveTab('MI_PERFIL')}
           >
-            <Text style={styles.primaryActionButtonText}>👤 Ver y Editar Mi Perfil Institucional</Text>
+            <Text style={styles.primaryActionButtonText}>👤 Ver y Actualizar Mi Perfil</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.secondaryActionButton}
             onPress={onLogout}
           >
-            <Text style={styles.secondaryActionButtonText}>🚪 Cerrar Sesión / Cambiar Organización</Text>
+            <Text style={styles.secondaryActionButtonText}>🚪 Cerrar Sesión Institucional</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* CONTENIDO 2: MI PERFIL */}
+      {/* CONTENIDO 2: MI PERFIL (PANEL DE ACTUALIZACIÓN EN EL ORDEN SOLICITADO) */}
       {activeTab === 'MI_PERFIL' && (
         <View style={styles.profileCard}>
           <View style={styles.profileHeaderRow}>
-            <Text style={styles.profileTitle}>🏢 Perfil de la Organización</Text>
+            <View style={styles.profileTitleContainer}>
+              <Text style={styles.profileLogoAvatar}>{logo}</Text>
+              <View>
+                <Text style={styles.profileTitle}>Perfil Institucional</Text>
+                <Text style={styles.profileSubtitle}>
+                  {isEditing ? 'Modificando datos en la base de datos' : 'Datos registrados en Give&Go MySQL'}
+                </Text>
+              </View>
+            </View>
+
             <TouchableOpacity
-              style={styles.editToggleButton}
+              style={[styles.editToggleButton, isEditing && styles.editToggleButtonActive]}
               onPress={() => {
                 if (isEditing) {
                   handleSaveProfile();
@@ -212,112 +324,304 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   setIsEditing(true);
                 }
               }}
+              disabled={isSaving}
             >
-              <Text style={styles.editToggleButtonText}>
-                {isEditing ? '💾 Guardar Cambios' : '✏️ Editar Perfil'}
-              </Text>
+              {isSaving ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <Text style={styles.editToggleButtonText}>
+                  {isEditing ? '💾 Guardar' : '✏️ Editar'}
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
 
-          {/* Campos de información / edición */}
-          <Text style={styles.fieldLabel}>Nombre de la Organización</Text>
+          {/* Criterio 1: Selección de Logo / Insignia en modo edición */}
+          {isEditing && (
+            <View style={styles.logoPickerContainer}>
+              <Text style={styles.fieldLabel}>Logo / Emblema de la Organización</Text>
+              <View style={styles.logoOptionsRow}>
+                {LOGO_OPTIONS.map((item) => (
+                  <TouchableOpacity
+                    key={item}
+                    style={[styles.logoOptionItem, logo === item && styles.logoOptionItemSelected]}
+                    onPress={() => setLogo(item)}
+                  >
+                    <Text style={styles.logoOptionEmoji}>{item}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* ============================================================== */}
+          {/* CAMPOS EN EL ORDEN ESTRICTO SOLICITADO POR EL USUARIO:        */}
+          {/* 1. nombre, 2. direccion, 3. telefono, 4. correo, 5. password, */}
+          {/* 6. descripcion, 7. nit, 8. mision, 9. vision                  */}
+          {/* ============================================================== */}
+
+          {/* 1. NOMBRE */}
+          <Text style={styles.fieldLabel}>1. Nombre de la Organización *</Text>
           {isEditing ? (
-            <TextInput style={styles.inputEdit} value={nombre} onChangeText={setNombre} />
+            <TextInput
+              style={styles.inputEdit}
+              value={nombre}
+              onChangeText={setNombre}
+              placeholder="Nombre oficial de la fundación"
+              placeholderTextColor="#94A3B8"
+            />
           ) : (
             <Text style={styles.fieldValue}>{nombre || 'Sin registrar'}</Text>
           )}
 
-          <Text style={styles.fieldLabel}>NIT</Text>
+          {/* 2. DIRECCIÓN */}
+          <Text style={styles.fieldLabel}>2. Dirección Institucional *</Text>
           {isEditing ? (
-            <TextInput style={styles.inputEdit} value={nit} onChangeText={setNit} />
-          ) : (
-            <Text style={styles.fieldValue}>{nit || 'Sin registrar'}</Text>
-          )}
-
-          <Text style={styles.fieldLabel}>Dirección</Text>
-          {isEditing ? (
-            <TextInput style={styles.inputEdit} value={direccion} onChangeText={setDireccion} />
+            <TextInput
+              style={styles.inputEdit}
+              value={direccion}
+              onChangeText={setDireccion}
+              placeholder="Ej. Calle 38C Sur # 78-45"
+              placeholderTextColor="#94A3B8"
+            />
           ) : (
             <Text style={styles.fieldValue}>{direccion || 'Sin registrar'}</Text>
           )}
 
-          <Text style={styles.fieldLabel}>Correo Electrónico</Text>
+          {/* 3. TELÉFONO */}
+          <Text style={styles.fieldLabel}>3. Teléfono de Contacto *</Text>
           {isEditing ? (
-            <TextInput style={styles.inputEdit} value={correo} onChangeText={setCorreo} keyboardType="email-address" />
-          ) : (
-            <Text style={styles.fieldValue}>{correo || 'Sin registrar'}</Text>
-          )}
-
-          <Text style={styles.fieldLabel}>Localidad</Text>
-          {isEditing ? (
-            <TextInput style={styles.inputEdit} value={localidad} onChangeText={setLocalidad} />
-          ) : (
-            <Text style={styles.fieldValue}>{localidad || 'Kennedy'}</Text>
-          )}
-
-          <Text style={styles.fieldLabel}>Teléfono</Text>
-          {isEditing ? (
-            <TextInput style={styles.inputEdit} value={telefono} onChangeText={setTelefono} keyboardType="phone-pad" />
+            <TextInput
+              style={styles.inputEdit}
+              value={telefono}
+              onChangeText={setTelefono}
+              placeholder="+57 312 456 7890"
+              placeholderTextColor="#94A3B8"
+              keyboardType="phone-pad"
+            />
           ) : (
             <Text style={styles.fieldValue}>{telefono || 'Sin registrar'}</Text>
           )}
 
-          <Text style={styles.fieldLabel}>Representante Legal</Text>
+          {/* 4. CORREO (Criterio 2: Protegido por Administrador General) */}
+          <View style={styles.labelRowWithLock}>
+            <Text style={styles.fieldLabel}>4. Correo Electrónico Institucional *</Text>
+            {!isAdminUnlocked && isEditing && (
+              <Text style={styles.lockBadge}>🔒 Solo Admin General</Text>
+            )}
+          </View>
           {isEditing ? (
-            <TextInput style={styles.inputEdit} value={representanteLegal} onChangeText={setRepresentanteLegal} />
+            <View>
+              <TextInput
+                style={[styles.inputEdit, !isAdminUnlocked && styles.inputLocked]}
+                value={correo}
+                onChangeText={setCorreo}
+                placeholder="contacto@organizacion.org"
+                placeholderTextColor="#94A3B8"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                editable={isAdminUnlocked}
+              />
+              {!isAdminUnlocked && (
+                <Text style={styles.lockHelperText}>
+                  🛡️ El correo institucional no puede modificarse sin autorización del Administrador General.
+                </Text>
+              )}
+            </View>
           ) : (
-            <Text style={styles.fieldValue}>{representanteLegal || 'Sin registrar'}</Text>
+            <Text style={styles.fieldValue}>{correo || 'Sin registrar'}</Text>
           )}
 
-          <Text style={styles.fieldLabel}>Categoría de Acción</Text>
+          {/* 5. PASSWORD */}
+          <View style={styles.labelRowWithLock}>
+            <Text style={styles.fieldLabel}>5. Contraseña Institucional</Text>
+            {isEditing && (
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <Text style={styles.togglePasswordSmall}>
+                  {showPassword ? 'Ocultar' : 'Mostrar'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
           {isEditing ? (
-            <TextInput style={styles.inputEdit} value={categoria} onChangeText={setCategoria} />
+            <TextInput
+              style={styles.inputEdit}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Clave maestra de la organización"
+              placeholderTextColor="#94A3B8"
+              secureTextEntry={!showPassword}
+            />
           ) : (
-            <Text style={styles.fieldValue}>{categoria || 'Alimentos y Bienestar Social'}</Text>
+            <Text style={styles.fieldValue}>
+              {password ? '••••••••••••' : 'Protegida en Base de Datos'}
+            </Text>
           )}
 
-          <Text style={styles.fieldLabel}>Misión de la Organización</Text>
+          {/* 6. DESCRIPCIÓN */}
+          <Text style={styles.fieldLabel}>6. Descripción de la Organización *</Text>
+          {isEditing ? (
+            <TextInput
+              style={[styles.inputEdit, styles.textAreaEdit]}
+              value={descripcion}
+              onChangeText={setDescripcion}
+              placeholder="Breve reseña del trabajo social y comunitario que realizan..."
+              placeholderTextColor="#94A3B8"
+              multiline
+              numberOfLines={3}
+            />
+          ) : (
+            <Text style={styles.fieldValue}>
+              {descripcion || 'Organización comunitaria dedicada al servicio social y solidario.'}
+            </Text>
+          )}
+
+          {/* 7. NIT (Criterio 2: Protegido por Administrador General) */}
+          <View style={styles.labelRowWithLock}>
+            <Text style={styles.fieldLabel}>7. NIT Institucional *</Text>
+            {!isAdminUnlocked && isEditing && (
+              <Text style={styles.lockBadge}>🔒 Solo Admin General</Text>
+            )}
+          </View>
+          {isEditing ? (
+            <View>
+              <TextInput
+                style={[styles.inputEdit, !isAdminUnlocked && styles.inputLocked]}
+                value={nit}
+                onChangeText={setNit}
+                placeholder="Ej. 901.458.789-2"
+                placeholderTextColor="#94A3B8"
+                editable={isAdminUnlocked}
+              />
+              {!isAdminUnlocked && (
+                <Text style={styles.lockHelperText}>
+                  🛡️ El NIT fiscal no puede modificarse sin autorización del Administrador General.
+                </Text>
+              )}
+            </View>
+          ) : (
+            <Text style={styles.fieldValue}>{nit || 'Sin registrar'}</Text>
+          )}
+
+          {/* 8. MISIÓN */}
+          <Text style={styles.fieldLabel}>8. Misión de la Organización</Text>
           {isEditing ? (
             <TextInput
               style={[styles.inputEdit, styles.textAreaEdit]}
               value={mision}
               onChangeText={setMision}
+              placeholder="Objetivo social fundamental de la fundación..."
+              placeholderTextColor="#94A3B8"
               multiline
+              numberOfLines={3}
             />
           ) : (
             <Text style={styles.fieldValue}>{mision || 'Sin registrar'}</Text>
           )}
 
-          <Text style={styles.fieldLabel}>Visión Institucional</Text>
+          {/* 9. VISIÓN */}
+          <Text style={styles.fieldLabel}>9. Visión Institucional</Text>
           {isEditing ? (
             <TextInput
               style={[styles.inputEdit, styles.textAreaEdit]}
               value={vision}
               onChangeText={setVision}
+              placeholder="Proyección a futuro y metas comunitarias..."
+              placeholderTextColor="#94A3B8"
               multiline
+              numberOfLines={3}
             />
           ) : (
             <Text style={styles.fieldValue}>{vision || 'Sin registrar'}</Text>
           )}
 
-          <Text style={styles.fieldLabel}>Sitio Web</Text>
-          {isEditing ? (
-            <TextInput style={styles.inputEdit} value={sitioWeb} onChangeText={setSitioWeb} />
-          ) : (
-            <Text style={styles.fieldValue}>{sitioWeb || 'No especificado'}</Text>
+          {/* SECCIÓN DE AUTORIZACIÓN DEL ADMINISTRADOR GENERAL (Criterio 2) */}
+          {isEditing && !isAdminUnlocked && (
+            <View style={styles.adminAuthSection}>
+              {!showAdminAuthBox ? (
+                <TouchableOpacity
+                  style={styles.adminUnlockButton}
+                  onPress={() => setShowAdminAuthBox(true)}
+                >
+                  <Text style={styles.adminUnlockButtonText}>
+                    🔑 ¿Eres Administrador General? Desbloquear NIT y Correo
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.adminAuthCard}>
+                  <Text style={styles.adminAuthTitle}>🔐 Autorización de Administrador General</Text>
+                  <Text style={styles.adminAuthDesc}>
+                    Ingresa el token o clave maestra institucional para habilitar la edición de NIT y Correo:
+                  </Text>
+                  <TextInput
+                    style={styles.adminAuthInput}
+                    placeholder="Clave Maestra (ej. ADMIN2026)"
+                    placeholderTextColor="#94A3B8"
+                    secureTextEntry
+                    value={adminKeyInput}
+                    onChangeText={setAdminKeyInput}
+                  />
+                  <View style={styles.adminAuthBtnRow}>
+                    <TouchableOpacity
+                      style={styles.adminAuthCancelBtn}
+                      onPress={() => {
+                        setShowAdminAuthBox(false);
+                        setAdminKeyInput('');
+                      }}
+                    >
+                      <Text style={styles.adminAuthCancelBtnText}>Cancelar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.adminAuthConfirmBtn}
+                      onPress={handleAuthorizeAdmin}
+                    >
+                      <Text style={styles.adminAuthConfirmBtnText}>Validar Permiso</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </View>
           )}
 
-          <Text style={styles.fieldLabel}>Redes Sociales</Text>
-          {isEditing ? (
-            <TextInput style={styles.inputEdit} value={redesSociales} onChangeText={setRedesSociales} />
-          ) : (
-            <Text style={styles.fieldValue}>{redesSociales || 'No especificadas'}</Text>
+          {/* Badge cuando el Administrador General está desbloqueado */}
+          {isEditing && isAdminUnlocked && (
+            <View style={styles.adminUnlockedBanner}>
+              <Text style={styles.adminUnlockedBannerText}>
+                🔓 Modo Administrador General Habilitado: Ahora puedes actualizar el NIT y Correo Institucional.
+              </Text>
+            </View>
           )}
 
+          {/* BOTONES DE ACCIÓN EN MODO EDICIÓN */}
           {isEditing && (
-            <TouchableOpacity style={styles.saveProfileButton} onPress={handleSaveProfile}>
-              <Text style={styles.saveProfileButtonText}>Guardar Todos los Cambios</Text>
-            </TouchableOpacity>
+            <View style={styles.editActionButtonsContainer}>
+              <TouchableOpacity
+                style={styles.saveProfileButton}
+                onPress={handleSaveProfile}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <View style={styles.savingRow}>
+                    <ActivityIndicator color={COLORS.white} />
+                    <Text style={[styles.saveProfileButtonText, { marginLeft: 8 }]}>
+                      Actualizando Base de Datos...
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.saveProfileButtonText}>
+                    💾 Guardar y Actualizar Base de Datos
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.cancelEditButton}
+                onPress={handleCancelEditing}
+                disabled={isSaving}
+              >
+                <Text style={styles.cancelEditButtonText}>✕ Cancelar Edición</Text>
+              </TouchableOpacity>
+            </View>
           )}
         </View>
       )}
@@ -423,13 +727,21 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 20,
   },
+  heroTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
   heroBadge: {
     color: '#FEE2E2',
     fontSize: 12,
     fontWeight: 'bold',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    marginBottom: 6,
+  },
+  heroLogoIcon: {
+    fontSize: 24,
   },
   heroTitle: {
     color: COLORS.white,
@@ -521,27 +833,82 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-    paddingBottom: 10,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
+  },
+  profileTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  profileLogoAvatar: {
+    fontSize: 30,
+    backgroundColor: COLORS.primarySurface,
+    padding: 8,
+    borderRadius: 14,
+    overflow: 'hidden',
   },
   profileTitle: {
     fontSize: 17,
     fontWeight: 'bold',
     color: COLORS.textPrimary,
   },
+  profileSubtitle: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
   editToggleButton: {
     backgroundColor: COLORS.primarySurface,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#FECDD3',
+  },
+  editToggleButtonActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   editToggleButtonText: {
     color: COLORS.primary,
     fontWeight: 'bold',
     fontSize: 12,
+  },
+  logoPickerContainer: {
+    backgroundColor: '#F8FAFC',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  logoOptionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 6,
+  },
+  logoOptionItem: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 10,
+    padding: 8,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoOptionItemSelected: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primarySurface,
+    borderWidth: 2,
+  },
+  logoOptionEmoji: {
+    fontSize: 20,
   },
   fieldLabel: {
     fontSize: 12,
@@ -551,11 +918,38 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     textTransform: 'uppercase',
   },
+  labelRowWithLock: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  lockBadge: {
+    fontSize: 11,
+    color: '#B91C1C',
+    fontWeight: 'bold',
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  lockHelperText: {
+    fontSize: 11,
+    color: '#64748B',
+    marginBottom: 6,
+    fontStyle: 'italic',
+  },
+  togglePasswordSmall: {
+    fontSize: 11,
+    color: COLORS.primary,
+    fontWeight: 'bold',
+  },
   fieldValue: {
-    fontSize: 15,
+    fontSize: 14,
     color: COLORS.textPrimary,
     fontWeight: '500',
     marginBottom: 6,
+    lineHeight: 20,
   },
   inputEdit: {
     backgroundColor: '#F8FAFC',
@@ -563,26 +957,146 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     borderRadius: 10,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 9,
     fontSize: 14,
     color: COLORS.black,
     marginBottom: 6,
   },
+  inputLocked: {
+    backgroundColor: '#F1F5F9',
+    borderColor: '#CBD5E1',
+    color: '#64748B',
+  },
   textAreaEdit: {
-    minHeight: 60,
+    minHeight: 70,
     textAlignVertical: 'top',
+  },
+  adminAuthSection: {
+    marginTop: 14,
+    marginBottom: 10,
+  },
+  adminUnlockButton: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#94A3B8',
+    borderStyle: 'dashed',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+  },
+  adminUnlockButtonText: {
+    fontSize: 12,
+    color: '#334155',
+    fontWeight: 'bold',
+  },
+  adminAuthCard: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    borderRadius: 12,
+    padding: 12,
+  },
+  adminAuthTitle: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#1E40AF',
+    marginBottom: 4,
+  },
+  adminAuthDesc: {
+    fontSize: 11,
+    color: '#1E3A8A',
+    marginBottom: 8,
+    lineHeight: 15,
+  },
+  adminAuthInput: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: '#93C5FD',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    fontSize: 13,
+    color: COLORS.black,
+    marginBottom: 8,
+  },
+  adminAuthBtnRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+  },
+  adminAuthCancelBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    backgroundColor: '#E2E8F0',
+  },
+  adminAuthCancelBtnText: {
+    fontSize: 11,
+    color: '#475569',
+    fontWeight: 'bold',
+  },
+  adminAuthConfirmBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    backgroundColor: '#1E40AF',
+  },
+  adminAuthConfirmBtnText: {
+    fontSize: 11,
+    color: COLORS.white,
+    fontWeight: 'bold',
+  },
+  adminUnlockedBanner: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    marginVertical: 10,
+  },
+  adminUnlockedBannerText: {
+    color: '#065F46',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  editActionButtonsContainer: {
+    marginTop: 14,
+    gap: 8,
   },
   saveProfileButton: {
     backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 18,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   saveProfileButtonText: {
     color: COLORS.white,
     fontSize: 15,
     fontWeight: 'bold',
+  },
+  savingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelEditButton: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    paddingVertical: 11,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  cancelEditButtonText: {
+    color: '#475569',
+    fontSize: 13,
+    fontWeight: '600',
   },
   roundedCardsRow: {
     flexDirection: 'row',

@@ -8,6 +8,8 @@ export interface Organizacion {
   correo: string;
   password?: string;
   pinSeguridad?: string;
+  descripcion?: string;
+  logo?: string;
   localidad: string;
   telefono: string;
   representanteLegal?: string;
