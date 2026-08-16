@@ -6,7 +6,9 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
+  Alert,
 } from 'react-native';
+//Define las rutas 
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { COLORS } from './src/constants/theme';
 import { ScreenType, Organizacion } from './src/types';
@@ -81,12 +83,16 @@ export default function App() {
         )}
 
         {currentScreen === 'DASHBOARD' && (
-          <DashboardScreen
-            currentOrg={currentOrg}
-            organizacionesCount={organizaciones.length}
-            onLogout={handleLogout}
-            onUpdateOrg={handleUpdateOrg}
-          />
+          currentOrg ? (
+            <DashboardScreen
+              currentOrg={currentOrg}
+              organizacionesCount={organizaciones.length}
+              onLogout={handleLogout}
+              onUpdateOrg={handleUpdateOrg}
+            />
+          ) : (
+            <LoginScreen onLoginSuccess={handleLoginSuccess} />
+          )
         )}
 
         {currentScreen === 'EVENTOS' && <EventosScreen />}
@@ -102,11 +108,22 @@ export default function App() {
       <BottomNav
         currentScreen={currentScreen}
         onSelectTab={(tab) => {
-          // Si el usuario intenta ir al Dashboard sin haber iniciado sesión, le muestra Login
-          if (tab === 'DASHBOARD' && !currentOrg) {
-            setCurrentScreen('LOGIN');
-          } else {
-            setCurrentScreen(tab);
+          // Eventos, Mapa y Donar no redirigen a ningún lugar al presionarlos
+          if (tab === 'EVENTOS' || tab === 'MAPA' || tab === 'DONAR') {
+            return;
+          }
+
+          // Si el usuario intenta ir al Dashboard sin haber iniciado sesión, NO se permite ingresar
+          if (tab === 'DASHBOARD') {
+            if (!currentOrg) {
+              Alert.alert(
+                'Acceso Denegado',
+                'Debes iniciar sesión con tu organización para poder ingresar al Dashboard.'
+              );
+              setCurrentScreen('LOGIN');
+            } else {
+              setCurrentScreen('DASHBOARD');
+            }
           }
         }}
       />

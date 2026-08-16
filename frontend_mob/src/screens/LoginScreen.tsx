@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import {//componentes y utilidades nativas de React Native
   StyleSheet,
   Text,
   View,
@@ -39,7 +39,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     };
     loadUrl();
   }, []);
-
+//Guarda la URL del servidor API
   const handleSaveServerUrl = async () => {
     await setApiBaseUrl(serverUrl);
     Alert.alert(
@@ -48,7 +48,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     );
     setShowServerConfig(false);
   };
-
+ //Credenciales Incompletas"
   const handleLogin = async () => {
     if (!correo.trim() || !password.trim()) {
       Alert.alert(
@@ -59,11 +59,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     }
 
     setIsLoading(true);
-
+  //hace la petición a la API
     try {
       const result = await loginOrganizacionApi(correo, password);
       setIsLoading(false);
-
+// Resultado exitoso
       if (result.success && result.org) {
         const fuente = result.source === 'backend' ? 'Servidor Backend Node.js' : 'Modo Offline / Caché Local';
         Alert.alert(
@@ -71,6 +71,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           `Has iniciado sesión exitosamente como "${result.org.nombre}".\n(Conexión: ${fuente})`
         );
         onLoginSuccess(result.org);
+//Resultado fallido        
       } else {
         Alert.alert('Acceso Denegado', result.error || 'Credenciales inválidas.');
       }
@@ -137,7 +138,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         {/* Campo Correo */}
         <Text style={styles.inputLabel}>Correo Electrónico Institucional *</Text>
         <Text style={styles.inputHelper}>Correo corporativo o del representante legal</Text>
-        <TextInput
+        <TextInput //entrada de texto
           style={styles.input}
           placeholder="contacto@organizacion.org"
           placeholderTextColor="#94A3B8"
@@ -156,7 +157,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             </Text>
           </TouchableOpacity>
         </View>
-        <TextInput
+        <TextInput //entrada de texto
           style={styles.input}
           placeholder="Clave maestra de la fundación"
           placeholderTextColor="#94A3B8"
