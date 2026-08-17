@@ -1,3 +1,4 @@
+//Componentes reutilizables
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { COLORS } from '../constants/theme';
@@ -9,7 +10,7 @@ interface HeaderProps {
   onLogout: () => void;
   onOpenLogin: () => void;
 }
-
+// Encabezado de la app siendo la barra superior en todas las
 export const Header: React.FC<HeaderProps> = ({
   currentScreen,
   isLoggedIn,

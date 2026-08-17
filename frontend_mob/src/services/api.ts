@@ -21,7 +21,7 @@ export const getApiBaseUrl = async (): Promise<string> => {
 };
 
 /**
- * Guarda una nueva URL base del Backend (ej. IP de tu computador con Node.js)
+ * Guarda una nueva URL base del Backend (que es ingresada en la parte superior en el login 
  */
 export const setApiBaseUrl = async (url: string): Promise<void> => {
   try {

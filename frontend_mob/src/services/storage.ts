@@ -1,3 +1,4 @@
+//Almacenamiento de tokens o preferencias locales 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Organizacion } from '../types';
 
@@ -57,7 +58,7 @@ export const INITIAL_ORGANIZACIONES: Organizacion[] = [
     verificada: 1,
   },
 ];
-
+// La función saveOrganizacion guarda una organización al inicio de la lista local de AsyncStorage, reemplazando cualquier versión previa para evitar duplicados
 export const saveOrganizacion = async (nuevaOrg: Organizacion): Promise<Organizacion[]> => {
   try {
     const existing = await getOrganizaciones();
@@ -70,7 +71,7 @@ export const saveOrganizacion = async (nuevaOrg: Organizacion): Promise<Organiza
     return [];
   }
 };
-
+//Actualiza los datos de una organización existente manteniendo su mismo orden/posición en la lista.
 export const updateOrganizacionInStorage = async (updatedOrg: Organizacion): Promise<Organizacion[]> => {
   try {
     const existing = await getOrganizaciones();
@@ -84,7 +85,6 @@ export const updateOrganizacionInStorage = async (updatedOrg: Organizacion): Pro
     return [];
   }
 };
-
 export const getOrganizaciones = async (): Promise<Organizacion[]> => {
   try {
     const jsonValue = await AsyncStorage.getItem(ORGS_STORAGE_KEY);
@@ -102,7 +102,8 @@ export const getOrganizaciones = async (): Promise<Organizacion[]> => {
     return INITIAL_ORGANIZACIONES;
   }
 };
-
+/*authenticateOrganizacion valida el correo y la contraseña de una organización contra la lista guardada en el
+ almacenamiento local para autenticar su inicio de sesión.*/
 export const authenticateOrganizacion = async (
   correo: string,
   password: string
@@ -131,6 +132,8 @@ export const authenticateOrganizacion = async (
 
   return { success: true, org: foundOrg };
 };
+/*clearOrganizaciones elimina completamente la clave de organizaciones guardada en AsyncStorage para 
+reiniciar o borrar esos datos BASICAMENTE SIRVE PARA CUANDO SE SIERRA SESION*/
 
 export const clearOrganizaciones = async (): Promise<void> => {
   try {
