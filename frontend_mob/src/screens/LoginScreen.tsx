@@ -115,15 +115,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           <Text style={styles.serverConfigDesc}>
             Para Expo Go en tu celular, ingresa la IP local de tu computador (ej. http://192.168.1.15:3000/api):
           </Text>
-          <TextInput
+          <TextInput //Campo de texto puedes ecribir la ip del compu aqui
             style={styles.serverInput}
             value={serverUrl}
-            onChangeText={setServerUrl}
+            onChangeText={setServerUrl}// Se actualiza la variable de estado cada vez que el usuqrio escribe
             placeholder="http://192.168.1.X:3000/api"
             placeholderTextColor="#94A3B8"
             autoCapitalize="none"
             autoCorrect={false}
           />
+          /** 
+          Al presionar el botón "Guardar URL del Servidor", ejecuta la función handleSaveServerUrl que vimos al inicio para aplicar 
+          los cambios
+          */
           <TouchableOpacity
             style={styles.saveServerBtn}
             onPress={handleSaveServerUrl}
@@ -138,11 +142,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         {/* Campo Correo */}
         <Text style={styles.inputLabel}>Correo Electrónico Institucional *</Text>
         <Text style={styles.inputHelper}>Correo corporativo o del representante legal</Text>
-        <TextInput //entrada de texto
+        <TextInput // Campo de texto donde ingresas el correo
           style={styles.input}
           placeholder="contacto@organizacion.org"
           placeholderTextColor="#94A3B8"
-          keyboardType="email-address"
+          keyboardType="email-address"//esto permite que se permita correctamente ecribir @
           autoCapitalize="none"
           value={correo}
           onChangeText={setCorreo}
@@ -157,11 +161,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             </Text>
           </TouchableOpacity>
         </View>
-        <TextInput //entrada de texto
+        <TextInput //Campo de texto donde ingresas contraseña
           style={styles.input}
           placeholder="Clave maestra de la fundación"
           placeholderTextColor="#94A3B8"
-          secureTextEntry={!showPassword}
+          secureTextEntry={!showPassword} //Oculta o muestra los caracteres en texto plano usando la propiedad
           value={password}
           onChangeText={setPassword}
         />
@@ -169,7 +173,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         {/* Botón Ingresar */}
         <TouchableOpacity
           style={styles.submitButton}
-          onPress={handleLogin}
+          onPress={handleLogin}//revisas que no hayan campos vacios el hadleLogin valida los datos con el servidor
           disabled={isLoading}
         >
           {isLoading ? (
@@ -212,7 +216,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     </View>
   );
 };
-
+// puro estilo
 const styles = StyleSheet.create({
   container: {
     padding: 16,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
+import {//componentes y utilidades nativas de React Native
   StyleSheet,
   View,
   ScrollView,
@@ -41,17 +41,17 @@ export default function App() {
     };
     loadStoredOrgs();
   }, []);
-
+//Entrar a la app:Cuando el usuario pone bien su clave, guarda quién es la organización y les da la entrada efectiva a DASHBOARD
   const handleLoginSuccess = (org: Organizacion) => {
     setCurrentOrg(org);
     setCurrentScreen('DASHBOARD');
   };
-
+//Cerrar sesión:Borra los datos de la sesión actual  y se devueleve al inicio de secion.
   const handleLogout = () => {
     setCurrentOrg(null);
     setCurrentScreen('LOGIN');
   };
-
+//editar informacion:Esta funcion guarda los cambios en la base de datos y asi mismo tambien se actualiza en pantalla la info.
   const handleUpdateOrg = async (updatedOrg: Organizacion) => {
     await updateOrganizacionApi(updatedOrg);
     setOrganizaciones((prev) =>
@@ -73,12 +73,13 @@ export default function App() {
       />
 
       {/* Área Principal de Contenido Con Scroll */}
-      <ScrollView
+      <ScrollView //pantalla deslizable
         style={styles.contentScroll}
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
-        {currentScreen === 'LOGIN' && (
+       
+        {currentScreen === 'LOGIN' && ( //muestra la pantalla segun la vista activa bien sea LOGIN o DASHBOARD
           <LoginScreen onLoginSuccess={handleLoginSuccess} />
         )}
 
@@ -130,7 +131,7 @@ export default function App() {
     </SafeAreaView>
   );
 }
-
+//Esta es la hoja de estilos de la pantalla
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,

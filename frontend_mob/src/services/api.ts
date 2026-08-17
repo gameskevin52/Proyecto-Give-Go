@@ -79,7 +79,7 @@ export const mapDbToOrganizacion = (dbOrg: any): Organizacion => {
 };
 
 /**
- * Mapea la interfaz del frontend (camelCase) al formato que espera el Backend MySQL (snake_case)
+ * Mapea la interfaz del frontend al formato que espera el Backend MySQL 
  */
 export const mapOrganizacionToDb = (org: Organizacion): any => {
   return {
@@ -110,7 +110,7 @@ export const mapOrganizacionToDb = (org: Organizacion): any => {
 };
 
 /**
- * Iniciar sesión consumiendo el Backend Node.js Express sin requerir NIT ni PIN
+ * Iniciar sesión consumiendo el Backend Node.js Express con correo y password
  */
 export const loginOrganizacionApi = async (
   correo: string,
@@ -154,8 +154,10 @@ export const loginOrganizacionApi = async (
           const itemCorreo = String(item.correo || '').trim().toLowerCase();
           return itemCorreo === cleanCorreo;
         });
-
-        if (match) {
+     /**si hay coincidencia cancela temporizador de error, traduce los datos al formato correcto,
+      * guarda informacion en el almacenamiento local y retorna la respuests de exito
+      */
+     if (match) { 
           clearTimeout(timeoutId);
           const mapped = mapDbToOrganizacion(match);
           await saveOrganizacion(mapped);
@@ -170,6 +172,9 @@ export const loginOrganizacionApi = async (
 
     clearTimeout(timeoutId);
 
+  /*Si la petición inicial sí respondió biencancela el temporizador y extrae 
+  el objeto de la organización probando distintas propiedades
+  */
     if (response && response.ok) {
       const data = await response.json();
       const rawOrg = data.data || data.organizacion || data.user || data;
@@ -195,7 +200,9 @@ export const loginOrganizacionApi = async (
     const orgCorreoClean = org.correo.trim().toLowerCase();
     return orgCorreoClean === cleanCorreo;
   });
-
+/*Si no existe nadie con ese correo en los datos locales, 
+devuelve un error indicando que no se encontró la organización
+ */
   if (!foundOrg) {
     return {
       success: false,
@@ -203,6 +210,9 @@ export const loginOrganizacionApi = async (
       source: 'local',
     };
   }
+  /* Si la organización existe pero la clave ingresada no coincide, devuelve el error 
+  "Contraseña institucional incorrecta."
+  */
 
   if (foundOrg.password && foundOrg.password !== password) {
     return {
@@ -211,11 +221,11 @@ export const loginOrganizacionApi = async (
       source: 'local',
     };
   }
-
+//Si el correo y la contraseña son correctos, da el acceso indicado qur la fuente fue la base de datos
   return {
     success: true,
     org: foundOrg,
-    source: 'local',
+    source: 'local',//osea aqui
   };
 };
 
@@ -223,11 +233,11 @@ export const loginOrganizacionApi = async (
  * Obtener listado de organizaciones desde el Backend Node.js Express (/api/organizations)
  */
 export const getOrganizacionesApi = async (): Promise<Organizacion[]> => {
-  const baseUrl = await getApiBaseUrl();
+  const baseUrl = await getApiBaseUrl();//Busca la URL base del servidor a donde va enviar la peticion
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 4000);
-
+  //peticion al backend
     const response = await fetch(`${baseUrl}/organizations`, {
       method: 'GET',
       headers: { Accept: 'application/json' },
@@ -246,10 +256,9 @@ export const getOrganizacionesApi = async (): Promise<Organizacion[]> => {
   return INITIAL_ORGANIZACIONES;
 };
 
-/**
- * Actualizar perfil de la organización en el Backend MySQL (/api/organizations/:id)
- * Optimizado para completarse de manera instantánea (< 2 segundos) y garantizar persistencia
- */
+// Actualizar perfil de la organización en el Backend MySQL 
+ 
+ 
 export const updateOrganizacionApi = async (
   org: Organizacion
 ): Promise<{ success: boolean; source: 'backend' | 'local'; message?: string }> => {
@@ -258,7 +267,7 @@ export const updateOrganizacionApi = async (
 
   try {
     const controller = new AbortController();
-    // Timeout estricto de 1.8 segundos para cumplir criterio de respuesta < 2s
+    // Timeout estricto de 1.8 segundos 
     const timeoutId = setTimeout(() => controller.abort(), 1800);
 
     const response = await fetch(`${baseUrl}/organizations/${org.idOrganizacion}`, {

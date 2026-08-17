@@ -162,7 +162,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       setIsEditing(false);
       setIsAdminUnlocked(false);
 
-      // Criterio 4 y 5: Mensaje de confirmación en menos de 2 segundos
+      // confirmacion de actualizacion de la organizacion
       Alert.alert(
         '¡Perfil Actualizado!',
         `Los datos de la organización se han actualizado exitosamente en la base de datos MySQL y en el panel institucional.\n\n⏱️ Tiempo de respuesta: ${elapsed.toFixed(2)}s`
@@ -195,9 +195,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   return (
     <View style={styles.container}>
       {/* 3 Botones / SubPestañas superiores */}
+      
       <View style={styles.tabButtonGroup}>
         <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'INFO_GENERAL' && styles.tabButtonActive]}
+          style={[styles.tabButton, activeTab === 'INFO_GENERAL' && styles.tabButtonActive]}//Informaacion general
           onPress={() => setActiveTab('INFO_GENERAL')}
         >
           <Text
@@ -211,7 +212,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'MI_PERFIL' && styles.tabButtonActive]}
+          style={[styles.tabButton, activeTab === 'MI_PERFIL' && styles.tabButtonActive]}//Miperfil donde hay posibilidad de actualizar
           onPress={() => setActiveTab('MI_PERFIL')}
         >
           <Text
@@ -301,7 +302,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </View>
       )}
 
-      {/* CONTENIDO 2: MI PERFIL (PANEL DE ACTUALIZACIÓN EN EL ORDEN SOLICITADO) */}
+      {/* CONTENIDO 2: Mi perfil panel de actualizacion */}
       {activeTab === 'MI_PERFIL' && (
         <View style={styles.profileCard}>
           <View style={styles.profileHeaderRow}>
@@ -315,7 +316,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               </View>
             </View>
 
-            <TouchableOpacity
+            <TouchableOpacity //Boton de confirmar o guardar actualizacion
               style={[styles.editToggleButton, isEditing && styles.editToggleButtonActive]}
               onPress={() => {
                 if (isEditing) {
@@ -354,11 +355,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </View>
           )}
 
-          {/* ============================================================== */}
-          {/* CAMPOS EN EL ORDEN ESTRICTO SOLICITADO POR EL USUARIO:        */}
-          {/* 1. nombre, 2. direccion, 3. telefono, 4. correo, 5. password, */}
-          {/* 6. descripcion, 7. nit, 8. mision, 9. vision                  */}
-          {/* ============================================================== */}
+          {/* Campos de edicion para la efectiva actualizacion de la organizacion*/}
 
           {/* 1. NOMBRE */}
           <Text style={styles.fieldLabel}>1. Nombre de la Organización *</Text>
@@ -403,7 +400,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <Text style={styles.fieldValue}>{telefono || 'Sin registrar'}</Text>
           )}
 
-          {/* 4. CORREO (Criterio 2: Protegido por Administrador General) */}
+          {/* 4. CORREO Protegido por Administrador General */}
           <View style={styles.labelRowWithLock}>
             <Text style={styles.fieldLabel}>4. Correo Electrónico Institucional *</Text>
             {!isAdminUnlocked && isEditing && (
@@ -476,7 +473,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </Text>
           )}
 
-          {/* 7. NIT (Criterio 2: Protegido por Administrador General) */}
+          {/* 7. NIT Protegido por Administrador General*/}
           <View style={styles.labelRowWithLock}>
             <Text style={styles.fieldLabel}>7. NIT Institucional *</Text>
             {!isAdminUnlocked && isEditing && (
@@ -626,12 +623,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </View>
       )}
 
-      {/* CONTENIDO 3: EVENTOS */}
+      {/*  EVENTOS en panel superior de dashboard */}
       {activeTab === 'EVENTOS_STATS' && (
         <View>
           <Text style={styles.sectionTitle}>Estadísticas Generales de Eventos</Text>
 
-          {/* 2 Cards Cuadriredondas */}
+          {/* Cards de cada uno*/}
           <View style={styles.roundedCardsRow}>
             <View style={styles.roundedCard}>
               <Text style={styles.roundedCardIcon}>🗓️</Text>
