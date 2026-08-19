@@ -1,0 +1,6 @@
+{
+  "name": "Give&Go Mobile - App Expo Go",
+  "description": "Aplicación móvil Give&Go con soporte para emulador Expo Go por código QR de terminal, registro, inicio y cierre de sesión conectado al backend.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
