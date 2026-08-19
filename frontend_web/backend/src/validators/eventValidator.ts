@@ -1,5 +1,7 @@
 import { body } from 'express-validator';
+console.log('🔥 EVENT VALIDATOR CARGADO');
 import { validateResults } from './validateHelper';
+import { NextFunction } from 'express';
 
 export const validateEvent = [
   body('nombre')
@@ -37,5 +39,10 @@ export const validateEvent = [
   body('longitud')
     .optional({ nullable: true })
     .isFloat({ min: -180, max: 180 }).withMessage('La longitud debe ser un número entre -180 y 180.'),
+
+    (req: Request, res: Response, next: NextFunction) => {
+    console.log('DATOS RECIBIDOS POR VALIDATOR:', req.body);
+    next();
+  },
   validateResults
 ];

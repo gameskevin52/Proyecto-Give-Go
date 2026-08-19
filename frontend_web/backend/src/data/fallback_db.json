@@ -383,6 +383,30 @@
       "latitud": null,
       "longitud": null,
       "imagen": ""
+    },
+    {
+      "id_evento": 6,
+      "nombre": "jjdjjdjddjdjdjjjdjdjdjdjd",
+      "id_categoria": 4,
+      "descripcion": "jdvjsvsuvivherivlkjnbsvhdvsd<nñvlvshlv<sjbvskb<",
+      "direccion": "cra hhddjkd 50",
+      "fecha": "2026-08-30T09:00:00",
+      "cupo": 20,
+      "vacantes_voluntarios": 10,
+      "vacantes_beneficiarios": 10,
+      "ayuda_ofrecida": "fbderhjbl<sdvbsdlvjblskvbslvkdbhvls<vb<s",
+      "estado": 1,
+      "organizacion_id": 1,
+      "barrio": "Kenedy",
+      "localidad": "Kennedy",
+      "ciudad": "Bogotá",
+      "departamento": "Bogotá D.C.",
+      "pais": "Colombia",
+      "punto_referencia": "fbaerbaerbrbearberaberberaba",
+      "nombre_lugar": "zngfnzgfnznzdgngdzndgndgnzd",
+      "latitud": null,
+      "longitud": null,
+      "imagen": ""
     }
   ],
   "tabla_postulaciones": [
@@ -559,6 +583,14 @@
       "id_usuario": 1001,
       "nombre_usuario": "Fundacion Bogotanadas Organización",
       "rol_usuario": "Organizacion"
+    },
+    {
+      "id_audit": 10,
+      "fecha": "2026-08-19T03:22:00.404Z",
+      "accion": "Creó el evento solidario: \"jjdjjdjddjdjdjjjdjdjdjdjd\".",
+      "id_usuario": 1,
+      "nombre_usuario": "Administrador General",
+      "rol_usuario": "Admin"
     }
   ],
   "solicitudes_verificacion": []

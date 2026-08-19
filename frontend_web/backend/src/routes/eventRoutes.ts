@@ -7,7 +7,7 @@ const router = Router();
 
 router.get('/', EventController.getAll);
 router.get('/:id', EventController.getById);
-router.post('/', authenticateJWT, validateEvent, EventController.create);
+router.post('/', validateEvent, EventController.create);
 router.put('/:id', authenticateJWT, EventController.update);
 router.delete('/:id', authenticateJWT, EventController.delete);
 

@@ -1,0 +1,6 @@
+{
+  "name": "Give & Go - Volunteer & Events App",
+  "description": "Mobile application for managing volunteer organizations, events, and community participation built with React Native and Expo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
