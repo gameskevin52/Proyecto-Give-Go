@@ -1,3 +1,4 @@
+//GENERA O VERIFICA JWT
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 

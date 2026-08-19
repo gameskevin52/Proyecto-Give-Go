@@ -1,12 +1,13 @@
+// INTERACTUA CON LA BASE DE DATOS TRABAJA CON EL CRUD PERO A NIVEL BASE DATOS CAMBIOS SE VEN REFLEJADOS AQUI 
 import { db } from '../config/db';
-
+// Estructura de la tabla organizacion
 export interface OrganizacionDB {
   id_organizacion: number;
   nombre: string;
   direccion?: string;
   telefono?: string;
   correo: string;
-  password?: string;
+  password?: string;// ? quiere decir que es null o no existe
   descripcion?: string;
   estado: number; // 1 = activo, 0 = inactivo
   fecha_registro?: string;

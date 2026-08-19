@@ -1,3 +1,4 @@
+//VERIFICA TOKENS JWT. BASICAENTE ES UN SISTEMA DE AUTENTICACION
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/auth';
 
@@ -11,6 +12,7 @@ export interface AuthenticatedRequest extends Request {
 
 // Middleware para verificar la validez del token JWT
 export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+//Verifica donde esta o donde viene el token
   const authHeader = req.headers.authorization;
   let token = null;
 
@@ -19,7 +21,7 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
   } else if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
   }
-
+//Filtros
   if (!token) {
     return res.status(401).json({
       success: false,
@@ -30,7 +32,7 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
 
   const decoded = verifyToken(token);
   if (!decoded) {
-    return res.status(403).json({
+    return res.status(403).json({//Si el token fue modificado, está mal redactado o ya expiró, devuelve un error 403 Forbidden
       success: false,
       message: 'Token inválido o expirado.',
       errors: []
@@ -44,7 +46,7 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
 // Middleware para autorizar según el rol del usuario
 export const authorizeRoles = (...allowedRoles: string[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    if (!req.user) {
+    if (!req.user) { // Si no se ejecuto authenticateJWt ante, arroja un error 401 Unauthorized
       return res.status(401).json({
         success: false,
         message: 'No autenticado.',
@@ -56,7 +58,7 @@ export const authorizeRoles = (...allowedRoles: string[]) => {
     const userRole = req.user.rol.toLowerCase();
     const normalizedAllowed = allowedRoles.map(r => r.toLowerCase());
 
-    if (!normalizedAllowed.includes(userRole)) {
+    if (!normalizedAllowed.includes(userRole)) {//Si el rol NO está en la lista: Detiene todo y responde con un error 403 Forbidden
       return res.status(403).json({
         success: false,
         message: 'No tiene permisos suficientes para realizar esta acción.',

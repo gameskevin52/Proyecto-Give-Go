@@ -1,9 +1,10 @@
-import mysql from 'mysql2/promise';
-import fs from 'fs';
-import path from 'path';
-import bcrypt from 'bcrypt';
+//CONECTA LA BASE DE DATOS
+import mysql from 'mysql2/promise';// Permite consultas a la base de datos
+import fs from 'fs';//Sirve para leer, escribir o manipular archivos de la computadora aqui se usa para para leer y ecribir en el archivo de JSON de respaldo.
+import path from 'path';//Evita errores de rutas sin importar si se ejecuta el proyecto en Windows
+import bcrypt from 'bcrypt';//Incriptacion de contraseñas
 
-// Configuración de variables de entorno con valores por defecto
+// Es una configuracion que prepara los datos de acceso para conectarse a la base de datos
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '3306', 10),
@@ -13,7 +14,7 @@ const dbConfig = {
   connectionLimit: 10,
 };
 
-let pool: mysql.Pool | null = null;
+let pool: mysql.Pool | null = null;//Crea una variable llamada pool para guardar la conexión activa a MySQL
 let useFallback = true;
 let fallbackData: any = {};
 const FALLBACK_FILE_PATH = path.join(process.cwd(), 'backend', 'src', 'data', 'fallback_db.json');
@@ -28,6 +29,7 @@ const seedFallbackData = () => {
       { id_categoria: 4, nombre: 'Medio Ambiente', descripcion: 'Reforestación de zonas verdes', estado: 1 },
       { id_categoria: 5, nombre: 'Económico', descripcion: 'Aportaciones monetarias', estado: 1 },
     ],
+    //Base de datos de falsa llena de datos de prueba
     usuarios: [
       {
         id_usuario: 1,

@@ -1,9 +1,11 @@
+//PROCESA LA LOGICA DE LAS ORGANIZACIONES ALMACENA EL CRUD
 import { Request, Response } from 'express';
+//Consultan la base de datos para obtener o modificar información
 import { OrganizacionModel, OrganizacionDB } from '../models/organizacionModel';
 import { UsuarioModel } from '../models/usuarioModel';
-import { hashPassword } from '../utils/auth';
+import { hashPassword } from '../utils/auth';// funcion para incriptar contraseñas
 
-const mapOrgToFrontend = (org: OrganizacionDB) => {
+const mapOrgToFrontend = (org: OrganizacionDB) => {// Actua como un "traductor" entre la base de datos y la pantalla del usuario
   return {
     id: `org_${org.id_organizacion}`,
     nombre: org.nombre,
@@ -28,13 +30,14 @@ const mapOrgToFrontend = (org: OrganizacionDB) => {
 };
 
 export const OrganizationController = {
-  async getAll(req: Request, res: Response) {
+  //Consulta todas la organizaciones
+  async getAll(req: Request, res: Response) {//Llama al modelo de la base de datos
     try {
       const orgs = await OrganizacionModel.getAll();
       return res.status(200).json({
         success: true,
         message: 'Organizaciones recuperadas correctamente.',
-        data: orgs.map(mapOrgToFrontend)
+        data: orgs.map(mapOrgToFrontend)// "Traduce" para ver en el frontend
       });
     } catch (err: any) {
       return res.status(500).json({
@@ -44,7 +47,7 @@ export const OrganizationController = {
       });
     }
   },
-
+//Consulta la organizacion segun su ID
   async getById(req: Request, res: Response) {
     try {
       // Soportar IDs en formato string 'org_X' o número X
@@ -72,7 +75,7 @@ export const OrganizationController = {
       });
     }
   },
-
+//Crear una organizacion
   async create(req: Request, res: Response) {
     try {
       const { 
@@ -91,7 +94,7 @@ export const OrganizationController = {
 
       const hashedPassword = await hashPassword(password);
 
-      // 1. Crear organización en `organizaciones`
+      // Envía a la base de datos la información completa de la fundación para guardarla en la tabla principal de organizaciones
       const id_organizacion = await OrganizacionModel.create({
         nombre,
         direccion,
@@ -110,7 +113,7 @@ export const OrganizationController = {
         categoria: categoria || ''
       });
 
-      // 2. Crear usuario asociado en `usuarios` para el login
+      // Permite que podamos iniciar secion
       await UsuarioModel.create({
         rol: 'Organizacion',
         nombre1: nombre,
@@ -120,7 +123,7 @@ export const OrganizationController = {
         password: hashedPassword,
         estado: 1
       });
-
+//Confirma que los datos se guardaron correctamente
       const org = await OrganizacionModel.getById(id_organizacion);
       if (!org) throw new Error('Error al recuperar la organización creada.');
 
@@ -137,7 +140,7 @@ export const OrganizationController = {
       });
     }
   },
-
+// Actualizar una organizacion
   async update(req: Request, res: Response) {
     try {
       const rawId = req.params.id;
@@ -157,7 +160,10 @@ export const OrganizationController = {
           errors: []
         });
       }
-
+    /*
+    *Va campo por campo revisando si viene un valor. Si el usuario envió un nuevo teléfono, guarda el teléfono en updateData.
+     Si no envió la ciudad,la ignora para no sobrescribir o borrar la ciudad actual que ya está en la base de datos.
+    */ 
       const updateData: Partial<OrganizacionDB> = {};
       if (nombre !== undefined) updateData.nombre = nombre;
       if (direccion !== undefined) updateData.direccion = direccion;
@@ -180,7 +186,7 @@ export const OrganizationController = {
         updateData.password = await hashPassword(password);
       }
 
-      // 1. Actualizar organización
+      // Actualiza la tabla organizaciones
       const ok = await OrganizacionModel.update(id, updateData);
       if (!ok) {
         return res.status(404).json({
@@ -202,11 +208,11 @@ export const OrganizationController = {
       }
 
       const org = await OrganizacionModel.getById(id);
-      if (!org) throw new Error('Organización no encontrada.');
-      return res.status(200).json({
+      if (!org) throw new Error('Organización no encontrada.');//Vuelve a consultar la organización recién modificada para asegurarse de tener la versión más reciente
+      return res.status(200).json({//Responde con un codigo 200 ok
         success: true,
         message: 'Organización actualizada correctamente.',
-        data: mapOrgToFrontend(org)
+        data: mapOrgToFrontend(org)// "Traduce en el frontend"
       });
     } catch (err: any) {
       return res.status(500).json({
@@ -216,7 +222,7 @@ export const OrganizationController = {
       });
     }
   },
-
+//Eliminar la organizacion
   async delete(req: Request, res: Response) {
     try {
       const rawId = req.params.id;

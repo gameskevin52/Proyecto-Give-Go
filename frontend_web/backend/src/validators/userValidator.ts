@@ -30,7 +30,7 @@ export const validateRegister = [
     .isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres.'),
   validateResults
 ];
-
+//Validaciones para su registro
 export const validateOrgRegister = [
   body('nombre')
     .trim()
