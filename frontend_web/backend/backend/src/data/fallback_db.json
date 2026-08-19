@@ -38,10 +38,10 @@
       "nombre1": "Administrador",
       "apellido1": "General",
       "correo": "admin@giveandgo.com",
-      "password": "$2b$10$JILzd8x66KLA3m4E2C8AfeAi1mUN8GxwDctgac5H.Q7BYo.pqdkIC",
+      "password": "$2b$10$jGGomqhjtvM9NnEPSfAOFukufE8GO9Xic10HQZUol9MchZ8HuhPa6",
       "telefono": "+57 300 123 4567",
       "estado": 1,
-      "fecha_registro": "2026-08-12T00:22:30.846Z"
+      "fecha_registro": "2026-08-19T22:04:58.487Z"
     },
     {
       "id_usuario": 999,
@@ -52,7 +52,7 @@
       "password": "none",
       "telefono": "",
       "estado": 1,
-      "fecha_registro": "2026-08-12T00:22:30.848Z"
+      "fecha_registro": "2026-08-19T22:04:58.489Z"
     },
     {
       "id_usuario": 2,
@@ -65,7 +65,7 @@
       "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
       "telefono": "+57 310 987 6543",
       "estado": 1,
-      "fecha_registro": "2026-08-12T00:22:30.848Z"
+      "fecha_registro": "2026-08-19T22:04:58.489Z"
     },
     {
       "id_usuario": 3,
@@ -76,7 +76,7 @@
       "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
       "telefono": "+57 315 222 3333",
       "estado": 1,
-      "fecha_registro": "2026-08-12T00:22:30.848Z"
+      "fecha_registro": "2026-08-19T22:04:58.489Z"
     },
     {
       "id_usuario": 4,
@@ -87,7 +87,7 @@
       "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
       "telefono": "+57 320 444 5555",
       "estado": 1,
-      "fecha_registro": "2026-08-12T00:22:30.848Z"
+      "fecha_registro": "2026-08-19T22:04:58.489Z"
     },
     {
       "id_usuario": 5,
@@ -98,7 +98,7 @@
       "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
       "telefono": "+57 301 555 6666",
       "estado": 1,
-      "fecha_registro": "2026-08-12T00:22:30.848Z"
+      "fecha_registro": "2026-08-19T22:04:58.489Z"
     },
     {
       "id_usuario": 101,
@@ -109,7 +109,7 @@
       "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
       "telefono": "+57 300 000 0000",
       "estado": 1,
-      "fecha_registro": "2026-08-12T00:22:30.848Z"
+      "fecha_registro": "2026-08-19T22:04:58.489Z"
     },
     {
       "id_usuario": 102,
@@ -120,7 +120,7 @@
       "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
       "telefono": "+57 300 000 0000",
       "estado": 1,
-      "fecha_registro": "2026-08-12T00:22:30.848Z"
+      "fecha_registro": "2026-08-19T22:04:58.489Z"
     },
     {
       "id_usuario": 103,
@@ -131,127 +131,7 @@
       "password": "$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.",
       "telefono": "+57 300 000 0000",
       "estado": 1,
-      "fecha_registro": "2026-08-12T00:22:30.848Z"
-    },
-    {
-      "id_usuario": 1000,
-      "rol": "Admin",
-      "nombre1": "Carlos",
-      "nombre2": "",
-      "apellido1": "Ramírez",
-      "apellido2": "",
-      "telefono": "",
-      "correo": "Mat@test.com",
-      "password": "$2b$10$MJqww1RM4881hhkrbA1zd.leNbpQ/DqtBJgVriheuX613WRR.qJbq",
-      "estado": 1,
-      "fecha_registro": "2026-08-12T00:48:29.087Z",
-      "tipo_documento": "",
-      "num_documento": "",
-      "fecha_nacimiento": "",
-      "direccion": "",
-      "barrio": "",
-      "localidad": "",
-      "ciudad": "",
-      "departamento": "",
-      "pais": "",
-      "codigo_postal": "",
-      "foto": ""
-    },
-    {
-      "id_usuario": 1001,
-      "rol": "Organizacion",
-      "nombre1": "pepos",
-      "nombre2": "",
-      "apellido1": "organizacion",
-      "apellido2": "",
-      "telefono": "",
-      "correo": "pepo@test.com",
-      "password": "$2b$10$FBwIibjP6jy3ZeEZ2HOwYOiHVtDeugh/BbzmcBhBshJ2vmNg.QDoC",
-      "estado": 1,
-      "fecha_registro": "2026-08-12T01:01:39.497Z",
-      "tipo_documento": "",
-      "num_documento": "",
-      "fecha_nacimiento": "",
-      "direccion": "",
-      "barrio": "",
-      "localidad": "",
-      "ciudad": "",
-      "departamento": "",
-      "pais": "",
-      "codigo_postal": "",
-      "foto": ""
-    },
-    {
-      "id_usuario": 1002,
-      "rol": "Voluntario",
-      "nombre1": "Pedro",
-      "nombre2": "",
-      "apellido1": "Perez",
-      "apellido2": "",
-      "telefono": "",
-      "correo": "pedrop@test.com",
-      "password": "$2b$10$6yXRkZvB879klzxyUdX7gu6uJZECs/Huui7JcQiySOYwiZAK6io4O",
-      "estado": 1,
-      "fecha_registro": "2026-08-12T01:32:01.648Z",
-      "tipo_documento": "",
-      "num_documento": "",
-      "fecha_nacimiento": "",
-      "direccion": "",
-      "barrio": "",
-      "localidad": "",
-      "ciudad": "",
-      "departamento": "",
-      "pais": "",
-      "codigo_postal": "",
-      "foto": ""
-    },
-    {
-      "id_usuario": 1003,
-      "rol": "Beneficiario",
-      "nombre1": "Nicol",
-      "nombre2": "",
-      "apellido1": "shtaron",
-      "apellido2": "",
-      "telefono": "",
-      "correo": "nicoli@test.com",
-      "password": "$2b$10$YvGvyAiFH4BA.nofIWJi.uB7zeAj90lDa1Di/CF5lc8t/53W3moo2",
-      "estado": 1,
-      "fecha_registro": "2026-08-12T01:40:11.276Z",
-      "tipo_documento": "",
-      "num_documento": "",
-      "fecha_nacimiento": "",
-      "direccion": "",
-      "barrio": "",
-      "localidad": "",
-      "ciudad": "",
-      "departamento": "",
-      "pais": "",
-      "codigo_postal": "",
-      "foto": ""
-    },
-    {
-      "id_usuario": 1004,
-      "rol": "Organizacion",
-      "nombre1": "Fundación Ejemplo",
-      "nombre2": "",
-      "apellido1": "Organización",
-      "apellido2": "",
-      "telefono": "+57 300 000 0000",
-      "correo": "fundacion@test.com",
-      "password": "$2b$10$oZKPEUUu15dV/qpTNK1LheP1MprQHXXPD7UDO5mTLudJWr.XAHrKC",
-      "estado": 1,
-      "fecha_registro": "2026-08-12T01:42:16.368Z",
-      "tipo_documento": "",
-      "num_documento": "",
-      "fecha_nacimiento": "",
-      "direccion": "",
-      "barrio": "",
-      "localidad": "",
-      "ciudad": "",
-      "departamento": "",
-      "pais": "",
-      "codigo_postal": "",
-      "foto": ""
+      "fecha_registro": "2026-08-19T22:04:58.489Z"
     }
   ],
   "organizaciones": [
@@ -264,7 +144,7 @@
       "telefono": "+57 300 000 0000",
       "descripcion": "Institución comunitaria enfocada en brindar seguridad alimentaria en Kennedy.",
       "estado": 1,
-      "fecha_registro": "2026-08-12T00:22:30.848Z",
+      "fecha_registro": "2026-08-19T22:04:58.489Z",
       "barrio": "Kennedy Central",
       "localidad": "Kennedy",
       "ciudad": "Bogotá",
@@ -283,7 +163,7 @@
       "telefono": "+57 300 000 0000",
       "descripcion": "Fundación sin ánimo de lucro enfocada en desarrollo y asistencia a adultos mayores.",
       "estado": 1,
-      "fecha_registro": "2026-08-12T00:22:30.848Z",
+      "fecha_registro": "2026-08-19T22:04:58.489Z",
       "barrio": "Castilla",
       "localidad": "Kennedy",
       "ciudad": "Bogotá",
@@ -302,7 +182,7 @@
       "telefono": "+57 300 000 0000",
       "descripcion": "Organización para la recuperación ambiental y el apoyo pedagógico.",
       "estado": 1,
-      "fecha_registro": "2026-08-12T00:22:30.848Z",
+      "fecha_registro": "2026-08-19T22:04:58.489Z",
       "barrio": "Patio Bonito",
       "localidad": "Kennedy",
       "ciudad": "Bogotá",
@@ -311,28 +191,6 @@
       "categoria": "Medio Ambiente",
       "latitud": 4.6288,
       "longitud": -74.162
-    },
-    {
-      "id_organizacion": 4,
-      "nombre": "Fundación Ejemplo",
-      "direccion": "Calle 123",
-      "telefono": "+57 300 000 0000",
-      "correo": "fundacion@test.com",
-      "password": "$2b$10$oZKPEUUu15dV/qpTNK1LheP1MprQHXXPD7UDO5mTLudJWr.XAHrKC",
-      "descripcion": "",
-      "estado": 1,
-      "fecha_registro": "2026-08-12T01:42:16.365Z",
-      "nit": "",
-      "representante_legal": "",
-      "barrio": "",
-      "localidad": "",
-      "ciudad": "Bogotá",
-      "departamento": "Bogotá D.C.",
-      "pais": "Colombia",
-      "categoria": "",
-      "logo": "",
-      "latitud": null,
-      "longitud": null
     }
   ],
   "eventos": [
@@ -559,38 +417,6 @@
       "id_usuario": 2,
       "nombre_usuario": "Carlos Mendoza",
       "rol_usuario": "Voluntario"
-    },
-    {
-      "id_audit": 4,
-      "fecha": "2026-08-12T00:48:29.114Z",
-      "accion": "Registro de nuevo usuario con rol: Admin.",
-      "id_usuario": 1000,
-      "nombre_usuario": "Carlos Ramírez",
-      "rol_usuario": "Admin"
-    },
-    {
-      "id_audit": 5,
-      "fecha": "2026-08-12T01:01:39.511Z",
-      "accion": "Registro de nuevo usuario con rol: Organizacion.",
-      "id_usuario": 1001,
-      "nombre_usuario": "pepos organizacion",
-      "rol_usuario": "Organizacion"
-    },
-    {
-      "id_audit": 6,
-      "fecha": "2026-08-12T01:32:01.665Z",
-      "accion": "Registro de nuevo usuario con rol: Voluntario.",
-      "id_usuario": 1002,
-      "nombre_usuario": "Pedro Perez",
-      "rol_usuario": "Voluntario"
-    },
-    {
-      "id_audit": 7,
-      "fecha": "2026-08-12T01:40:11.291Z",
-      "accion": "Registro de nuevo usuario con rol: Beneficiario.",
-      "id_usuario": 1003,
-      "nombre_usuario": "Nicol shtaron",
-      "rol_usuario": "Beneficiario"
     }
   ]
 }
