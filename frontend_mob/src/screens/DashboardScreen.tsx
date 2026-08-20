@@ -1,5 +1,8 @@
+
+// PANTALLA DASBOARD DE LA ORGANIZACION
+
 import React, { useState, useEffect } from 'react';
-import {
+import {//componentes y utilidades nativas de React Native
   StyleSheet,
   Text,
   View,
@@ -102,7 +105,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   const handleSaveProfile = async () => {
     if (!currentOrg) return;
 
-    // Criterio 3: Validaciones rigurosas
+    //  Validaciones rigurosas
     if (!nombre.trim() || nombre.trim().length < 3) {
       Alert.alert('Validación', 'El nombre de la organización debe contener al menos 3 caracteres.');
       return;
@@ -162,7 +165,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       setIsEditing(false);
       setIsAdminUnlocked(false);
 
-      // confirmacion de actualizacion de la organizacion
+      // Configuracion de actualizacion de la organizacion
       Alert.alert(
         '¡Perfil Actualizado!',
         `Los datos de la organización se han actualizado exitosamente en la base de datos MySQL y en el panel institucional.\n\n⏱️ Tiempo de respuesta: ${elapsed.toFixed(2)}s`
@@ -195,7 +198,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   return (
     <View style={styles.container}>
       {/* 3 Botones / SubPestañas superiores */}
-      
       <View style={styles.tabButtonGroup}>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'INFO_GENERAL' && styles.tabButtonActive]}//Informaacion general
@@ -212,7 +214,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'MI_PERFIL' && styles.tabButtonActive]}//Miperfil donde hay posibilidad de actualizar
+          style={[styles.tabButton, activeTab === 'MI_PERFIL' && styles.tabButtonActive]}//Mi perfil donde hay posibilidad de actualizar
           onPress={() => setActiveTab('MI_PERFIL')}
         >
           <Text
@@ -226,7 +228,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'EVENTOS_STATS' && styles.tabButtonActive]}
+          style={[styles.tabButton, activeTab === 'EVENTOS_STATS' && styles.tabButtonActive]}// Don de se ve las estadisticas
           onPress={() => setActiveTab('EVENTOS_STATS')}
         >
           <Text
@@ -302,7 +304,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </View>
       )}
 
-      {/* CONTENIDO 2: Mi perfil panel de actualizacion */}
+      {/* CONTENIDO 2: MI PERFIL (PANEL DE ACTUALIZACIÓN EN EL ORDEN SOLICITADO) */}
       {activeTab === 'MI_PERFIL' && (
         <View style={styles.profileCard}>
           <View style={styles.profileHeaderRow}>
@@ -356,6 +358,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           )}
 
           {/* Campos de edicion para la efectiva actualizacion de la organizacion*/}
+         
 
           {/* 1. NOMBRE */}
           <Text style={styles.fieldLabel}>1. Nombre de la Organización *</Text>
@@ -400,7 +403,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <Text style={styles.fieldValue}>{telefono || 'Sin registrar'}</Text>
           )}
 
-          {/* 4. CORREO Protegido por Administrador General */}
+          {/* 4. CORREO (Criterio 2: Protegido por Administrador General) */}
           <View style={styles.labelRowWithLock}>
             <Text style={styles.fieldLabel}>4. Correo Electrónico Institucional *</Text>
             {!isAdminUnlocked && isEditing && (
@@ -473,7 +476,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </Text>
           )}
 
-          {/* 7. NIT Protegido por Administrador General*/}
+          {/* 7. NIT (Criterio 2: Protegido por Administrador General) */}
           <View style={styles.labelRowWithLock}>
             <Text style={styles.fieldLabel}>7. NIT Institucional *</Text>
             {!isAdminUnlocked && isEditing && (
@@ -580,7 +583,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </View>
           )}
 
-          {/* Badge cuando el Administrador General está desbloqueado */}
+          {/* Aviso que sale cuando el Administrador General está desbloqueado */}
           {isEditing && isAdminUnlocked && (
             <View style={styles.adminUnlockedBanner}>
               <Text style={styles.adminUnlockedBannerText}>
@@ -623,12 +626,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         </View>
       )}
 
-      {/*  EVENTOS en panel superior de dashboard */}
+      {/* CONTENIDO 3: EVENTOS */}
       {activeTab === 'EVENTOS_STATS' && (
         <View>
           <Text style={styles.sectionTitle}>Estadísticas Generales de Eventos</Text>
 
-          {/* Cards de cada uno*/}
+          {/* 2 Cards Cuadriredondas */}
           <View style={styles.roundedCardsRow}>
             <View style={styles.roundedCard}>
               <Text style={styles.roundedCardIcon}>🗓️</Text>
@@ -684,6 +687,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     </View>
   );
 };
+
+//Puros estilos
 
 const styles = StyleSheet.create({
   container: {

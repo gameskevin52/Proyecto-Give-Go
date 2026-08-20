@@ -4,6 +4,8 @@ import { INITIAL_ORGANIZACIONES, saveOrganizacion, updateOrganizacionInStorage }
 
 // Clave para guardar la IP del backend configurada por el usuario
 const API_URL_STORAGE_KEY = '@give_and_go_api_base_url';
+// Clave para guardar el token JWT de sesión
+const AUTH_TOKEN_STORAGE_KEY = '@give_and_go_auth_token';
 
 // URL por defecto para el backend de Node.js Express montado en /api
 export const DEFAULT_API_BASE_URL = 'http://10.0.2.2:3000/api';
@@ -21,7 +23,7 @@ export const getApiBaseUrl = async (): Promise<string> => {
 };
 
 /**
- * Guarda una nueva URL base del Backend (que es ingresada en la parte superior en el login 
+ * Guarda una nueva URL base del Backend (ej. IP de tu computador con Node.js)
  */
 export const setApiBaseUrl = async (url: string): Promise<void> => {
   try {
@@ -35,6 +37,32 @@ export const setApiBaseUrl = async (url: string): Promise<void> => {
     await AsyncStorage.setItem(API_URL_STORAGE_KEY, cleanUrl);
   } catch (error) {
     console.error('Error guardando API URL:', error);
+  }
+};
+
+/**
+ * Obtiene el token JWT guardado de la sesión
+ */
+export const getAuthToken = async (): Promise<string | null> => {
+  try {
+    return await AsyncStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Guarda el token JWT de la sesión
+ */
+export const setAuthToken = async (token: string): Promise<void> => {
+  try {
+    if (token) {
+      await AsyncStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
+    } else {
+      await AsyncStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    }
+  } catch (error) {
+    console.error('Error guardando Auth Token:', error);
   }
 };
 
@@ -75,11 +103,12 @@ export const mapDbToOrganizacion = (dbOrg: any): Organizacion => {
     fechaRegistro: dbOrg.fecha_registro ? new Date(dbOrg.fecha_registro).getTime() : Date.now(),
     estadoVerificacion: (dbOrg.estado_verificacion as any) || (dbOrg.estadoVerificacion as any) || 'verificado',
     verificada: typeof dbOrg.verificada === 'boolean' ? (dbOrg.verificada ? 1 : 0) : Number(dbOrg.verificada ?? 1),
+    token: dbOrg.token || undefined,
   };
 };
 
 /**
- * Mapea la interfaz del frontend al formato que espera el Backend MySQL 
+ * Mapea la interfaz del frontend (camelCase) al formato que espera el Backend MySQL (snake_case)
  */
 export const mapOrganizacionToDb = (org: Organizacion): any => {
   return {
@@ -110,7 +139,7 @@ export const mapOrganizacionToDb = (org: Organizacion): any => {
 };
 
 /**
- * Iniciar sesión consumiendo el Backend Node.js Express con correo y password
+ * Iniciar sesión consumiendo el Backend Node.js Express sin requerir NIT ni PIN
  */
 export const loginOrganizacionApi = async (
   correo: string,
@@ -154,10 +183,8 @@ export const loginOrganizacionApi = async (
           const itemCorreo = String(item.correo || '').trim().toLowerCase();
           return itemCorreo === cleanCorreo;
         });
-     /**si hay coincidencia cancela temporizador de error, traduce los datos al formato correcto,
-      * guarda informacion en el almacenamiento local y retorna la respuests de exito
-      */
-     if (match) { 
+
+        if (match) {
           clearTimeout(timeoutId);
           const mapped = mapDbToOrganizacion(match);
           await saveOrganizacion(mapped);
@@ -172,13 +199,17 @@ export const loginOrganizacionApi = async (
 
     clearTimeout(timeoutId);
 
-  /*Si la petición inicial sí respondió biencancela el temporizador y extrae 
-  el objeto de la organización probando distintas propiedades
-  */
     if (response && response.ok) {
       const data = await response.json();
       const rawOrg = data.data || data.organizacion || data.user || data;
       const mappedOrg = mapDbToOrganizacion(rawOrg);
+
+      // Extraer y guardar el token JWT retornado por el backend
+      const token = data.token || data.accessToken || data.jwt || (data.data && data.data.token);
+      if (token) {
+        mappedOrg.token = token;
+        await setAuthToken(token);
+      }
 
       // Guardar copia local en caché
       await saveOrganizacion(mappedOrg);
@@ -200,9 +231,7 @@ export const loginOrganizacionApi = async (
     const orgCorreoClean = org.correo.trim().toLowerCase();
     return orgCorreoClean === cleanCorreo;
   });
-/*Si no existe nadie con ese correo en los datos locales, 
-devuelve un error indicando que no se encontró la organización
- */
+
   if (!foundOrg) {
     return {
       success: false,
@@ -210,9 +239,6 @@ devuelve un error indicando que no se encontró la organización
       source: 'local',
     };
   }
-  /* Si la organización existe pero la clave ingresada no coincide, devuelve el error 
-  "Contraseña institucional incorrecta."
-  */
 
   if (foundOrg.password && foundOrg.password !== password) {
     return {
@@ -221,11 +247,11 @@ devuelve un error indicando que no se encontró la organización
       source: 'local',
     };
   }
-//Si el correo y la contraseña son correctos, da el acceso indicado qur la fuente fue la base de datos
+
   return {
     success: true,
     org: foundOrg,
-    source: 'local',//osea aqui
+    source: 'local',
   };
 };
 
@@ -233,14 +259,21 @@ devuelve un error indicando que no se encontró la organización
  * Obtener listado de organizaciones desde el Backend Node.js Express (/api/organizations)
  */
 export const getOrganizacionesApi = async (): Promise<Organizacion[]> => {
-  const baseUrl = await getApiBaseUrl();//Busca la URL base del servidor a donde va enviar la peticion
+  const baseUrl = await getApiBaseUrl();
+  const token = await getAuthToken();
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 4000);
-  //peticion al backend
+
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${baseUrl}/organizations`, {
       method: 'GET',
-      headers: { Accept: 'application/json' },
+      headers,
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -256,43 +289,63 @@ export const getOrganizacionesApi = async (): Promise<Organizacion[]> => {
   return INITIAL_ORGANIZACIONES;
 };
 
-// Actualizar perfil de la organización en el Backend MySQL 
- 
- 
+/**
+ * Actualizar perfil de la organización en el Backend MySQL (/api/organizations/:id)
+ * Optimizado para enviar Authorization Bearer Token (evitando 401 Unauthorized)
+ * y persistir directamente en MySQL a través de Node.js Express
+ */
 export const updateOrganizacionApi = async (
   org: Organizacion
 ): Promise<{ success: boolean; source: 'backend' | 'local'; message?: string }> => {
   const baseUrl = await getApiBaseUrl();
   const payload = mapOrganizacionToDb(org);
+  const token = org.token || (await getAuthToken());
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  };
+
+  // Inyectar token de autorización si está disponible para evitar 401 Unauthorized
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   try {
     const controller = new AbortController();
-    // Timeout estricto de 1.8 segundos 
-    const timeoutId = setTimeout(() => controller.abort(), 1800);
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+    console.log(`[API] Enviando PUT a ${baseUrl}/organizations/${org.idOrganizacion} con token:`, Boolean(token));
 
     const response = await fetch(`${baseUrl}/organizations/${org.idOrganizacion}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      headers,
       body: JSON.stringify(payload),
       signal: controller.signal,
-    }).catch(() => null);
+    }).catch((err) => {
+      console.log('[API] Error de conexión en PUT organizations:', err);
+      return null;
+    });
 
     clearTimeout(timeoutId);
 
-    if (response && (response.ok || response.status === 200)) {
-      // Guardar también en almacenamiento local para consistencia offline
-      await updateOrganizacionInStorage(org);
-      return {
-        success: true,
-        source: 'backend',
-        message: 'Datos guardados correctamente en la base de datos MySQL.',
-      };
+    if (response) {
+      if (response.ok || response.status === 200 || response.status === 204) {
+        console.log('[API] ✅ Actualización exitosa en base de datos MySQL (HTTP 200/204)');
+        await updateOrganizacionInStorage(org);
+        return {
+          success: true,
+          source: 'backend',
+          message: 'Datos guardados correctamente en la base de datos MySQL (XAMPP).',
+        };
+      } else if (response.status === 401) {
+        console.warn('[API] ⚠️ Error 401 Unauthorized: El backend requiere token JWT válido en header Authorization');
+      } else {
+        console.warn(`[API] ⚠️ Respuesta del servidor con estado HTTP ${response.status}`);
+      }
     }
   } catch (err) {
-    console.log('Fallo actualización remota inmediata, aplicando persistencia local:', err);
+    console.log('[API] Error intentando actualizar en backend remoto:', err);
   }
 
   // Persistir de forma segura en local storage
@@ -300,6 +353,6 @@ export const updateOrganizacionApi = async (
   return {
     success: true,
     source: 'local',
-    message: 'Datos guardados en el almacenamiento local seguro del dispositivo.',
+    message: 'Datos actualizados localmente en el dispositivo.',
   };
 };

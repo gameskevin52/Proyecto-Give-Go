@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {//componentes y utilidades nativas de React Native
+import {
   StyleSheet,
   View,
   ScrollView,
@@ -73,13 +73,12 @@ export default function App() {
       />
 
       {/* Área Principal de Contenido Con Scroll */}
-      <ScrollView //pantalla deslizable
+      <ScrollView //Pantalla deslizable
         style={styles.contentScroll}
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
-       
-        {currentScreen === 'LOGIN' && ( //muestra la pantalla segun la vista activa bien sea LOGIN o DASHBOARD
+        {currentScreen === 'LOGIN' && (//muestra la pantalla segun la vista activa bien sea LOGIN o DASHBOARD
           <LoginScreen onLoginSuccess={handleLoginSuccess} />
         )}
 
@@ -98,7 +97,7 @@ export default function App() {
 
         {currentScreen === 'EVENTOS' && <EventosScreen />}
 
-        {currentScreen === 'MAPA' && <MapaScreen organizaciones={organizaciones} />}
+        {currentScreen === 'MAPA' && <MapaScreen />}
 
         {currentScreen === 'DONAR' && <DonarScreen />}
 

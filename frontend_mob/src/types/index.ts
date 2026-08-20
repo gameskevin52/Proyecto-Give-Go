@@ -1,8 +1,5 @@
+export type ScreenType = 'DASHBOARD' | 'EVENTOS' | 'MAPA' | 'DONAR' | 'LOGIN';
 
-//ESTO ES UN MOLDE DE DATOS
-
-export type ScreenType = 'DASHBOARD' | 'EVENTOS' | 'MAPA' | 'DONAR' | 'LOGIN'; //Define las únicas pantallas válidas
-//Define todos los atributos requeridos
 export interface Organizacion {
   idOrganizacion: number;
   nombre: string;
@@ -28,6 +25,7 @@ export interface Organizacion {
   fechaRegistro: number;
   estadoVerificacion: 'pendiente' | 'verificado' | 'rechazado';
   verificada: number;
+  token?: string;
 }
 
 export interface Evento {

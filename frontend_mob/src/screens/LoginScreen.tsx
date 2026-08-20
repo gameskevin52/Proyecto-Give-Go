@@ -1,3 +1,6 @@
+
+// PANTALLA DE INICIO DE SESION 
+
 import React, { useState, useEffect } from 'react';
 import {//componentes y utilidades nativas de React Native
   StyleSheet,
@@ -118,16 +121,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           <TextInput //Campo de texto puedes ecribir la ip del compu aqui
             style={styles.serverInput}
             value={serverUrl}
-            onChangeText={setServerUrl}// Se actualiza la variable de estado cada vez que el usuqrio escribe
+            onChangeText={setServerUrl} // Se actualiza la variable de estado cada vez que el usuqrio escribe
             placeholder="http://192.168.1.X:3000/api"
             placeholderTextColor="#94A3B8"
             autoCapitalize="none"
             autoCorrect={false}
           />
-          /** 
-          Al presionar el botón "Guardar URL del Servidor", ejecuta la función handleSaveServerUrl que vimos al inicio para aplicar 
-          los cambios
-          */
           <TouchableOpacity
             style={styles.saveServerBtn}
             onPress={handleSaveServerUrl}
@@ -165,7 +164,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           style={styles.input}
           placeholder="Clave maestra de la fundación"
           placeholderTextColor="#94A3B8"
-          secureTextEntry={!showPassword} //Oculta o muestra los caracteres en texto plano usando la propiedad
+          secureTextEntry={!showPassword}//Oculta o muestra los caracteres en texto plano usando la propiedad
           value={password}
           onChangeText={setPassword}
         />
@@ -216,7 +215,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     </View>
   );
 };
-// puro estilo
+//Puro estilo de la vista
 const styles = StyleSheet.create({
   container: {
     padding: 16,
