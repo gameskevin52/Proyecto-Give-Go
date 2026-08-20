@@ -57,7 +57,8 @@ INSERT INTO usuarios (id_usuario, rol, nombre1, nombre2, apellido1, apellido2, t
 INSERT INTO usuarios (id_usuario, rol, nombre1, nombre2, apellido1, apellido2, telefono, correo, password, estado) VALUES
 (101, 'Organizacion', 'Fundación Manos por Kennedy', NULL, 'Organización', NULL, '+57 300 000 0000', 'contacto@manosporkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
 (102, 'Organizacion', 'Fundación Bogotá Solidaria', NULL, 'Organización', NULL, '+57 300 000 0000', 'info@bogotasolidaria.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
-(103, 'Organizacion', 'Asociación Social Ciudad Kennedy', NULL, 'Organización', NULL, '+57 300 000 0000', 'hola@ciudadkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1);
+(103, 'Organizacion', 'Asociación Social Ciudad Kennedy', NULL, 'Organización', NULL, '+57 300 000 0000', 'hola@ciudadkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
+(104, 'Organizacion', 'Banco de Alimentos Bogotá', NULL, 'Fundación', NULL, '+57 301 111 1111', 'pepes@bancodealimentosbogota.org', 'pepes345', 1);
 
 INSERT INTO organizaciones (id_organizacion, nombre, direccion, telefono, correo, password, descripcion, nit, mision, vision) VALUES
 (1, 'Fundación Manos por Kennedy', 'Calle 38 Sur # 78-45, Kennedy Central, Bogotá D.C.', '+57 300 000 0000', 'contacto@manosporkennedy.org', 'SAMSUNG23y', 'Institución comunitaria enfocada en brindar seguridad alimentaria en Kennedy', '901.809.708-23', 'Ayudar a aquellas personas que lo necesitan', 'Pensar en grande y llegar lejos'), 
