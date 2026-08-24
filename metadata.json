@@ -1,0 +1,6 @@
+{
+  "name": "Give&Go - Donación",
+  "description": "Aplicación móvil Give&Go para realizar donaciones monetarias y de objetos a organizaciones benéficas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
