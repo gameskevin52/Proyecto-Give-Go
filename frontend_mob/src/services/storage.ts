@@ -1,3 +1,6 @@
+
+//MANEJA DATOS PERSISTIDOS LOCALMENTE 
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Organizacion } from '../types';
 

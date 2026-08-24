@@ -1,5 +1,5 @@
 
-// PANTALLA DE INICIO DE SESION 
+// PANTALLA DE INICIO DE SESION MANEJA LA AUTENTICACION DE USUARIOS
 
 import React, { useState, useEffect } from 'react';
 import {//componentes y utilidades nativas de React Native
@@ -101,7 +101,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             onPress={() => setShowServerConfig(!showServerConfig)}
           >
             <Text style={styles.serverConfigToggleText}>
-              {showServerConfig ? '✕ Cerrar IP' : '⚙️ Config Backend'}
+              {showServerConfig ? '✕ Cerrar IP' : '⚙️ Config Backend'} 
             </Text>
           </TouchableOpacity>
         </View>

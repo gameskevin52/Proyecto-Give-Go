@@ -1,3 +1,4 @@
+//Centraliza todas las llamadas HTTP al backend.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Organizacion, Evento, Donacion } from '../types';
 import { INITIAL_ORGANIZACIONES, saveOrganizacion, updateOrganizacionInStorage } from './storage';
