@@ -103,7 +103,7 @@ export const OrganizacionModel = {
       return nextId;
     }
   },
-
+// Actualizar org
   async update(id: number, data: Partial<Omit<OrganizacionDB, 'id_organizacion' | 'fecha_registro'>>): Promise<boolean> {
     if (db.isMySQLConnected()) {
       const fields: string[] = [];
@@ -136,7 +136,7 @@ export const OrganizacionModel = {
       return true;
     }
   },
-
+//Eliminar org 
   async delete(id: number): Promise<boolean> {
     if (db.isMySQLConnected()) {
       const [result] = await db.query('DELETE FROM organizaciones WHERE id_organizacion = ?', [id]);
