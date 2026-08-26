@@ -1,125 +1,230 @@
-/**
- * Validaciones de formulario para creación y actualización de eventos (HU013 / HU014)
- * Mobile first layer de validación basada en las reglas del backend (eventValidator.ts)
- */
+import {
+  CreateEventDTO,
+  UpdateEventDTO,
+  EventFormErrors,
+} from '../types/event.types';
 
-import { CreateEventDTO, UpdateEventDTO, EventFormErrors } from '../types/event.types';
+type EventData = Partial<CreateEventDTO | UpdateEventDTO>;
 
-export interface ValidationResult {
+interface ValidationResult {
   isValid: boolean;
   errors: EventFormErrors;
 }
 
 /**
- * Valida si un string de fecha y hora es posterior al instante actual
+ * Valida los datos necesarios para crear un evento.
  */
-export function isFutureDate(dateString: string): boolean {
-  const parsedDate = new Date(dateString);
-  if (isNaN(parsedDate.getTime())) {
-    return false;
-  }
-  const now = new Date();
-  return parsedDate.getTime() > now.getTime();
-}
-
-/**
- * Valida los datos del formulario de creación o actualización de evento
- */
-export function validateEventForm(data: Partial<CreateEventDTO | UpdateEventDTO>): ValidationResult {
+export const validateCreateEvent = (
+  data: CreateEventDTO
+): ValidationResult => {
   const errors: EventFormErrors = {};
 
-  // 1. Nombre del evento
-  if (!data.nombre || data.nombre.trim().length === 0) {
+  // Nombre
+  if (!data.nombre || !data.nombre.trim()) {
     errors.nombre = 'El nombre del evento es obligatorio.';
   } else if (data.nombre.trim().length < 3) {
     errors.nombre = 'El nombre debe tener al menos 3 caracteres.';
-  } else if (data.nombre.trim().length > 150) {
-    errors.nombre = 'El nombre no puede exceder 150 caracteres.';
   }
 
-  // 2. Categoría
- if (!data.categoria || Number(data.categoria) <= 0) {
-  errors.categoria = 'Debes seleccionar una categoría válida.';
-}
+  // Categoría
+  if (!data.id_categoria || Number(data.id_categoria) <= 0) {
+    errors.id_categoria = 'Selecciona una categoría válida.';
+  }
 
-  // 3. Descripción
-  if (!data.descripcion || data.descripcion.trim().length === 0) {
-    errors.descripcion = 'La descripción del evento es obligatoria.';
+  // Descripción
+  if (!data.descripcion || !data.descripcion.trim()) {
+    errors.descripcion = 'La descripción es obligatoria.';
   } else if (data.descripcion.trim().length < 10) {
-    errors.descripcion = 'La descripción debe tener al información más detallada (mínimo 10 caracteres).';
+    errors.descripcion =
+      'La descripción debe tener al menos 10 caracteres.';
   }
 
-  // 4. Dirección
-  if (!data.direccion || data.direccion.trim().length === 0) {
-    errors.direccion = 'La dirección del evento es obligatoria.';
+  // Dirección
+  if (!data.direccion || !data.direccion.trim()) {
+    errors.direccion = 'La dirección es obligatoria.';
   }
 
-  // 5. Fecha y hora
-  if (!data.fecha || data.fecha.trim().length === 0) {
-    errors.fecha = 'La fecha y hora del evento son obligatorias.';
+  // Fecha
+  if (!data.fecha || !data.fecha.trim()) {
+    errors.fecha = 'La fecha y hora son obligatorias.';
   } else {
-    const dateObj = new Date(data.fecha);
-    if (isNaN(dateObj.getTime())) {
-      errors.fecha = 'Formato de fecha inválido. Usa el selector de fecha y hora.';
-    } else if (!isFutureDate(data.fecha)) {
-      errors.fecha = 'La fecha y hora del evento deben ser posteriores a la fecha y hora actuales.';
-    }
+    validateDate(data.fecha, errors);
   }
 
-  // 6. Cupo total
-  if (data.cupo === undefined || data.cupo === null || isNaN(Number(data.cupo))) {
-    errors.cupo = 'El cupo total es obligatorio.';
-  } else if (Number(data.cupo) <= 0) {
-    errors.cupo = 'El cupo total debe ser un número entero mayor a 0.';
+  // Cupo
+  const cupo = Number(data.cupo);
+
+  if (!Number.isFinite(cupo) || cupo <= 0) {
+    errors.cupo = 'El cupo debe ser mayor que 0.';
   }
 
-  // 7. Vacantes para voluntarios
-  if (
-  data.vacantesVoluntarios === undefined ||
-  data.vacantesVoluntarios === null ||
-  isNaN(Number(data.vacantesVoluntarios))
-) {
-  errors.vacantesVoluntarios = 'Las vacantes de voluntarios son obligatorias.';
-} else if (Number(data.vacantesVoluntarios) < 0) {
-  errors.vacantesVoluntarios =
-    'Las vacantes de voluntarios no pueden ser negativas.';
-}
+  // Vacantes voluntarios
+  const vacantesVoluntarios = Number(
+    data.vacantes_voluntarios
+  );
 
-  // 8. Vacantes para beneficiarios
   if (
-  data.vacantesBeneficiarios === undefined ||
-  data.vacantesBeneficiarios === null ||
-  isNaN(Number(data.vacantesBeneficiarios))
-) {
-  errors.vacantesBeneficiarios =
-    'Las vacantes de beneficiarios son obligatorias.';
-} else if (Number(data.vacantesBeneficiarios) < 0) {
-  errors.vacantesBeneficiarios =
-    'Las vacantes de beneficiarios no pueden ser negativas.';
-}
-
-    // Coherencia entre cupos
-  if (
-    data.cupo !== undefined &&
-    data.vacantesVoluntarios !== undefined &&
-    data.vacantesBeneficiarios !== undefined
+    !Number.isFinite(vacantesVoluntarios) ||
+    vacantesVoluntarios < 0
   ) {
-    const totalVacantes =
-      Number(data.vacantesVoluntarios) +
-      Number(data.vacantesBeneficiarios);
+    errors.vacantes_voluntarios =
+      'Las vacantes de voluntarios no pueden ser negativas.';
+  }
 
-    if (totalVacantes > Number(data.cupo)) {
-      errors.cupo =
-        'La suma de voluntarios y beneficiarios supera el cupo total.';
-    }
+  // Vacantes beneficiarios
+  const vacantesBeneficiarios = Number(
+    data.vacantes_beneficiarios
+  );
+
+  if (
+    !Number.isFinite(vacantesBeneficiarios) ||
+    vacantesBeneficiarios < 0
+  ) {
+    errors.vacantes_beneficiarios =
+      'Las vacantes de beneficiarios no pueden ser negativas.';
+  }
+
+  // Validación de capacidad
+  if (
+    Number.isFinite(cupo) &&
+    Number.isFinite(vacantesVoluntarios) &&
+    Number.isFinite(vacantesBeneficiarios) &&
+    vacantesVoluntarios + vacantesBeneficiarios > cupo
+  ) {
+    errors.cupo =
+      'La suma de las vacantes no puede superar el cupo total.';
+  }
+
+  // Ayuda ofrecida
+  if (!data.ayuda_ofrecida || !data.ayuda_ofrecida.trim()) {
+    errors.ayuda_ofrecida =
+      'Debes indicar qué ayuda o recursos se ofrecerán.';
   }
 
   return {
     isValid: Object.keys(errors).length === 0,
     errors,
   };
-}
+};
 
-// Mantener compatibilidad directa con HU013
-export const validateCreateEvent = validateEventForm;
-export const validateUpdateEvent = validateEventForm;
+/**
+ * Valida los datos necesarios para actualizar un evento.
+ */
+export const validateUpdateEvent = (
+  data: UpdateEventDTO
+): ValidationResult => {
+  const errors: EventFormErrors = {};
+
+  // Nombre
+  if (!data.nombre || !data.nombre.trim()) {
+    errors.nombre = 'El nombre del evento es obligatorio.';
+  } else if (data.nombre.trim().length < 3) {
+    errors.nombre = 'El nombre debe tener al menos 3 caracteres.';
+  }
+
+  // Categoría
+  if (!data.id_categoria || Number(data.id_categoria) <= 0) {
+    errors.id_categoria = 'Selecciona una categoría válida.';
+  }
+
+  // Descripción
+  if (!data.descripcion || !data.descripcion.trim()) {
+    errors.descripcion = 'La descripción es obligatoria.';
+  } else if (data.descripcion.trim().length < 10) {
+    errors.descripcion =
+      'La descripción debe tener al menos 10 caracteres.';
+  }
+
+  // Dirección
+  if (!data.direccion || !data.direccion.trim()) {
+    errors.direccion = 'La dirección es obligatoria.';
+  }
+
+  // Fecha
+  if (!data.fecha || !data.fecha.trim()) {
+    errors.fecha = 'La fecha y hora son obligatorias.';
+  } else {
+    validateDate(data.fecha, errors);
+  }
+
+  // Cupo
+  const cupo = Number(data.cupo);
+
+  if (!Number.isFinite(cupo) || cupo <= 0) {
+    errors.cupo = 'El cupo debe ser mayor que 0.';
+  }
+
+  // Vacantes voluntarios
+  const vacantesVoluntarios = Number(
+    data.vacantes_voluntarios
+  );
+
+  if (
+    !Number.isFinite(vacantesVoluntarios) ||
+    vacantesVoluntarios < 0
+  ) {
+    errors.vacantes_voluntarios =
+      'Las vacantes de voluntarios no pueden ser negativas.';
+  }
+
+  // Vacantes beneficiarios
+  const vacantesBeneficiarios = Number(
+    data.vacantes_beneficiarios
+  );
+
+  if (
+    !Number.isFinite(vacantesBeneficiarios) ||
+    vacantesBeneficiarios < 0
+  ) {
+    errors.vacantes_beneficiarios =
+      'Las vacantes de beneficiarios no pueden ser negativas.';
+  }
+
+  // Validación de capacidad
+  if (
+    Number.isFinite(cupo) &&
+    Number.isFinite(vacantesVoluntarios) &&
+    Number.isFinite(vacantesBeneficiarios) &&
+    vacantesVoluntarios + vacantesBeneficiarios > cupo
+  ) {
+    errors.cupo =
+      'La suma de las vacantes no puede superar el cupo total.';
+  }
+
+  // Ayuda ofrecida
+  if (!data.ayuda_ofrecida || !data.ayuda_ofrecida.trim()) {
+    errors.ayuda_ofrecida =
+      'Debes indicar qué ayuda o recursos se ofrecerán.';
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+  };
+};
+
+/**
+ * Valida fecha y hora.
+ *
+ * Formato esperado:
+ * YYYY-MM-DD HH:mm:ss
+ */
+const validateDate = (
+  fecha: string,
+  errors: EventFormErrors
+): void => {
+  const date = new Date(fecha.replace(' ', 'T'));
+
+  if (Number.isNaN(date.getTime())) {
+    errors.fecha =
+      'La fecha debe tener un formato válido.';
+    return;
+  }
+
+  const now = new Date();
+
+  if (date <= now) {
+    errors.fecha =
+      'La fecha y hora deben ser posteriores al momento actual.';
+  }
+};

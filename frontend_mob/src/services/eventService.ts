@@ -1,9 +1,8 @@
 /**
  * Servicio de Eventos - Give & Go Mobile
  *
- * Este archivo adapta Mobile al contrato REAL del backend.
+ * CONTRATO REAL DEL BACKEND
  *
- * Backend:
  * GET    /api/events/
  * GET    /api/events/:id
  * POST   /api/events/
@@ -12,17 +11,17 @@
  */
 
 import { apiRequest } from './api';
+
 import {
   CreateEventDTO,
   UpdateEventDTO,
   Evento,
-  ApiResponse,
 } from '../types/event.types';
 
 /**
  * Respuesta estándar del backend.
  */
-interface BackendResponse<T> {
+export interface BackendResponse<T> {
   success: boolean;
   message: string;
   data: T;
@@ -31,7 +30,7 @@ interface BackendResponse<T> {
 
 /**
  * HU017
- * Listar todos los eventos.
+ * Obtener todos los eventos.
  *
  * GET /api/events/
  */
@@ -40,13 +39,22 @@ export async function getAllEvents(): Promise<BackendResponse<Evento[]>> {
 }
 
 /**
+ * HU016
+ * Obtener un evento por su ID.
+ *
+ * GET /api/events/:id
+ */
+export async function getEventById(
+  id: string
+): Promise<BackendResponse<Evento>> {
+  return apiRequest<BackendResponse<Evento>>(`/events/${id}`);
+}
+
+/**
  * HU013
- * Crear evento.
+ * Crear un evento.
  *
  * POST /api/events/
- *
- * Los nombres enviados aquí deben coincidir
- * con los que recibe eventController.ts.
  */
 export async function createEvent(
   eventData: CreateEventDTO
@@ -61,25 +69,13 @@ export async function createEvent(
 }
 
 /**
- * HU016
- * Consultar evento por ID.
- *
- * GET /api/events/:id
- */
-export async function getEventById(
-  id: number
-): Promise<BackendResponse<Evento>> {
-  return apiRequest<BackendResponse<Evento>>(`/events/${id}`);
-}
-
-/**
  * HU014
- * Actualizar evento.
+ * Actualizar un evento.
  *
  * PUT /api/events/:id
  */
 export async function updateEvent(
-  id: number,
+  id: string,
   eventData: UpdateEventDTO
 ): Promise<BackendResponse<Evento>> {
   return apiRequest<BackendResponse<Evento>>(`/events/${id}`, {
@@ -90,17 +86,14 @@ export async function updateEvent(
 
 /**
  * HU015
- * Eliminar evento.
+ * Eliminar un evento.
  *
  * DELETE /api/events/:id
  */
 export async function deleteEvent(
-  id: number
+  id: string
 ): Promise<BackendResponse<{ id: string }>> {
-  return apiRequest<BackendResponse<{ id: string }>>(
-    `/events/${id}`,
-    {
-      method: 'DELETE',
-    }
-  );
+  return apiRequest<BackendResponse<{ id: string }>>(`/events/${id}`, {
+    method: 'DELETE',
+  });
 }

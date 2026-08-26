@@ -1,7 +1,7 @@
 import { body } from 'express-validator';
 console.log('🔥 EVENT VALIDATOR CARGADO');
 import { validateResults } from './validateHelper';
-import { NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 export const validateEvent = [
   body('nombre')

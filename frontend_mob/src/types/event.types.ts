@@ -1,21 +1,24 @@
 /**
- * Tipos del módulo de Eventos de Give & Go Mobile.
+ * Tipos del módulo de Eventos
+ * Give & Go Mobile
  *
- * IMPORTANTE:
- * Estos tipos representan el contrato REAL que devuelve/recibe
- * el eventController.ts del backend.
+ * Contrato del backend:
+ *
+ * GET    /api/events/
+ * GET    /api/events/:id
+ * POST   /api/events/
+ * PUT    /api/events/:id
+ * DELETE /api/events/:id
  */
 
 /**
  * Evento recibido desde el backend.
  *
- * GET /api/events/
- * GET /api/events/:id
- * POST /api/events/
- * PUT /api/events/:id
+ * El backend utiliza estos nombres en las respuestas.
  */
 export interface Evento {
   id: string;
+
   nombre: string;
   categoria: string;
   descripcion: string;
@@ -27,6 +30,7 @@ export interface Evento {
   vacantesBeneficiarios: number;
 
   ayudaOfrecida: string;
+
   estado: 'activo' | 'finalizado' | 'cancelado';
 
   organizacionId: string;
@@ -48,30 +52,27 @@ export interface Evento {
 }
 
 /**
- * Payload REAL que espera el backend para crear un evento.
+ * DTO utilizado para CREAR eventos.
  *
  * POST /api/events/
  *
- * El backend busca la categoría utilizando:
- *   categoria
- *
- * y la organización utilizando:
- *   organizacionId
+ * Estos nombres corresponden al contrato
+ * que espera actualmente el backend.
  */
 export interface CreateEventDTO {
   nombre: string;
-  categoria: string;
+  id_categoria: number;
   descripcion: string;
   direccion: string;
   fecha: string;
 
   cupo: number;
-  vacantesVoluntarios: number;
-  vacantesBeneficiarios: number;
+  vacantes_voluntarios: number;
+  vacantes_beneficiarios: number;
 
-  ayudaOfrecida: string;
+  ayuda_ofrecida: string;
 
-  organizacionId: string;
+  organizacion_id: number;
 
   estado?: 'activo' | 'finalizado' | 'cancelado';
 
@@ -91,24 +92,24 @@ export interface CreateEventDTO {
 }
 
 /**
- * Payload REAL que espera el backend para actualizar.
+ * DTO utilizado para ACTUALIZAR eventos.
  *
  * PUT /api/events/:id
  */
 export interface UpdateEventDTO {
-  nombre?: string;
-  categoria?: string;
-  descripcion?: string;
-  direccion?: string;
-  fecha?: string;
+  nombre: string;
+  id_categoria: number;
+  descripcion: string;
+  direccion: string;
+  fecha: string;
 
-  cupo?: number;
-  vacantesVoluntarios?: number;
-  vacantesBeneficiarios?: number;
+  cupo: number;
+  vacantes_voluntarios: number;
+  vacantes_beneficiarios: number;
 
-  ayudaOfrecida?: string;
+  ayuda_ofrecida: string;
 
-  organizacionId?: string;
+  organizacion_id: number;
 
   estado?: 'activo' | 'finalizado' | 'cancelado';
 
@@ -128,7 +129,7 @@ export interface UpdateEventDTO {
 }
 
 /**
- * Categoría del evento.
+ * Categoría de evento.
  */
 export interface EventCategory {
   id_categoria: number;
@@ -147,18 +148,39 @@ export interface ApiResponse<T = unknown> {
 }
 
 /**
- * Errores del formulario.
+ * Errores de formularios.
+ *
+ * Se utilizan los mismos nombres
+ * que los campos de los DTO.
  */
 export interface EventFormErrors {
   nombre?: string;
-  categoria?: string;
+  id_categoria?: string;
   descripcion?: string;
   direccion?: string;
   fecha?: string;
+
   cupo?: string;
-  vacantesVoluntarios?: string;
-  vacantesBeneficiarios?: string;
-  ayudaOfrecida?: string;
+  vacantes_voluntarios?: string;
+  vacantes_beneficiarios?: string;
+
+  ayuda_ofrecida?: string;
+
+  organizacion_id?: string;
+
+  barrio?: string;
+  localidad?: string;
   ciudad?: string;
+  departamento?: string;
+  pais?: string;
+
+  punto_referencia?: string;
+  nombre_lugar?: string;
+
+  latitud?: string;
+  longitud?: string;
+
+  imagen?: string;
+
   general?: string;
 }

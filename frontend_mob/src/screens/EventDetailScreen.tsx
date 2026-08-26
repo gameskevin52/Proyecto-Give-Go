@@ -32,9 +32,9 @@ const CATEGORY_NAMES: Record<number, string> = {
 };
 
 interface EventDetailScreenProps {
-  eventId: number;
+  eventId: string;
   onBack?: () => void;
-  onNavigateToEdit?: (id: number) => void;
+  onNavigateToEdit?: (id: string) => void;
 }
 
 export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
