@@ -55,6 +55,7 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
     try {
       const response = await getEventById(eventId);
       const data: Evento = (response?.data || response) as Evento;
+      console.log('IMAGEN RECIBIDA:', data.imagen);
 
       if (!data || (!data.id_evento && !data.nombre)) {
         setNotFound(true);
@@ -147,7 +148,7 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
   const { dateStr, timeStr } = formatDateTime(event.fecha);
   const categoryName =
     event.categoria_nombre ||
-    CATEGORY_NAMES[event.id_categoria] ||
+    CATEGORY_NAMES[event.id_categoria ?? 0] ||
     `Categoría #${event.id_categoria}`;
 
   return (
@@ -177,12 +178,18 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({
         </View>
 
         {/* IMAGEN DEL EVENTO (Si existe) */}
-        {event.imagen && event.imagen.trim().length > 0 ? (
+        {typeof event.imagen === 'string' && event.imagen.trim().length > 0 ? (
           <View style={styles.imageContainer}>
             <Image
-              source={{ uri: event.imagen }}
-              style={styles.eventImage}
-              resizeMode="cover"
+            source={{
+            uri: 'https://picsum.photos/800/400'
+            }}
+            style={styles.eventImage}
+            resizeMode="cover"
+            onLoad={() => console.log('IMAGEN CARGADA CORRECTAMENTE')}
+            onError={(error) =>
+            console.log('ERROR CARGANDO IMAGEN:', error.nativeEvent)
+            }
             />
           </View>
         ) : null}

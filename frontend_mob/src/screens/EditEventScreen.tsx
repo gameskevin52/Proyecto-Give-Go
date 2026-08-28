@@ -28,10 +28,11 @@ import {
 import { validateUpdateEvent } from '../utils/eventValidators';
 
 import {
+  Evento,
   UpdateEventDTO,
+  UpdateEventFormData,
   EventCategory,
   EventFormErrors,
-  Evento,
 } from '../types/event.types';
 
 const EVENT_CATEGORIES: EventCategory[] = [
@@ -62,7 +63,7 @@ export const EditEventScreen: React.FC<EditEventScreenProps> = ({
     null
   );
 
-  const [formData, setFormData] = useState<Partial<UpdateEventDTO>>({
+  const [formData, setFormData] = useState<Partial<UpdateEventFormData>>({
     nombre: '',
     categoria: '1',
     descripcion: '',
@@ -213,7 +214,7 @@ export const EditEventScreen: React.FC<EditEventScreenProps> = ({
    * Cambiar campo
    */
   const handleChange = (
-    field: keyof UpdateEventDTO,
+    field: keyof UpdateEventFormData,
     value: any
   ) => {
     setFormData((prev) => ({
@@ -293,7 +294,7 @@ export const EditEventScreen: React.FC<EditEventScreenProps> = ({
     const payload: UpdateEventDTO = {
       nombre: (formData.nombre || '').trim(),
 
-      categoria: String(
+      id_categoria: Number(
         formData.categoria || '1'
       ),
 
@@ -307,47 +308,32 @@ export const EditEventScreen: React.FC<EditEventScreenProps> = ({
 
       cupo: Number(formData.cupo) || 0,
 
-      vacantesVoluntarios:
+      vacantes_voluntarios:
         Number(formData.vacantesVoluntarios) || 0,
 
-      vacantesBeneficiarios:
+      vacantes_beneficiarios:
         Number(formData.vacantesBeneficiarios) || 0,
 
-      ayudaOfrecida:
+      ayuda_ofrecida:
         (formData.ayudaOfrecida || '').trim(),
 
-      organizacionId:
-        String(formData.organizacionId || '1'),
+        organizacion_id: Number(
+    String(formData.organizacionId || '1')
+      ),
 
-      barrio:
-        (formData.barrio || '').trim(),
+      barrio: formData.barrio,
+      localidad: formData.localidad,
+      ciudad: formData.ciudad,
+      departamento: formData.departamento,
+      pais: formData.pais,
 
-      localidad:
-        (formData.localidad || '').trim(),
+      punto_referencia: formData.punto_referencia,
+      nombre_lugar: formData.nombre_lugar,
 
-      ciudad:
-        (formData.ciudad || '').trim(),
+      latitud: formData.latitud,
+      longitud: formData.longitud,
 
-      departamento:
-        (formData.departamento || '').trim(),
-
-      pais:
-        (formData.pais || 'Colombia').trim(),
-
-      punto_referencia:
-        (formData.punto_referencia || '').trim(),
-
-      nombre_lugar:
-        (formData.nombre_lugar || '').trim(),
-
-      latitud:
-        formData.latitud ?? null,
-
-      longitud:
-        formData.longitud ?? null,
-
-      imagen:
-        (formData.imagen || '').trim(),
+      imagen: formData.imagen,
     };
 
     const validation =

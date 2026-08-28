@@ -18,7 +18,12 @@ import { CustomInput } from '../components/common/CustomInput';
 import { CustomButton } from '../components/common/CustomButton';
 import { createEvent } from '../services/eventService';
 import { validateCreateEvent } from '../utils/eventValidators';
-import { CreateEventDTO, EventCategory, EventFormErrors } from '../types/event.types';
+import {
+  CreateEventDTO,
+  CreateEventFormData,
+  EventCategory,
+  EventFormErrors,
+} from '../types/event.types';
 
 // Categorías oficiales del backend
 const EVENT_CATEGORIES: EventCategory[] = [
@@ -45,7 +50,7 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
   const currentOrganizacionId = 1;
 
   // Estado del formulario
- const [formData, setFormData] = useState<Partial<CreateEventDTO>>({
+ const [formData, setFormData] = useState<Partial<CreateEventFormData>>({
   nombre: '',
   categoria: '1',
   descripcion: '',
@@ -76,7 +81,11 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
   const [dateInput, setDateInput] = useState<string>(''); // YYYY-MM-DD
   const [timeInput, setTimeInput] = useState<string>(''); // HH:mm
 
-  const handleChange = (field: keyof CreateEventDTO, value: any) => {
+  const handleChange = (
+  field: keyof CreateEventFormData,
+  value: any
+) => {
+
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -124,15 +133,15 @@ export const CreateEventScreen: React.FC<CreateEventScreenProps> = ({
     // 1. Armar payload con datos tipados
     const payload: CreateEventDTO = {
   nombre: (formData.nombre || '').trim(),
-  categoria: String(formData.categoria || '1'),
+  id_categoria: Number(formData.categoria || '1'),
   descripcion: (formData.descripcion || '').trim(),
   direccion: (formData.direccion || '').trim(),
   fecha: formData.fecha || '',
   cupo: Number(formData.cupo),
-  vacantesVoluntarios: Number(formData.vacantesVoluntarios),
-  vacantesBeneficiarios: Number(formData.vacantesBeneficiarios),
-  ayudaOfrecida: (formData.ayudaOfrecida || '').trim(),
-  organizacionId: String(formData.organizacionId || currentOrganizacionId),
+  vacantes_voluntarios: Number(formData.vacantesVoluntarios),
+  vacantes_beneficiarios: Number(formData.vacantesBeneficiarios),
+  ayuda_ofrecida: (formData.ayudaOfrecida || '').trim(),
+  organizacion_id: Number(formData.organizacionId || currentOrganizacionId),
   barrio: (formData.barrio || '').trim(),
   localidad: (formData.localidad || '').trim(),
   ciudad: (formData.ciudad || '').trim(),

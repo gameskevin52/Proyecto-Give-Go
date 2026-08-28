@@ -137,10 +137,21 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {/* Imagen */}
         {item.imagen ? (
           <Image
-            source={{ uri: item.imagen }}
-            style={styles.cardImage}
-            resizeMode="cover"
-          />
+          source={{
+          uri: 'https://picsum.photos/800/400',
+          }}
+          style={styles.cardImage}
+          resizeMode="cover"
+          onLoad={() =>
+          console.log('✅ IMAGEN DEL LISTADO CARGADA:', item.nombre)
+        }
+          onError={(error) =>
+          console.log(
+          '❌ ERROR IMAGEN DEL LISTADO:',
+          error.nativeEvent
+        ) 
+      }
+      />
         ) : (
           <View style={styles.imagePlaceholder}>
             <Text style={styles.placeholderEmoji}>🤝</Text>
