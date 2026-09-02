@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Give&Go - Documentación de Funciones de Usuarios</title>
+    <style>
+      :root {
+        --bg: #f8fafc;
+        --panel: #ffffff;
+        --panel-2: #f1f5f9;
+        --text: #0f172a;
+        --muted: #475569;
+        --primary: #dc2626;
+        --primary-soft: #fee2e2;
+        --success: #059669;
+        --success-soft: #d1fae5;
+        --warning: #d97706;
+        --warning-soft: #fef3c7;
+        --info: #2563eb;
+        --info-soft: #dbeafe;
+        --purple: #7c3aed;
+        --purple-soft: #ede9fe;
+        --border: #e2e8f0;
+        --code-bg: #0f172a;
+        --code-text: #e2e8f0;
+        --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(180deg, #fff7f7 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px 20px 80px;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #0f172a 0%, #7f1d1d 100%);
+        color: white;
+        border-radius: 24px;
+        padding: 32px 28px;
+        box-shadow: var(--shadow);
+        margin-bottom: 28px;
+      }
+
+      .header h1 {
+        margin: 0 0 10px;
+        font-size: clamp(1.8rem, 2vw, 3rem);
+      }
+
+      .header p {
+        margin: 0;
+        color: #e2e8f0;
+        line-height: 1.6;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: bold;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      .badge.red { background: var(--primary-soft); color: #991b1b; }
+      .badge.green { background: var(--success-soft); color: #065f46; }
+      .badge.blue { background: var(--info-soft); color: #1d4ed8; }
+      .badge.purple { background: var(--purple-soft); color: #6d28d9; }
+      .badge.orange { background: var(--warning-soft); color: #b45309; }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+
+      .stat {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+
+      .stat .num {
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+
+      .stat .label {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .section {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        padding: 28px;
+        margin-bottom: 22px;
+        box-shadow: var(--shadow);
+      }
+
+      .section h2 {
+        margin-top: 0;
+        margin-bottom: 18px;
+        font-size: 1.5rem;
+      }
+
+      .section h3 {
+        margin-top: 0;
+        margin-bottom: 12px;
+        font-size: 1.15rem;
+      }
+
+      .section p, .section li {
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 13px;
+      }
+
+      th, td {
+        border: 1px solid var(--border);
+        padding: 12px 10px;
+        vertical-align: top;
+        text-align: left;
+      }
+
+      th {
+        background: var(--panel-2);
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      code {
+        font-family: Consolas, "Courier New", monospace;
+        background: #eef2ff;
+        color: #1e3a8a;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 12px;
+      }
+
+      pre {
+        margin: 0;
+        background: var(--code-bg);
+        color: var(--code-text);
+        padding: 16px 18px;
+        border-radius: 14px;
+        overflow-x: auto;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 5px 8px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: bold;
+      }
+
+      .pill.get { background: #dbeafe; color: #1d4ed8; }
+      .pill.post { background: #dcfce7; color: #166534; }
+      .pill.put { background: #fef3c7; color: #92400e; }
+      .pill.delete { background: #fee2e2; color: #991b1b; }
+
+      .stack {
+        display: grid;
+        gap: 20px;
+      }
+
+      .flow-box {
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 16px;
+      }
+
+      .flow-box strong {
+        color: var(--text);
+      }
+
+      .response {
+        color: #166534;
+        font-weight: 700;
+      }
+
+      .error {
+        color: #991b1b;
+        font-weight: 700;
+      }
+
+      .notes {
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 14px;
+        padding: 16px;
+        margin-top: 18px;
+      }
+
+      .notes strong {
+        color: #9a4d00;
+      }
+
+      .footer {
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 32px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <div class="badge red">API Give&Go</div>
+        <h1>Documentación paso a paso de las funciones de usuarios</h1>
+        <p>
+          Explicación completa de cada acción del módulo de usuarios: login, registro, perfil,
+          actualización, listado, detalle, creación y eliminación; incluyendo botones,
+          request, validaciones, middleware y response del backend.
+        </p>
+      </header>
+
+      <section class="grid">
+        <div class="stat">
+          <div class="num">12</div>
+          <div class="label">Funciones principales del módulo de usuarios</div>
+        </div>
+        <div class="stat">
+          <div class="num">4</div>
+          <div class="label">Roles principales: admin, voluntario, beneficiario y organización</div>
+        </div>
+        <div class="stat">
+          <div class="num">JWT</div>
+          <div class="label">Se usa token para proteger perfil y acciones sensibles</div>
+        </div>
+        <div class="stat">
+          <div class="num">HTTP</div>
+          <div class="label">Se trabaja con GET, POST, PUT y DELETE</div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>1. ¿Qué hace el módulo de usuarios?</h2>
+        <p>
+          El módulo de usuarios es el núcleo de autenticación y gestión de cuentas de Give&Go.
+          Aquí se controla quién puede entrar al sistema, cómo se registra, cómo se actualiza su perfil,
+          cómo se consulta la información personal y cómo el administrador puede listar o eliminar usuarios.
+        </p>
+        <p>
+          En el backend, todas estas funciones están en el archivo <code>backend/src/controllers/userController.ts</code>
+          y las rutas se exponen desde <code>backend/src/routes/userRoutes.ts</code>.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>2. Rutas principales del módulo de usuarios</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Método</th>
+              <th>Ruta</th>
+              <th>Función</th>
+              <th>Protección</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="pill post">POST</span></td>
+              <td><code>/api/users/login</code></td>
+              <td>Iniciar sesión</td>
+              <td>Público</td>
+            </tr>
+            <tr>
+              <td><span class="pill post">POST</span></td>
+              <td><code>/api/users/register</code></td>
+              <td>Registrar usuario</td>
+              <td>Público</td>
+            </tr>
+            <tr>
+              <td><span class="pill post">POST</span></td>
+              <td><code>/api/users/forgot-password</code></td>
+              <td>Recuperar contraseña</td>
+              <td>Público</td>
+            </tr>
+            <tr>
+              <td><span class="pill get">GET</span></td>
+              <td><code>/api/users/profile</code></td>
+              <td>Ver perfil del usuario autenticado</td>
+              <td>JWT</td>
+            </tr>
+            <tr>
+              <td><span class="pill put">PUT</span></td>
+              <td><code>/api/users/profile</code></td>
+              <td>Actualizar perfil</td>
+              <td>JWT</td>
+            </tr>
+            <tr>
+              <td><span class="pill get">GET</span></td>
+              <td><code>/api/users</code></td>
+              <td>Listar todos los usuarios</td>
+              <td>Admin</td>
+            </tr>
+            <tr>
+              <td><span class="pill get">GET</span></td>
+              <td><code>/api/users/:id</code></td>
+              <td>Ver detalle de un usuario</td>
+              <td>JWT</td>
+            </tr>
+            <tr>
+              <td><span class="pill post">POST</span></td>
+              <td><code>/api/users</code></td>
+              <td>Crear usuario desde administración</td>
+              <td>Admin</td>
+            </tr>
+            <tr>
+              <td><span class="pill put">PUT</span></td>
+              <td><code>/api/users/:id</code></td>
+              <td>Actualizar usuario por administrador</td>
+              <td>JWT</td>
+            </tr>
+            <tr>
+              <td><span class="pill delete">DELETE</span></td>
+              <td><code>/api/users/:id</code></td>
+              <td>Eliminar usuario</td>
+              <td>JWT / permisos</td>
+            </tr>
+            <tr>
+              <td><span class="pill get">GET</span></td>
+              <td><code>/api/users/public/:id</code></td>
+              <td>Perfil público de usuario</td>
+              <td>Público</td>
+            </tr>
+            <tr>
+              <td><span class="pill get">GET</span></td>
+              <td><code>/api/users/stats/volunteers-count</code></td>
+              <td>Conteo de voluntarios</td>
+              <td>Público</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h2>3. Middleware y validaciones que se ejecutan antes de cada función</h2>
+        <div class="stack">
+          <div class="flow-box">
+            <strong>validateLogin</strong><br />
+            Valida que <code>correo</code> sea un email real y que <code>password</code> no venga vacío.
+          </div>
+          <div class="flow-box">
+            <strong>validateRegister</strong><br />
+            Valida nombre, apellido, rol, correo y longitud mínima de contraseña.
+          </div>
+          <div class="flow-box">
+            <strong>authenticateJWT</strong><br />
+            Revisa el <code>Authorization: Bearer &lt;token&gt;</code> o la cookie <code>token</code>.
+            Si no existe o está vencido, responde con <code>401</code> o <code>403</code>.
+          </div>
+          <div class="flow-box">
+            <strong>authorizeRoles('Admin')</strong><br />
+            Permite la acción solo si el usuario tiene rol administrador.
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>4. Función 1: login</h2>
+        <div class="pill post">POST /api/users/login</div>
+        <p><strong>Botón o acción en frontend:</strong> Botón “Iniciar sesión” de la pantalla de login.</p>
+
+        <h3>Request</h3>
+        <pre>POST /api/users/login
+Content-Type: application/json
+
+{
+  "correo": "ana@gmail.com",
+  "password": "123456"
+}</pre>
+
+        <h3>Qué hace el backend</h3>
+        <ul>
+          <li>Lee <code>correo</code> y <code>password</code> desde <code>req.body</code>.</li>
+          <li>Busca el usuario con <code>UsuarioModel.getByEmail(correo)</code>.</li>
+          <li>Si no existe responde <code>404</code>.</li>
+          <li>Si el usuario está inactivo responde <code>403</code>.</li>
+          <li>Compara la contraseña con <code>bcrypt</code> usando <code>comparePassword</code>.</li>
+          <li>Si coincide genera un JWT con <code>generateToken()</code>.</li>
+          <li>Guarda la sesión en cookie opcional y registra auditoría.</li>
+        </ul>
+
+        <h3>Response exitoso</h3>
+        <pre>{
+  "success": true,
+  "message": "Sesión iniciada correctamente.",
+  "data": {
+    "user": {
+      "id": "1",
+      "rol": "voluntario",
+      "nombre1": "Ana",
+      "correo": "ana@gmail.com"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+}</pre>
+
+        <h3>Response fallido</h3>
+        <pre>{
+  "success": false,
+  "message": "La contraseña es incorrecta.",
+  "errors": []
+}</pre>
+
+        <div class="notes">
+          <strong>Importante:</strong> El login no solo valida la contraseña; también genera el token que se usará en las siguientes pantallas y en las peticiones protegidas.
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>5. Función 2: register</h2>
+        <div class="pill post">POST /api/users/register</div>
+        <p><strong>Botón o acción en frontend:</strong> Botón “Crear cuenta”, “Registrarse”, o “Registrarme”.</p>
+
+        <h3>Request</h3>
+        <pre>POST /api/users/register
+Content-Type: application/json
+
+{
+  "rol": "beneficiario",
+  "nombre1": "Luis",
+  "apellido1": "García",
+  "correo": "luis@gmail.com",
+  "password": "123456",
+  "telefono": "3001234567",
+  "barrio": "Usaquén",
+  "ciudad": "Bogotá"
+}</pre>
+
+        <h3>Qué hace el backend</h3>
+        <ul>
+          <li>Valida que el rol sea uno permitido: <code>admin</code>, <code>voluntario</code>, <code>beneficiario</code>, <code>organizacion</code>.</li>
+          <li>Consulta si ya existe un usuario con ese correo.</li>
+          <li>Si ya existe responde <code>409 Conflict</code>.</li>
+          <li>Encripta la contraseña con <code>hashPassword()</code>.</li>
+          <li>Guarda el nuevo usuario en la base de datos.</li>
+          <li>Genera un JWT para iniciar sesión automáticamente.</li>
+          <li>Registra un log de auditoría.</li>
+        </ul>
+
+        <h3>Response exitoso</h3>
+        <pre>{
+  "success": true,
+  "message": "Usuario registrado con éxito.",
+  "data": {
+    "user": {
+      "id": "2",
+      "rol": "beneficiario",
+      "nombre1": "Luis",
+      "correo": "luis@gmail.com"
+    },
+    "token": "eyJ..."
+  }
+}</pre>
+
+        <h3>Response fallido</h3>
+        <pre>{
+  "success": false,
+  "message": "El correo ya está registrado por otro usuario.",
+  "errors": []
+}</pre>
+      </section>
+
+      <section class="section">
+        <h2>6. Función 3: forgotPassword</h2>
+        <div class="pill post">POST /api/users/forgot-password</div>
+        <p><strong>Botón o acción en frontend:</strong> Botón “Recuperar contraseña” o enlace “¿Olvidaste tu contraseña?”.</p>
+
+        <h3>Request</h3>
+        <pre>POST /api/users/forgot-password
+Content-Type: application/json
+
+{
+  "correo": "luis@gmail.com",
+  "nuevaPassword": "nuevacontraseña123"
+}</pre>
+
+        <h3>Qué hace</h3>
+        <ul>
+          <li>Busca el usuario por correo.</li>
+          <li>Si existe y viene una nueva contraseña, la encripta y actualiza.</li>
+          <li>Si no se envía contraseña, responde con verificación del correo.</li>
+        </ul>
+
+        <h3>Response exitoso</h3>
+        <pre>{
+  "success": true,
+  "message": "Contraseña restablecida correctamente. Ya puedes iniciar sesión con tu nueva contraseña.",
+  "data": {
+    "correo": "luis@gmail.com"
+  }
+}</pre>
+      </section>
+
+      <section class="section">
+        <h2>7. Función 4: getProfile</h2>
+        <div class="pill get">GET /api/users/profile</div>
+        <p><strong>Botón o acción en frontend:</strong> Botón “Mi perfil”, o carga automática al entrar a la pantalla de perfil.</p>
+
+        <h3>Request</h3>
+        <pre>GET /api/users/profile
+Authorization: Bearer eyJhbGciOi... </pre>
+
+        <h3>Qué hace</h3>
+        <ul>
+          <li>Valida el JWT usando <code>authenticateJWT</code>.</li>
+          <li>Obtiene el ID del usuario desde <code>req.user.id</code>.</li>
+          <li>Busca el usuario en la base de datos.</li>
+          <li>Devuelve el perfil completo limpio, sin mostrar la contraseña.</li>
+        </ul>
+
+        <h3>Response</h3>
+        <pre>{
+  "success": true,
+  "message": "Perfil recuperado.",
+  "data": {
+    "id": "1",
+    "rol": "voluntario",
+    "nombre1": "Ana",
+    "correo": "ana@gmail.com",
+    "telefono": "3001112233",
+    "ciudad": "Bogotá"
+  }
+}</pre>
+      </section>
+
+      <section class="section">
+        <h2>8. Función 5: updateProfile</h2>
+        <div class="pill put">PUT /api/users/profile</div>
+        <p><strong>Botón o acción en frontend:</strong> Botón “Guardar cambios” en la pantalla de edición del perfil.</p>
+
+        <h3>Request</h3>
+        <pre>PUT /api/users/profile
+Authorization: Bearer eyJhbGciOi...
+Content-Type: application/json
+
+{
+  "telefono": "3210001234",
+  "barrio": "Chapinero",
+  "ciudad": "Bogotá",
+  "biografia": "Me gusta ayudar a la comunidad",
+  "password": "nuevaclave123"
+}</pre>
+
+        <h3>Qué hace</h3>
+        <ul>
+          <li>Lee los datos enviados por el formulario.</li>
+          <li>Arma un <code>updateData</code> con solo los campos que vienen definidos.</li>
+          <li>Si llega una contraseña, la encripta antes de guardar.</li>
+          <li>Actualiza el usuario en la tabla principal.</li>
+          <li>Si el usuario es una organización, también sincroniza la tabla <code>organizaciones</code>.</li>
+          <li>Guarda auditoría del cambio.</li>
+        </ul>
+
+        <h3>Response</h3>
+        <pre>{
+  "success": true,
+  "message": "Perfil actualizado correctamente.",
+  "data": {
+    "id": "1",
+    "rol": "voluntario",
+    "telefono": "3210001234",
+    "barrio": "Chapinero"
+  }
+}</pre>
+      </section>
+
+      <section class="section">
+        <h2>9. Función 6: getAll</h2>
+        <div class="pill get">GET /api/users</div>
+        <p><strong>Botón o acción en frontend:</strong> Botón “Ver usuarios” en el panel del administrador.</p>
+
+        <h3>Request</h3>
+        <pre>GET /api/users
+Authorization: Bearer eyJhbGciOi... </pre>
+
+        <h3>Qué hace</h3>
+        <ul>
+          <li>Primero verifica que el usuario autenticado sea admin con <code>authorizeRoles('Admin')</code>.</li>
+          <li>Consulta todos los usuarios con <code>UsuarioModel.getAll()</code>.</li>
+          <li>Mapea cada usuario a un formato seguro para frontend.</li>
+          <li>Devuelve la lista completa.</li>
+        </ul>
+
+        <h3>Response</h3>
+        <pre>{
+  "success": true,
+  "message": "Usuarios recuperados correctamente.",
+  "data": [
+    { "id": "1", "rol": "voluntario", "correo": "ana@gmail.com" },
+    { "id": "2", "rol": "beneficiario", "correo": "luis@gmail.com" }
+  ]
+}</pre>
+      </section>
+
+      <section class="section">
+        <h2>10. Función 7: getById</h2>
+        <div class="pill get">GET /api/users/:id</div>
+        <p><strong>Botón o acción en frontend:</strong> Al dar clic en un usuario desde una lista o panel administrativo.</p>
+
+        <h3>Request</h3>
+        <pre>GET /api/users/3
+Authorization: Bearer eyJhbGciOi... </pre>
+
+        <h3>Qué hace</h3>
+        <ul>
+          <li>Convierte <code>req.params.id</code> a número.</li>
+          <li>Busca ese usuario por ID.</li>
+          <li>Si no existe responde <code>404</code>.</li>
+          <li>Devuelve el perfil del usuario solicitado.</li>
+        </ul>
+
+        <h3>Response</h3>
+        <pre>{
+  "success": true,
+  "message": "Usuario recuperado.",
+  "data": {
+    "id": "3",
+    "rol": "organizacion",
+    "nombre1": "Fundación Esperanza",
+    "correo": "contacto@fundacion.com"
+  }
+}</pre>
+      </section>
+
+      <section class="section">
+        <h2>11. Función 8: create</h2>
+        <div class="pill post">POST /api/users</div>
+        <p><strong>Botón o acción en frontend:</strong> Botón “Crear usuario” desde el administrador.</p>
+
+        <h3>Request</h3>
+        <pre>POST /api/users
+Authorization: Bearer eyJhbGciOi...
+Content-Type: application/json
+
+{
+  "rol": "voluntario",
+  "nombre1": "María",
+  "apellido1": "López",
+  "correo": "maria@gmail.com",
+  "password": "abc123",
+  "estado": "activo"
+}</pre>
+
+        <h3>Qué hace</h3>
+        <ul>
+          <li>Verifica que el usuario que crea sea admin.</li>
+          <li>Comprueba si el correo ya existe.</li>
+          <li>Encripta la contraseña.</li>
+          <li>Inserta el nuevo registro con el rol solicitado.</li>
+          <li>Registra la auditoría con el administrador que lo creó.</li>
+        </ul>
+
+        <h3>Response</h3>
+        <pre>{
+  "success": true,
+  "message": "Usuario creado correctamente.",
+  "data": {
+    "id": "7",
+    "rol": "voluntario",
+    "correo": "maria@gmail.com"
+  }
+}</pre>
+      </section>
+
+      <section class="section">
+        <h2>12. Función 9: update</h2>
+        <div class="pill put">PUT /api/users/:id</div>
+        <p><strong>Botón o acción en frontend:</strong> Botón “Editar” en una tarjeta o tabla de usuarios del admin.</p>
+
+        <h3>Request</h3>
+        <pre>PUT /api/users/4
+Authorization: Bearer eyJhbGciOi...
+Content-Type: application/json
+
+{
+  "rol": "admin",
+  "estado": 1,
+  "telefono": "5551234",
+  "ciudad": "Medellín"
+}</pre>
+
+        <h3>Qué hace</h3>
+        <ul>
+          <li>Consolida los campos a actualizar.</li>
+          <li>Si el usuario es una organización, también actualiza la información en la tabla de organizaciones.</li>
+          <li>Revisa si la contraseña cambió para encriptarla.</li>
+          <li>Guarda la auditoría del cambio.</li>
+        </ul>
+
+        <h3>Response</h3>
+        <pre>{
+  "success": true,
+  "message": "Usuario actualizado correctamente.",
+  "data": {
+    "id": "4",
+    "rol": "admin",
+    "ciudad": "Medellín"
+  }
+}</pre>
+      </section>
+
+      <section class="section">
+        <h2>13. Función 10: delete</h2>
+        <div class="pill delete">DELETE /api/users/:id</div>
+        <p><strong>Botón o acción en frontend:</strong> Botón “Eliminar cuenta” o “Borrar usuario”.</p>
+
+        <h3>Request</h3>
+        <pre>DELETE /api/users/8
+Authorization: Bearer eyJhbGciOi... </pre>
+
+        <h3>Qué hace</h3>
+        <ul>
+          <li>Revisa que el usuario esté autenticado.</li>
+          <li>Si no es admin, solo permite eliminarse a sí mismo.</li>
+          <li>Busca el usuario a eliminar.</li>
+          <li>Si es organización, también borra el registro relacionado.</li>
+          <li>Elimina la cuenta y registra la auditoría.</li>
+        </ul>
+
+        <h3>Response</h3>
+        <pre>{
+  "success": true,
+  "message": "Cuenta eliminada correctamente.",
+  "data": { "id": 8 }
+}</pre>
+      </section>
+
+      <section class="section">
+        <h2>14. Función 11: getPublicProfile</h2>
+        <div class="pill get">GET /api/users/public/:id</div>
+        <p><strong>Botón o acción en frontend:</strong> Clic en un perfil público de otra persona o organización.</p>
+
+        <h3>Request</h3>
+        <pre>GET /api/users/public/org_5</pre>
+
+        <h3>Qué hace</h3>
+        <ul>
+          <li>Si recibe <code>org_...</code> busca primero la organización.</li>
+          <li>Si recibe un ID normal, busca el usuario por ID o por correo.</li>
+          <li>Construye un perfil público con datos visibles como nombre, descripción, estadísticas y logros.</li>
+          <li>Calcula métricas por rol: admin, organización, voluntario o beneficiario.</li>
+        </ul>
+
+        <h3>Response</h3>
+        <pre>{
+  "success": true,
+  "message": "Perfil público obtenido.",
+  "data": {
+    "id": "org_5",
+    "rol": "organizacion",
+    "nombre1": "Fundación Esperanza",
+    "descripcion": "Apoyo a familias vulnerables",
+    "stats": {
+      "eventosCreados": 8,
+      "beneficiariosAtendidos": 120
+    }
+  }
+}</pre>
+      </section>
+
+      <section class="section">
+        <h2>15. Función 12: getVolunteersCount</h2>
+        <div class="pill get">GET /api/users/stats/volunteers-count</div>
+        <p><strong>Botón o acción en frontend:</strong> Carga de estadísticas en dashboard o home.</p>
+
+        <h3>Request</h3>
+        <pre>GET /api/users/stats/volunteers-count</pre>
+
+        <h3>Qué hace</h3>
+        <ul>
+          <li>Trae a todos los usuarios.</li>
+          <li>Filtra los que tengan rol <code>Voluntario</code>.</li>
+          <li>Devuelve el total.</li>
+        </ul>
+
+        <h3>Response</h3>
+        <pre>{
+  "success": true,
+  "message": "Conteo de voluntarios obtenido correctamente.",
+  "data": 42
+}</pre>
+      </section>
+
+      <section class="section">
+        <h2>16. Flujo completo del usuario desde el botón hasta la base de datos</h2>
+        <ol>
+          <li>El usuario hace clic en “Registrarse” o “Iniciar sesión”.</li>
+          <li>El frontend prepara un JSON y lo envía al backend.</li>
+          <li>La ruta recibe la petición y ejecuta el middleware de validación.</li>
+          <li>El controlador consulta el modelo del usuario.</li>
+          <li>El modelo hace una consulta SQL a MySQL.</li>
+          <li>El backend responde con JSON y, si aplica, con JWT.</li>
+          <li>El frontend guarda el token y redirige o actualiza la vista.</li>
+        </ol>
+
+        <pre>Frontend → Ruta → Middleware → Controller → Model → Base de Datos → Response JSON</pre>
+      </section>
+
+      <section class="section">
+        <h2>17. Resumen visual</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Acción</th>
+              <th>Qué pasa</th>
+              <th>Resultado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Login</td>
+              <td>Validar email + contraseña + token</td>
+              <td>Se abre la sesión</td>
+            </tr>
+            <tr>
+              <td>Registro</td>
+              <td>Crear usuario + encriptar contraseña</td>
+              <td>Cuenta creada y token firmado</td>
+            </tr>
+            <tr>
+              <td>Perfil</td>
+              <td>Consultar usuario autenticado</td>
+              <td>Se ve su información</td>
+            </tr>
+            <tr>
+              <td>Actualizar perfil</td>
+              <td>Editar campos + sincronizar organización</td>
+              <td>Se guarda la nueva información</td>
+            </tr>
+            <tr>
+              <td>Listado</td>
+              <td>Ver todos los usuarios por admin</td>
+              <td>Panel de administración</td>
+            </tr>
+            <tr>
+              <td>Eliminar</td>
+              <td>Validar permisos + borrar registro</td>
+              <td>Cuenta eliminada</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h2>18. Archivos exactos que intervienen y flujo completo desde el arranque</h2>
+
+        <h3>18.1. Arranque del servidor</h3>
+        <ul>
+          <li><strong>backend/src/server.ts</strong>: es el punto de entrada de la API. Aquí se llama a <code>initDB()</code> para conectarse a la base de datos, luego se monta Vite en desarrollo y por último se ejecuta <code>app.listen()</code>.</li>
+          <li><strong>backend/src/app.ts</strong>: configura Express, CORS, JSON, cookies, middlewares de seguridad y monta todas las rutas bajo <code>/api</code>.</li>
+          <li><strong>backend/src/config/db.ts</strong>: configura la conexión MySQL y prepara el fallback a memoria si MySQL no responde.</li>
+        </ul>
+
+        <h3>18.2. Registro de rutas del módulo usuarios</h3>
+        <ul>
+          <li><strong>backend/src/app.ts</strong>: tiene la línea <code>app.use('/api/users', userRoutes);</code>.</li>
+          <li><strong>backend/src/routes/userRoutes.ts</strong>: define todas las rutas del usuario, por ejemplo:<br />
+            <code>router.post('/login', validateLogin, UserController.login);</code><br />
+            <code>router.post('/register', validateRegister, UserController.register);</code><br />
+            <code>router.get('/profile', authenticateJWT, UserController.getProfile);</code><br />
+            <code>router.get('/', authenticateJWT, authorizeRoles('Admin'), UserController.getAll);</code>
+          </li>
+        </ul>
+
+        <h3>18.3. Validación antes de entrar a la lógica</h3>
+        <ul>
+          <li><strong>backend/src/validators/userValidator.ts</strong>: en <code>validateLogin</code> y <code>validateRegister</code> se comprueban los campos obligatorios y el formato del correo.</li>
+          <li>Si falla la validación, el backend responde con un <code>400</code> o mensaje de error antes de cualquier lógica de negocio.</li>
+        </ul>
+
+        <h3>18.4. Protección con JWT</h3>
+        <ul>
+          <li><strong>backend/src/middlewares/authMiddleware.ts</strong>: el middleware <code>authenticateJWT</code> toma el token del <code>Authorization</code> o de la cookie.</li>
+          <li>Hace <code>verifyToken(token)</code> y, si es válido, asigna <code>req.user</code> con id, rol y correo.</li>
+          <li><strong>authorizeRoles('Admin')</strong> restringe rutas como listado, creación o eliminación de usuarios.</li>
+        </ul>
+
+        <h3>18.5. Lógica principal del usuario</h3>
+        <ul>
+          <li><strong>backend/src/controllers/userController.ts</strong>: aquí está toda la lógica real de usuarios.</li>
+          <li>Se encuentra la función <code>login</code>, la función <code>register</code>, la función <code>getProfile</code>, <code>updateProfile</code>, <code>getAll</code>, <code>delete</code>, etc.</li>
+          <li>Dentro de esas funciones se usan helpers como <code>mapUserToFrontend()</code>, <code>hashPassword()</code>, <code>comparePassword()</code> y <code>generateToken()</code>.</li>
+        </ul>
+
+        <h3>18.6. Capa de acceso a datos</h3>
+        <ul>
+          <li><strong>backend/src/models/usuarioModel.ts</strong>: es la capa que consulta y modifica la base de datos.</li>
+          <li>Ejemplos reales: <code>getByEmail()</code>, <code>getById()</code>, <code>getAll()</code>, <code>create()</code>, <code>update()</code> y <code>delete()</code>.</li>
+          <li>La capa del controlador no consulta directo la BD; primero llama al modelo.</li>
+        </ul>
+
+        <h3>18.7. Flujo real desde que presiona “Iniciar sesión”</h3>
+        <pre>Usuario hace clic en botón de login
+  ↓
+frontend_web/src/contexts/AuthContext.tsx
+  ↓
+login(correo, password)
+  ↓
+UserService.login(...)
+  ↓
+POST /api/users/login
+  ↓
+backend/src/routes/userRoutes.ts
+  ↓
+validateLogin
+  ↓
+UserController.login
+  ↓
+UsuarioModel.getByEmail(correo)
+  ↓
+comparePassword(password, user.password)
+  ↓
+generateToken({ id, rol, correo })
+  ↓
+res.status(200).json({ success: true, data: { user, token } })
+  ↓
+Frontend guarda token y usuario en sessionStorage o AsyncStorage
+  ↓
+La app queda logueada y ya puede navegar a pantallas protegidas</pre>
+
+        <h3>18.8. Flujo real desde que presiona “Registrarse”</h3>
+        <pre>Usuario llena formulario
+  ↓
+frontend_web/src/contexts/AuthContext.tsx
+  ↓
+register(userData)
+  ↓
+UserService.register(userData)
+  ↓
+POST /api/users/register
+  ↓
+backend/src/routes/userRoutes.ts
+  ↓
+validateRegister
+  ↓
+UserController.register
+  ↓
+Verifica si ya existe correo
+  ↓
+hashPassword(password)
+  ↓
+UsuarioModel.create({...})
+  ↓
+Se genera token JWT
+  ↓
+Se responde con 201 Created
+  ↓
+Frontend guarda la sesión y redirige</pre>
+
+        <h3>18.9. Flujo real del listado de todos los usuarios</h3>
+        <pre>Admin entra a panel de administración
+  ↓
+Frontend solicita GET /api/users
+  ↓
+authMiddleware.authenticateJWT valida el token
+  ↓
+authorizeRoles('Admin') valida el rol
+  ↓
+UserController.getAll
+  ↓
+UsuarioModel.getAll()
+  ↓
+SELECT * FROM usuarios
+  ↓
+Mapeo con mapUserToFrontend
+  ↓
+res.status(200).json({ success: true, data: [...] })
+  ↓
+El frontend dibuja la tabla de usuarios</pre>
+
+        <h3>18.10. Flujo real de actualización y eliminación</h3>
+        <pre>Usuario o admin edita perfil o elimina cuenta
+  ↓
+Frontend envía PUT/DELETE con Authorization
+  ↓
+authenticateJWT verifica JWT
+  ↓
+UserController.updateProfile o UserController.delete
+  ↓
+UsuarioModel.update o UsuarioModel.delete
+  ↓
+Se actualiza la base de datos
+  ↓
+Se genera auditoría con logAudit
+  ↓
+Se responde con success: true o 404/403/401 según el caso</pre>
+
+        <h3>18.11. Archivos visuales del frontend</h3>
+        <ul>
+          <li><strong>frontend_web/src/contexts/AuthContext.tsx</strong>: guarda la sesión, maneja login, register, logout y updateProfile.</li>
+          <li><strong>frontend_mobile/src/store/auth/AuthContext.tsx</strong>: hace la misma lógica en React Native con AsyncStorage.</li>
+          <li>La parte visual se hace en pantallas o componentes tipo Login, Register, Profile, Dashboard, UserList, etc.</li>
+        </ul>
+
+        <h3>18.12. Orden exacto del proceso completo</h3>
+        <ol>
+          <li>Se inicia el servidor con <strong>backend/src/server.ts</strong>.</li>
+          <li>Se carga la configuración de la BD con <strong>backend/src/config/db.ts</strong>.</li>
+          <li>Se monta la app en <strong>backend/src/app.ts</strong>.</li>
+          <li>Se registran rutas en <strong>backend/src/routes/userRoutes.ts</strong>.</li>
+          <li>El frontend llama a la API desde autenticación.</li>
+          <li>Las validaciones corren desde <strong>backend/src/validators/userValidator.ts</strong>.</li>
+          <li>Los middlewares de JWT ejecutan <strong>backend/src/middlewares/authMiddleware.ts</strong>.</li>
+          <li>La lógica del negocio vive en <strong>backend/src/controllers/userController.ts</strong>.</li>
+          <li>El modelo entra en <strong>backend/src/models/usuarioModel.ts</strong> y hace consultas SQL.</li>
+          <li>La respuesta vuelve en JSON al frontend.</li>
+          <li>El frontend guarda la sesión y actualiza la interfaz visual.</li>
+          <li>La operación termina con el usuario dentro del sistema o con un error controlado.</li>
+        </ol>
+      </section>
+
+      <div class="footer">
+        Give&Go © 2026 - Documentación técnica del módulo de usuarios.<br />
+        Este documento explica el flujo real de cada función, incluyendo request, validaciones, middleware y response del backend.
+      </div>
+    </div>
+  </body>
+</html>
