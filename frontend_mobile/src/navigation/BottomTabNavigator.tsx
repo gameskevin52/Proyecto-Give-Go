@@ -1,0 +1,98 @@
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { View, StyleSheet } from 'react-native';
+import {
+  Home,
+  Calendar,
+  HeartHandshake,
+  ClipboardList,
+  Bell,
+  User,
+  MapPin,
+  LayoutDashboard,
+} from 'lucide-react-native';
+import { BottomTabParamList } from './types';
+import { colors } from '../config/theme';
+import { useAuth } from '../store/auth/AuthContext';
+
+// Views
+import { Home as HomeScreen } from '../features/home/views/Home';
+import { MapaSocialView } from '../features/map/views/MapaSocialView';
+import { EventsListView } from '../features/events/views/EventsListView';
+import { DonationsListView } from '../features/donations/views/DonationsListView';
+import { DashboardView } from '../features/dashboard/views/DashboardView';
+import { BeneficiaryRequestsView } from '../features/beneficiary/views/BeneficiaryRequestsView';
+import { NotificationsView } from '../features/notifications/views/NotificationsView';
+import { ProfileView } from '../features/profile/views/ProfileView';
+
+const Tab = createBottomTabNavigator<BottomTabParamList>();
+
+const TabIcon = ({ name, focused, color }: { name: string; focused: boolean; color: string }) => {
+  const iconSize = focused ? 22 : 20;
+  const strokeWidth = focused ? 2.5 : 2;
+
+  let IconComponent = Home;
+  if (name === 'Mapa') IconComponent = MapPin;
+  if (name === 'Eventos') IconComponent = Calendar;
+  if (name === 'Donaciones') IconComponent = HeartHandshake;
+  if (name === 'Dashboard') IconComponent = LayoutDashboard;
+  if (name === 'Solicitudes') IconComponent = ClipboardList;
+  if (name === 'Notificaciones') IconComponent = Bell;
+  if (name === 'Perfil') IconComponent = User;
+
+  return (
+    <View style={[styles.iconBox, focused && styles.iconBoxActive]}>
+      <IconComponent size={iconSize} color={color} strokeWidth={strokeWidth} />
+    </View>
+  );
+};
+
+export const BottomTabNavigator = () => {
+  const { user } = useAuth();
+  const isBeneficiary = user?.rol === 'Beneficiario' || (user?.rol as string) === 'beneficiario';
+
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted || '#94A3B8',
+        tabBarStyle: {
+          backgroundColor: colors.surface,
+          borderTopWidth: 1,
+          borderTopColor: colors.borderLight,
+          height: 62,
+          paddingBottom: 8,
+          paddingTop: 6,
+        },
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '600',
+        },
+        tabBarIcon: ({ focused, color }) => (
+          <TabIcon name={route.name} focused={focused} color={color} />
+        ),
+      })}
+    >
+      <Tab.Screen name="Inicio" component={HomeScreen} />
+      <Tab.Screen name="Mapa" component={MapaSocialView} />
+      <Tab.Screen name="Eventos" component={EventsListView} />
+      <Tab.Screen name="Donaciones" component={DonationsListView} />
+      <Tab.Screen name="Dashboard" component={DashboardView} />
+      <Tab.Screen name="Perfil" component={ProfileView} />
+    </Tab.Navigator>
+  );
+};
+
+const styles = StyleSheet.create({
+  iconBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconBoxActive: {
+    transform: [{ scale: 1.08 }],
+  },
+});
+
+export default BottomTabNavigator;
+// navegacion
