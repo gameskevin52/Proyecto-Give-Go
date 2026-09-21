@@ -90,11 +90,14 @@ export const Button: React.FC<ButtonProps> = ({
  */
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  error?: string;
+  error?: any;
+  icon?: React.ReactNode;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, className = '', type = 'text', ...props }, ref) => {
+  ({ label, error, icon, className = '', type = 'text', ...props }, ref) => {
+    const errorMessage = typeof error === 'string' ? error : error?.message;
+
     return (
       <div className="w-full mb-4">
         {label && (
@@ -102,15 +105,22 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <input
-          ref={ref}
-          type={type}
-          className={`w-full px-4 py-3 border text-sm rounded-xl bg-white text-neutral-950 placeholder-neutral-400 focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all duration-150 ${
-            error ? 'border-brand-error focus:ring-brand-error/10' : 'border-neutral-200 hover:border-neutral-300'
-          } ${className}`}
-          {...props}
-        />
-        {error && <p className="mt-1.5 text-xs text-brand-error font-medium">{error}</p>}
+        <div className="relative">
+          {icon && (
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400">
+              {icon}
+            </div>
+          )}
+          <input
+            ref={ref}
+            type={type}
+            className={`w-full ${icon ? 'pl-10' : 'px-4'} py-3 border text-sm rounded-xl bg-white text-neutral-950 placeholder-neutral-400 focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all duration-150 ${
+              errorMessage ? 'border-brand-error focus:ring-brand-error/10' : 'border-neutral-200 hover:border-neutral-300'
+            } ${className}`}
+            {...props}
+          />
+        </div>
+        {errorMessage && <p className="mt-1.5 text-xs text-brand-error font-medium">{errorMessage}</p>}
       </div>
     );
   }
@@ -125,11 +135,13 @@ Input.displayName = 'Input';
  */
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
-  error?: string;
+  error?: any;
 }
 
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, className = '', rows = 3, ...props }, ref) => {
+    const errorMessage = typeof error === 'string' ? error : error?.message;
+
     return (
       <div className="w-full mb-4">
         {label && (
@@ -141,11 +153,11 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           rows={rows}
           className={`w-full px-4 py-3 border text-sm rounded-xl bg-white text-neutral-950 placeholder-neutral-400 focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all duration-150 ${
-            error ? 'border-brand-error focus:ring-brand-error/10' : 'border-neutral-200 hover:border-neutral-300'
+            errorMessage ? 'border-brand-error focus:ring-brand-error/10' : 'border-neutral-200 hover:border-neutral-300'
           } ${className}`}
           {...props}
         />
-        {error && <p className="mt-1.5 text-xs text-brand-error font-medium">{error}</p>}
+        {errorMessage && <p className="mt-1.5 text-xs text-brand-error font-medium">{errorMessage}</p>}
       </div>
     );
   }
@@ -160,12 +172,14 @@ Textarea.displayName = 'Textarea';
  */
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
-  error?: string;
+  error?: any;
   options: { value: string; label: string }[];
 }
 
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, options, className = '', ...props }, ref) => {
+    const errorMessage = typeof error === 'string' ? error : error?.message;
+
     return (
       <div className="w-full mb-4">
         {label && (
@@ -176,7 +190,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           className={`w-full px-4 py-3 border text-sm rounded-xl bg-white text-neutral-950 focus:outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand transition-all duration-150 cursor-pointer ${
-            error ? 'border-brand-error focus:ring-brand-error/10' : 'border-neutral-200 hover:border-neutral-300'
+            errorMessage ? 'border-brand-error focus:ring-brand-error/10' : 'border-neutral-200 hover:border-neutral-300'
           } ${className}`}
           {...props}
         >
@@ -186,7 +200,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             </option>
           ))}
         </select>
-        {error && <p className="mt-1.5 text-xs text-brand-error font-medium">{error}</p>}
+        {errorMessage && <p className="mt-1.5 text-xs text-brand-error font-medium">{errorMessage}</p>}
       </div>
     );
   }
@@ -375,28 +389,56 @@ export const Loader: React.FC<{ fullScreen?: boolean }> = ({ fullScreen = false 
  * ==========================================
  */
 interface AlertProps {
-  type?: 'success' | 'danger' | 'info';
-  message: string;
+  type?: 'success' | 'danger' | 'info' | 'error' | 'warning';
+  variant?: 'success' | 'danger' | 'info' | 'error' | 'warning' | string;
+  message?: string;
+  children?: React.ReactNode;
+  onClose?: () => void;
   className?: string;
 }
 
-export const Alert: React.FC<AlertProps> = ({ type = 'info', message, className = '' }) => {
-  const styles = {
+export const Alert: React.FC<AlertProps> = ({
+  type,
+  variant,
+  message,
+  children,
+  onClose,
+  className = '',
+}) => {
+  const rawType = type || variant || 'info';
+  const finalType = rawType === 'error' ? 'danger' : rawType;
+
+  const styles: Record<string, string> = {
     success: 'bg-green-50 border-green-200 text-green-800 rounded-xl',
     danger: 'bg-red-50 border-red-200 text-brand-error rounded-xl',
+    warning: 'bg-amber-50 border-amber-200 text-amber-800 rounded-xl',
     info: 'bg-neutral-50 border-neutral-200 text-neutral-800 rounded-xl',
   };
 
-  const icons = {
+  const icons: Record<string, React.ReactNode> = {
     success: <CheckCircle className="w-4 h-4 text-brand-success mr-2.5 shrink-0" />,
     danger: <AlertCircle className="w-4 h-4 text-brand-error mr-2.5 shrink-0" />,
+    warning: <AlertCircle className="w-4 h-4 text-amber-600 mr-2.5 shrink-0" />,
     info: <Info className="w-4 h-4 text-neutral-500 mr-2.5 shrink-0" />,
   };
 
+  const content = children ?? message;
+
   return (
-    <div className={`p-4 border flex items-start ${styles[type]} ${className}`}>
-      <div className="mt-0.5">{icons[type]}</div>
-      <span className="text-xs font-medium leading-relaxed">{message}</span>
+    <div className={`p-4 border flex items-start justify-between ${styles[finalType] || styles.info} ${className}`}>
+      <div className="flex items-start">
+        <div className="mt-0.5">{icons[finalType] || icons.info}</div>
+        <div className="text-xs font-medium leading-relaxed">{content}</div>
+      </div>
+      {onClose && (
+        <button
+          onClick={onClose}
+          type="button"
+          className="ml-3 -mr-1 -mt-1 p-1 text-neutral-400 hover:text-neutral-700 rounded-lg transition-colors cursor-pointer"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 };
@@ -409,12 +451,13 @@ export const Alert: React.FC<AlertProps> = ({ type = 'info', message, className 
 interface ConfirmDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   title: string;
   message: string;
   confirmText?: string;
   cancelText?: string;
   type?: 'primary' | 'danger';
+  variant?: 'primary' | 'danger' | string;
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -426,8 +469,10 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   confirmText = 'Confirmar',
   cancelText = 'Cancelar',
   type = 'danger',
+  variant,
 }) => {
   if (!isOpen) return null;
+  const isDanger = (variant || type) === 'danger';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -439,7 +484,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <Button variant="outline" size="sm" onClick={onClose}>
             {cancelText}
           </Button>
-          <Button variant={type === 'danger' ? 'danger' : 'primary'} size="sm" onClick={() => { onConfirm(); onClose(); }}>
+          <Button variant={isDanger ? 'danger' : 'primary'} size="sm" onClick={() => { onConfirm(); onClose(); }}>
             {confirmText}
           </Button>
         </div>
@@ -570,16 +615,17 @@ export const Table = <T,>({ headers, data, renderRow }: TableProps<T>) => {
  */
 interface BadgeProps {
   children: React.ReactNode;
-  variant?: 'success' | 'danger' | 'info' | 'warning' | 'neutral';
+  variant?: 'success' | 'danger' | 'info' | 'warning' | 'neutral' | 'outline';
 }
 
 export const Badge: React.FC<BadgeProps> = ({ children, variant = 'neutral' }) => {
-  const styles = {
+  const styles: Record<string, string> = {
     success: 'bg-green-50 text-green-700 border-green-200',
     danger: 'bg-red-50 text-brand border-red-200',
     info: 'bg-blue-50 text-blue-700 border-blue-200',
     warning: 'bg-amber-50 text-amber-700 border-amber-200',
     neutral: 'bg-neutral-100 text-neutral-600 border-neutral-200',
+    outline: 'bg-white text-neutral-700 border-neutral-200',
   };
 
   return (
@@ -599,6 +645,7 @@ interface EmptyStateProps {
   description: string;
   actionText?: string;
   onAction?: () => void;
+  action?: React.ReactNode;
   icon?: React.ReactNode;
 }
 
@@ -607,6 +654,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   description,
   actionText,
   onAction,
+  action,
   icon,
 }) => {
   return (
@@ -618,11 +666,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       )}
       <h3 className="text-sm font-bold text-neutral-900 tracking-tight">{title}</h3>
       <p className="text-xs text-neutral-500 font-medium max-w-xs mt-2 mb-6 leading-relaxed">{description}</p>
-      {actionText && onAction && (
+      {action ? (
+        action
+      ) : actionText && onAction ? (
         <Button variant="primary" size="sm" onClick={onAction}>
           {actionText}
         </Button>
-      )}
+      ) : null}
     </div>
   );
 };

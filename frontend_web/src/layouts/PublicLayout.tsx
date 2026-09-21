@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/UI';
-import { Menu, X, User, LayoutDashboard, LogOut, Heart, Calendar, MapPin, ChevronDown } from 'lucide-react';
+import { Menu, X, User, LayoutDashboard, LogOut, Heart, Calendar, MapPin, ChevronDown, Smartphone, Download } from 'lucide-react';
 
 export const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
@@ -96,6 +96,14 @@ export const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children
               >
                 Mapa Solidario
               </Link>
+              <a 
+                href="/api/download/apk" 
+                download="GiveAndGo.apk"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 text-brand border border-red-200 hover:bg-brand hover:text-white font-bold text-xs transition-all shadow-2xs"
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                <span>App Móvil</span>
+              </a>
             </nav>
 
             {/* Usuario a la derecha */}

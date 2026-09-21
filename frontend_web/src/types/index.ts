@@ -47,7 +47,6 @@ export interface Usuario {
   mision?: string;
   vision?: string;
   fechaRegistro?: string;
-  // Campos de organización cuando el usuario es una Organización
   organizacionId?: string;
   id_organizacion?: number;
   nit?: string;
@@ -107,7 +106,7 @@ export interface UserBadge {
   id: string;
   nombre: string;
   descripcion: string;
-  icono: string; // 'shield' | 'award' | 'check' | 'heart' | 'star'
+  icono: string;
   fechaObtencion: string;
 }
 
@@ -124,21 +123,17 @@ export interface PublicProfileData {
   user: Usuario;
   organization?: Organizacion;
   stats: {
-    // Admin
     usuariosAdministrados?: number;
     organizacionesVerificadas?: number;
     eventosAdministrados?: number;
-    // Org
     eventosCreados?: number;
     beneficiariosAtendidos?: number;
     voluntariosRegistrados?: number;
     donacionesRecibidas?: number;
-    // Volunteer
     eventosParticipados?: number;
     horasVoluntariado?: number;
     certificados?: number;
     donacionesRealizadas?: number;
-    // Beneficiary
     eventosAyudaRecibida?: number;
     ayudasRecibidas?: number;
     organizacionesApoyo?: number;
@@ -151,7 +146,7 @@ export interface PublicProfileData {
 export interface Evento {
   id: string;
   nombre: string;
-  categoria: string; // id de la categoria o nombre
+  categoria: string;
   descripcion: string;
   fecha: string;
   estado: 'activo' | 'finalizado' | 'cancelado';
@@ -203,16 +198,16 @@ export interface SeguimientoEvento {
 
 export interface Donacion {
   id: string;
-  categoria: string; // e.g., 'Alimentos', 'Salud', 'Educación', 'Económico'
+  categoria: string;
   tipo: 'monetaria' | 'objeto';
   fecha: string;
-  usuarioId: string; // ID del voluntario donante
-  organizacionId: string; // ID de la organización destino
+  usuarioId: string;
+  organizacionId: string;
 }
 
 export interface DonacionMonetaria {
   id: string;
-  metodo: string; // 'transferencia' | 'tarjeta' | 'paypal'
+  metodo: string;
   cuenta: string;
   valor: number;
   donacionId: string;

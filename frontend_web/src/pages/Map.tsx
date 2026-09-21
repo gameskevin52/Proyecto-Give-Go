@@ -68,10 +68,10 @@ export const Map: React.FC = () => {
         }
       },
       (error) => {
-        console.error('Error getting geolocation', error);
+        console.warn('Geolocation unavailable or permission denied:', error?.message || 'Access denied');
         setIsLocating(false);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
     );
   };
 
@@ -91,7 +91,6 @@ export const Map: React.FC = () => {
       }
     }
     loadData();
-    requestUserLocation();
   }, []);
 
   // Map initialization

@@ -1,20 +1,44 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Give&Go — Frontend Web (React + Vite + Tailwind CSS)
 
-# Run and deploy your AI Studio app
+Aplicación web oficial de **Give&Go**. Proporciona interfaces ricas para administradores, voluntarios, beneficiarios y organizaciones sociales.
 
-This contains everything you need to run your app locally.
+## Arquitectura de Carpetas
 
-View your app in AI Studio: https://ai.studio/apps/ca55df65-4f1c-4706-8d8d-825910f7b86e
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```text
+frontend_web/
+├── src/
+│   ├── assets/              # Iconos, imágenes y recursos estáticos
+│   ├── components/          # Componentes modulares
+│   │   ├── common/          # Botones, inputs, badges y modales genéricos
+│   │   ├── navigation/      # Barras de navegación superior, sidebar y footer
+│   │   ├── events/          # Mapas y tarjetas de convocatorias
+│   │   ├── donations/       # Tarjetas y formularios de donaciones
+│   │   ├── organizations/   # Tarjetas de ONG y estados de verificación
+│   │   └── admin/           # Paneles y métricas de administración
+│   ├── contexts/            # Contexto global de autenticación (AuthContext)
+│   ├── hooks/               # Custom hooks (useAuth, useEvents, useDonations)
+│   ├── layouts/             # DashboardLayout y PublicLayout
+│   ├── pages/               # Vistas estructuradas por dominio
+│   │   ├── Auth/            # Login, Registro, Recuperación de contraseña
+│   │   ├── Home/            # Página de inicio comunitaria
+│   │   ├── Events/          # Explorador de convocatorias con filtros
+│   │   ├── Map/             # Vista satelital e interactiva de eventos en Bogotá
+│   │   ├── Donations/       # Portal de donaciones monetarias y en especie
+│   │   ├── Organizations/   # Gestión y perfil de fundaciones
+│   │   ├── Admin/           # Panel maestro de auditoría, verificación y usuarios
+│   │   ├── Beneficiary/     # Portal de ayuda y solicitudes de beneficiarios
+│   │   ├── Volunteer/       # Convocatorias inscritas y horas de voluntariado
+│   │   └── Profile/         # Perfil público y configuración de privacidad
+│   ├── routes/              # Definición de rutas protegidas y públicas
+│   ├── services/            # Clientes HTTP y conexión a la API REST del backend
+│   ├── types/               # Tipado estricto de TypeScript
+│   ├── utils/               # Formateadores de moneda COP, fechas y utilitarios
+│   ├── App.tsx              # Componente raíz con AuthProvider y Router
+│   ├── main.tsx             # Punto de montaje en el DOM
+│   └── index.css            # Configuración de estilos Tailwind CSS
+├── public/                  # Recursos públicos servidos directamente
+├── .env                     # Variables de entorno para Vite
+├── .env.example             # Ejemplo de variables de entorno
+├── package.json             # Dependencias del frontend web
+└── README.md                # Documentación técnica
+```

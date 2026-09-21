@@ -23,7 +23,10 @@ import {
   Check, 
   Layers,
   ExternalLink,
-  UserPlus
+  UserPlus,
+  Smartphone,
+  Download,
+  QrCode
 } from 'lucide-react';
 import { Evento, Organizacion } from '../types';
 
@@ -842,6 +845,127 @@ export const Home: React.FC = () => {
               Procesos simplificados de registro, publicación y control de cupos sin trámites burocráticos.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* =========================================================
+          8.5. SECCIÓN PROMOCIONAL APP MÓVIL OFICIAL
+         ========================================================= */}
+      <section className="bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 text-white rounded-3xl p-8 sm:p-12 border border-neutral-800 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 bg-red-600/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-80 h-80 bg-red-800/15 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          
+          {/* Ilustración de Mockup Móvil */}
+          <div className="lg:col-span-5 flex justify-center">
+            <div className="relative w-64 sm:w-72 bg-neutral-900 rounded-[40px] p-3 border-4 border-neutral-800 shadow-2xl shadow-red-950/50">
+              {/* Notch */}
+              <div className="w-28 h-4 bg-neutral-950 rounded-b-xl mx-auto mb-2 flex items-center justify-center">
+                <div className="w-3 h-3 rounded-full bg-neutral-800" />
+              </div>
+              
+              {/* Screen Mockup */}
+              <div className="bg-white rounded-[32px] p-4 text-neutral-900 space-y-3.5 border border-neutral-200">
+                <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
+                  <span className="text-xs font-black text-neutral-950 flex items-center gap-1">
+                    <span className="text-red-600">❤️</span> Give&Go Mobile
+                  </span>
+                  <span className="text-[9px] font-extrabold uppercase bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+                    Android Native
+                  </span>
+                </div>
+
+                <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-3 rounded-2xl space-y-1 shadow-xs">
+                  <p className="text-[10px] font-medium text-red-100">Próximo evento en tu zona</p>
+                  <p className="text-xs font-black leading-snug">Jornada Nutricional Kennedy</p>
+                  <p className="text-[9px] text-amber-200 font-bold">12 Cupos de Voluntariado</p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="p-2.5 bg-neutral-50 rounded-xl border border-neutral-100 flex items-center justify-between text-xs">
+                    <span className="font-bold text-neutral-800 text-[11px]">📍 Bosa Central</span>
+                    <span className="text-[10px] text-emerald-600 font-extrabold">Activo</span>
+                  </div>
+                  <div className="p-2.5 bg-neutral-50 rounded-xl border border-neutral-100 flex items-center justify-between text-xs">
+                    <span className="font-bold text-neutral-800 text-[11px]">📋 Mis Postulaciones</span>
+                    <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">En revisión</span>
+                  </div>
+                </div>
+
+                {/* Bottom Bar Native */}
+                <div className="pt-2 border-t border-neutral-100 flex justify-around items-center text-neutral-400">
+                  <div className="text-center text-red-600">
+                    <Calendar className="w-4 h-4 mx-auto" />
+                    <span className="text-[8px] font-bold block mt-0.5">Eventos</span>
+                  </div>
+                  <div className="text-center">
+                    <MapPin className="w-4 h-4 mx-auto" />
+                    <span className="text-[8px] font-medium block mt-0.5">Mapa</span>
+                  </div>
+                  <div className="text-center">
+                    <Heart className="w-4 h-4 mx-auto" />
+                    <span className="text-[8px] font-medium block mt-0.5">Postulaciones</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Información y Botones de Descarga */}
+          <div className="lg:col-span-7 space-y-6 text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-950/80 border border-red-500/30 text-xs font-bold text-red-300">
+              <Smartphone className="w-4 h-4 text-red-400" />
+              <span>Aplicación Móvil Oficial Android</span>
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display tracking-tight text-white leading-tight">
+              Lleva la solidaridad en tu bolsillo con <span className="text-red-500">Give&amp;Go Mobile</span>
+            </h2>
+
+            <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed font-normal">
+              Diseñada específicamente para dispositivos móviles Android con navegación nativa por pestañas. Postúlate a voluntariados, recibe notificaciones de causas cercanas y consulta tus postulaciones en tiempo real desde cualquier lugar.
+            </p>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-2.5 text-xs text-neutral-200">
+                <CheckCircle2 className="w-4 h-4 text-red-500 shrink-0" />
+                <span>Navegación fluida por Bottom Tabs nativa para Android</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs text-neutral-200">
+                <CheckCircle2 className="w-4 h-4 text-red-500 shrink-0" />
+                <span>Misma cuenta y sincronización total en tiempo real con la base de datos MySQL</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs text-neutral-200">
+                <CheckCircle2 className="w-4 h-4 text-red-500 shrink-0" />
+                <span>Gestión instantánea para Voluntarios, Beneficiarios y Organizaciones</span>
+              </div>
+            </div>
+
+            {/* Acciones de Descarga */}
+            <div className="pt-2 flex flex-wrap items-center gap-4">
+              {/* Botón Descarga Directa APK */}
+              <a
+                href="/api/download/apk"
+                download="GiveAndGo.apk"
+                className="bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs sm:text-sm py-3 px-6 rounded-2xl shadow-lg shadow-red-900/40 flex items-center gap-2.5 transition-all cursor-pointer border border-red-500"
+              >
+                <Download className="w-4 h-4" />
+                <span>Descargar APK para Android</span>
+              </a>
+
+              {/* Botón Preparado para Google Play Store */}
+              <div className="inline-flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-neutral-900 border border-neutral-700 text-xs text-neutral-400 font-bold">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <span>Próximamente en Google Play Store</span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-neutral-500 italic">
+              * Compatible con Android 8.0+ (Oreo) o superior. Instalación segura mediante paquete APK oficial firmado.
+            </p>
+          </div>
+
         </div>
       </section>
 

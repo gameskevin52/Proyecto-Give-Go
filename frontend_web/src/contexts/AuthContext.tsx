@@ -22,6 +22,7 @@ interface AuthContextType {
     pais?: string
   ) => Promise<{ success: boolean; error?: string }>;
   updateProfile: (updatedData: Partial<Usuario>) => Promise<{ success: boolean; error?: string }>;
+  deleteAccount: () => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -170,8 +171,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const deleteAccount = async () => {
+    if (!user) return { success: false, error: 'No hay sesión activa.' };
+    try {
+      setLoading(true);
+      await UserService.delete(user.id);
+      sessionStorage.removeItem('gg_session');
+      sessionStorage.removeItem('gg_token');
+      setUser(null);
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Error al eliminar la cuenta' };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register, registerOrg, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, registerOrg, updateProfile, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );

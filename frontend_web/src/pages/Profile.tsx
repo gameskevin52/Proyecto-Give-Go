@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Card, Input, Button, Alert, Select, Textarea } from '../components/UI';
 import { 
@@ -16,23 +16,33 @@ import {
   FileText, 
   Check, 
   Globe, 
-  Facebook, 
-  Twitter, 
-  Instagram, 
-  Linkedin, 
+  Share2, 
+  AtSign, 
+  Briefcase, 
   Eye, 
   Sparkles, 
   CheckCircle2,
   ExternalLink,
-  Camera
+  Camera,
+  Trash2,
+  AlertTriangle,
+  ShieldAlert,
+  X
 } from 'lucide-react';
 
 export const Profile: React.FC = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, deleteAccount } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Estados para Modal de Eliminación de Cuenta
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const isOrg = user?.rol === 'organizacion';
   const initialTab = searchParams.get('tab') || (isOrg ? 'perfil_publico' : 'principal');
@@ -182,6 +192,25 @@ export const Profile: React.FC = () => {
       setErrorMsg(result.error || 'Ocurrió un error al actualizar el perfil.');
     }
     setIsLoading(false);
+  };
+
+  const canDeleteProfile = user?.rol === 'organizacion' || user?.rol === 'voluntario' || user?.rol === 'beneficiario';
+
+  const handleDeleteAccount = async () => {
+    if (confirmText.trim().toUpperCase() !== 'ELIMINAR') {
+      setDeleteError('Por favor escribe "ELIMINAR" para confirmar la cancelación de tu cuenta.');
+      return;
+    }
+    setIsDeleting(true);
+    setDeleteError(null);
+    const res = await deleteAccount();
+    if (res.success) {
+      setShowDeleteModal(false);
+      navigate('/', { replace: true });
+    } else {
+      setDeleteError(res.error || 'Ocurrió un error al intentar eliminar la cuenta.');
+      setIsDeleting(false);
+    }
   };
 
   if (!user) {
@@ -440,25 +469,25 @@ export const Profile: React.FC = () => {
                   <Input
                     label="Facebook"
                     placeholder="https://facebook.com/tuorganizacion"
-                    icon={<Facebook className="w-4 h-4 text-blue-600" />}
+                    icon={<Share2 className="w-4 h-4 text-blue-600" />}
                     {...register('redes_facebook')}
                   />
                   <Input
                     label="Instagram"
                     placeholder="https://instagram.com/tuorganizacion"
-                    icon={<Instagram className="w-4 h-4 text-pink-600" />}
+                    icon={<Camera className="w-4 h-4 text-pink-600" />}
                     {...register('redes_instagram')}
                   />
                   <Input
                     label="Twitter / X"
                     placeholder="https://twitter.com/tuorganizacion"
-                    icon={<Twitter className="w-4 h-4 text-sky-500" />}
+                    icon={<AtSign className="w-4 h-4 text-sky-500" />}
                     {...register('redes_twitter')}
                   />
                   <Input
                     label="LinkedIn"
                     placeholder="https://linkedin.com/company/tuorganizacion"
-                    icon={<Linkedin className="w-4 h-4 text-blue-700" />}
+                    icon={<Briefcase className="w-4 h-4 text-blue-700" />}
                     {...register('redes_linkedin')}
                   />
                 </div>
@@ -570,8 +599,8 @@ export const Profile: React.FC = () => {
                             Sitio Web Configurado
                           </span>
                         )}
-                        {watchFacebook && <Facebook className="w-3.5 h-3.5 text-blue-600" />}
-                        {watchInstagram && <Instagram className="w-3.5 h-3.5 text-pink-600" />}
+                        {watchFacebook && <Share2 className="w-3.5 h-3.5 text-blue-600" />}
+                        {watchInstagram && <Camera className="w-3.5 h-3.5 text-pink-600" />}
                       </div>
 
                       <Link to={`/perfil/${publicProfileId}`} target="_blank" rel="noopener noreferrer">
@@ -753,48 +782,83 @@ export const Profile: React.FC = () => {
 
         {/* TAB 3: Seguridad */}
         {activeTab === 'seguridad' && (
-          <Card title="Credenciales de Acceso y Seguridad">
-            <div className="space-y-4">
-              <Input
-                label="Dirección de Correo Electrónico"
-                type="email"
-                icon={<Mail className="w-4 h-4 text-neutral-400" />}
-                error={errors.correo?.message}
-                {...register('correo', { required: 'El correo electrónico es requerido' })}
-              />
+          <div className="space-y-6">
+            <Card title="Credenciales de Acceso y Seguridad">
+              <div className="space-y-4">
+                <Input
+                  label="Dirección de Correo Electrónico"
+                  type="email"
+                  icon={<Mail className="w-4 h-4 text-neutral-400" />}
+                  error={errors.correo?.message}
+                  {...register('correo', { required: 'El correo electrónico es requerido' })}
+                />
 
-              <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-200/60 space-y-3">
-                <h4 className="text-[10px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-red-600" />
-                  Cambio de Contraseña (Opcional)
-                </h4>
-                <p className="text-[10px] text-neutral-500 leading-normal">
-                  Completa estos campos únicamente si deseas actualizar tu clave actual.
-                </p>
+                <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-200/60 space-y-3">
+                  <h4 className="text-[10px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-red-600" />
+                    Cambio de Contraseña (Opcional)
+                  </h4>
+                  <p className="text-[10px] text-neutral-500 leading-normal">
+                    Completa estos campos únicamente si deseas actualizar tu clave actual.
+                  </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  <Input
-                    label="Nueva Contraseña"
-                    type="password"
-                    error={errors.password?.message}
-                    {...register('password')}
-                  />
-                  <Input
-                    label="Confirmar Nueva Contraseña"
-                    type="password"
-                    error={errors.confirmPassword?.message}
-                    {...register('confirmPassword', {
-                      validate: val => {
-                        if (watchPassword && val !== watchPassword) {
-                          return 'Las contraseñas no coinciden';
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <Input
+                      label="Nueva Contraseña"
+                      type="password"
+                      error={errors.password?.message}
+                      {...register('password')}
+                    />
+                    <Input
+                      label="Confirmar Nueva Contraseña"
+                      type="password"
+                      error={errors.confirmPassword?.message}
+                      {...register('confirmPassword', {
+                        validate: val => {
+                          if (watchPassword && val !== watchPassword) {
+                            return 'Las contraseñas no coinciden';
+                          }
                         }
-                      }
-                    })}
-                  />
+                      })}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+
+            {canDeleteProfile && (
+              <Card title="Zona de Peligro — Administración de Cuenta">
+                <div className="p-4 bg-red-50/70 border border-red-200/80 rounded-xl space-y-3">
+                  <div className="flex items-center gap-2 text-red-700 font-extrabold text-xs uppercase tracking-wider">
+                    <ShieldAlert className="w-4.5 h-4.5 text-red-600" />
+                    Eliminación Permanente del Perfil
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-neutral-900">
+                      Eliminar mi cuenta de Give&Go
+                    </h4>
+                    <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
+                      Si ya no deseas formar parte de la plataforma Give&Go, puedes darte de baja. Se eliminarán permanentemente tus datos de perfil, publicaciones e historial. Esta acción es definitiva y no se puede deshacer.
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setShowDeleteModal(true);
+                        setConfirmText('');
+                        setDeleteError(null);
+                      }}
+                      className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-xs cursor-pointer transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Eliminar Perfil Definitivamente
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+          </div>
         )}
 
         {/* Botón de Envío Global */}
@@ -819,6 +883,74 @@ export const Profile: React.FC = () => {
           </div>
         </div>
       </form>
+
+      {/* Modal de Confirmación de Eliminación de Cuenta */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-md w-full border border-neutral-200 shadow-xl overflow-hidden p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+              <div className="flex items-center gap-2 text-red-600 font-black text-sm uppercase tracking-wider">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+                Eliminar Perfil de Usuario
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="text-neutral-400 hover:text-neutral-700 p-1 rounded-lg cursor-pointer transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-neutral-600 leading-relaxed">
+              ¿Estás seguro de que deseas eliminar la cuenta de <strong className="text-neutral-900">{isOrg ? user.nombre1 : `${user.nombre1} ${user.apellido1}`}</strong> ({user.rol})?
+              Se borrarán todos tus datos personales, tu perfil público y tus registros. Esta acción es <strong className="text-red-600">permanente e irreversible</strong>.
+            </p>
+
+            {deleteError && (
+              <Alert type="danger" message={deleteError} />
+            )}
+
+            <div className="space-y-2 bg-neutral-50 p-3 rounded-xl border border-neutral-200">
+              <label className="text-[11px] font-bold text-neutral-700 block">
+                Escribe <span className="text-red-600 font-mono font-black">ELIMINAR</span> para confirmar:
+              </label>
+              <Input
+                type="text"
+                placeholder="ELIMINAR"
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                className="bg-white uppercase font-mono text-xs"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="text-xs font-bold border-neutral-300"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                size="sm"
+                onClick={handleDeleteAccount}
+                isLoading={isDeleting}
+                disabled={confirmText.trim().toUpperCase() !== 'ELIMINAR'}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Sí, Eliminar Perfil
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

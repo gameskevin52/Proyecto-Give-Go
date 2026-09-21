@@ -21,11 +21,9 @@ import {
   Edit3, 
   Share2, 
   ExternalLink, 
-  Facebook, 
-  Twitter, 
-  Instagram, 
-  Linkedin, 
-  Github, 
+  AtSign, 
+  Briefcase, 
+  Code2, 
   Sparkles, 
   Users, 
   Clock, 
@@ -409,28 +407,28 @@ export const PublicProfile: React.FC = () => {
             {user.redesSociales && Object.values(user.redesSociales).some(Boolean) && (
               <div className="flex items-center gap-2 pt-2">
                 {user.redesSociales.facebook && (
-                  <a href={user.redesSociales.facebook} target="_blank" rel="noopener noreferrer" className="p-2 text-neutral-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                    <Facebook className="w-4 h-4" />
+                  <a href={user.redesSociales.facebook} target="_blank" rel="noopener noreferrer" className="p-2 text-neutral-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Facebook">
+                    <Share2 className="w-4 h-4" />
                   </a>
                 )}
                 {user.redesSociales.twitter && (
-                  <a href={user.redesSociales.twitter} target="_blank" rel="noopener noreferrer" className="p-2 text-neutral-500 hover:text-sky-500 hover:bg-sky-50 rounded-lg transition-all">
-                    <Twitter className="w-4 h-4" />
+                  <a href={user.redesSociales.twitter} target="_blank" rel="noopener noreferrer" className="p-2 text-neutral-500 hover:text-sky-500 hover:bg-sky-50 rounded-lg transition-all" title="Twitter / X">
+                    <AtSign className="w-4 h-4" />
                   </a>
                 )}
                 {user.redesSociales.instagram && (
-                  <a href={user.redesSociales.instagram} target="_blank" rel="noopener noreferrer" className="p-2 text-neutral-500 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-all">
-                    <Instagram className="w-4 h-4" />
+                  <a href={user.redesSociales.instagram} target="_blank" rel="noopener noreferrer" className="p-2 text-neutral-500 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-all" title="Instagram">
+                    <Camera className="w-4 h-4" />
                   </a>
                 )}
                 {user.redesSociales.linkedin && (
-                  <a href={user.redesSociales.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 text-neutral-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all">
-                    <Linkedin className="w-4 h-4" />
+                  <a href={user.redesSociales.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 text-neutral-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all" title="LinkedIn">
+                    <Briefcase className="w-4 h-4" />
                   </a>
                 )}
                 {user.redesSociales.github && (
-                  <a href={user.redesSociales.github} target="_blank" rel="noopener noreferrer" className="p-2 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all">
-                    <Github className="w-4 h-4" />
+                  <a href={user.redesSociales.github} target="_blank" rel="noopener noreferrer" className="p-2 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-all" title="GitHub">
+                    <Code2 className="w-4 h-4" />
                   </a>
                 )}
               </div>
