@@ -12,13 +12,20 @@ export interface OrganizacionDB {
   fecha_registro?: string;
   nit?: string;
   representante_legal?: string;
+  id_barrio?: number;
   barrio?: string;
   localidad?: string;
   ciudad?: string;
   departamento?: string;
   pais?: string;
+  id_categoria?: number;
   categoria?: string;
+  mision?: string;
+  vision?: string;
+  sitio_web?: string;
+  redes_sociales?: string;
   logo?: string;
+  foto_portada?: string;
   latitud?: number | null;
   longitud?: number | null;
   verificada?: number; // 0 = No, 1 = Si
@@ -63,12 +70,28 @@ export const OrganizacionModel = {
       const [result] = await db.query(
         `INSERT INTO organizaciones (
           nombre, direccion, telefono, correo, password, descripcion, estado,
-          nit, representante_legal, barrio, localidad, ciudad, departamento, pais, categoria, logo, latitud, longitud
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          nit, representante_legal, barrio, categoria, mision, vision, sitio_web, redes_sociales, logo, foto_portada, latitud, longitud
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          data.nombre, data.direccion || null, data.telefono || null, data.correo, data.password, data.descripcion || null, estado,
-          data.nit || null, data.representante_legal || null, data.barrio || null, data.localidad || null, data.ciudad || null, data.departamento || null, data.pais || null, data.categoria || null, data.logo || null,
-          data.latitud !== undefined ? data.latitud : null, data.longitud !== undefined ? data.longitud : null
+          data.nombre,
+          data.direccion || null,
+          data.telefono || null,
+          data.correo,
+          data.password,
+          data.descripcion || null,
+          estado,
+          data.nit || null,
+          data.representante_legal || null,
+          data.barrio || 'Kennedy Central',
+          data.categoria || null,
+          data.mision || null,
+          data.vision || null,
+          data.sitio_web || null,
+          data.redes_sociales || null,
+          data.logo || null,
+          data.foto_portada || null,
+          data.latitud !== undefined ? data.latitud : null,
+          data.longitud !== undefined ? data.longitud : null
         ]
       );
       return (result as any).insertId;
@@ -87,13 +110,18 @@ export const OrganizacionModel = {
         fecha_registro: new Date().toISOString(),
         nit: data.nit || '',
         representante_legal: data.representante_legal || '',
-        barrio: data.barrio || '',
-        localidad: data.localidad || '',
-        ciudad: data.ciudad || '',
-        departamento: data.departamento || '',
-        pais: data.pais || '',
+        barrio: data.barrio || 'Kennedy Central',
+        localidad: 'Kennedy',
+        ciudad: 'Bogotá',
+        departamento: 'Bogotá D.C.',
+        pais: 'Colombia',
         categoria: data.categoria || '',
+        mision: data.mision || '',
+        vision: data.vision || '',
+        sitio_web: data.sitio_web || '',
+        redes_sociales: data.redes_sociales || '',
         logo: data.logo || '',
+        foto_portada: data.foto_portada || '',
         latitud: data.latitud !== undefined ? data.latitud : null,
         longitud: data.longitud !== undefined ? data.longitud : null
       };
@@ -104,12 +132,20 @@ export const OrganizacionModel = {
   },
 
   async update(id: number, data: Partial<Omit<OrganizacionDB, 'id_organizacion' | 'fecha_registro'>>): Promise<boolean> {
+    const allowedColumns = [
+      'nombre', 'nit', 'representante_legal', 'id_categoria', 'categoria',
+      'id_barrio', 'direccion', 'barrio', 'telefono', 'correo', 'password',
+      'descripcion', 'mision', 'vision', 'sitio_web', 'redes_sociales',
+      'logo', 'foto_portada', 'latitud', 'longitud', 'verificada', 'estado_verificacion',
+      'estado', 'id_usuario_representante'
+    ];
+
     if (db.isMySQLConnected()) {
       const fields: string[] = [];
       const values: any[] = [];
       
       Object.entries(data).forEach(([key, val]) => {
-        if (val !== undefined) {
+        if (val !== undefined && allowedColumns.includes(key)) {
           fields.push(`${key} = ?`);
           values.push(val);
         }

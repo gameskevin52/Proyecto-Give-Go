@@ -1,9 +1,13 @@
 -- ===================================================
--- GIVE&GO DATABASE SEED: AUDITORÍAS / HISTORIAL DE ACCIONES
+-- GIVE&GO DATABASE SEED: AUDITORÍAS (3FN)
 -- ===================================================
 
-INSERT INTO `auditorias` (`fecha`, `accion`, `id_usuario`, `nombre_usuario`, `rol_usuario`) VALUES
-('2026-07-16T10:00:00.000Z', 'Inicio de sesión exitoso del Administrador', 1, 'Administrador General', 'Admin'),
-('2026-07-16T11:15:00.000Z', 'Creación de convocatoria exitosa: Reforestación del Humedal El Burro', 1, 'Administrador General', 'Admin'),
-('2026-07-16T12:30:00.000Z', 'Inscripción de voluntario en el evento de Reforestación', 2, 'Carlos Mendoza', 'Voluntario'),
-('2026-07-16T13:45:00.000Z', 'Registro de nueva donación monetaria', 2, 'Carlos Mendoza', 'Voluntario');
+USE `giveandgo_v2`;
+
+INSERT INTO `auditorias` (
+  `id_usuario`, `accion`, `modulo_afectado`, `direccion_ip`, `detalles`, `nombre_usuario`, `rol_usuario`
+) VALUES
+(1, 'Inicio de sesión exitoso del Administrador', 'autenticacion', '192.168.1.10', 'Acceso desde panel administrativo', 'Administrador General', 'Admin'),
+(1, 'Creación de convocatoria comunitaria en Kennedy Central', 'eventos', '192.168.1.10', 'ID Evento: 1 - Jornada de Donación', 'Administrador General', 'Admin'),
+(2, 'Inscripción confirmada como voluntario', 'postulaciones', '186.84.90.12', 'Evento: Reforestación Humedal El Burro', 'Carlos Andrés Mendoza', 'Voluntario'),
+(2, 'Donación monetaria procesada exitosamente', 'donaciones', '186.84.90.12', 'Monto: $150,000 COP via Pasarela', 'Carlos Andrés Mendoza', 'Voluntario');

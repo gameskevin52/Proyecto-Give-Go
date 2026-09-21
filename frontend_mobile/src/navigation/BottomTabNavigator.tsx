@@ -1,15 +1,26 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, StyleSheet } from 'react-native';
-import { Home, Calendar, HeartHandshake, ClipboardList, Bell, User } from 'lucide-react-native';
+import {
+  Home,
+  Calendar,
+  HeartHandshake,
+  ClipboardList,
+  Bell,
+  User,
+  MapPin,
+  LayoutDashboard,
+} from 'lucide-react-native';
 import { BottomTabParamList } from './types';
 import { colors } from '../config/theme';
 import { useAuth } from '../store/auth/AuthContext';
 
 // Views
 import { Home as HomeScreen } from '../features/home/views/Home';
+import { MapaSocialView } from '../features/map/views/MapaSocialView';
 import { EventsListView } from '../features/events/views/EventsListView';
 import { DonationsListView } from '../features/donations/views/DonationsListView';
+import { DashboardView } from '../features/dashboard/views/DashboardView';
 import { BeneficiaryRequestsView } from '../features/beneficiary/views/BeneficiaryRequestsView';
 import { NotificationsView } from '../features/notifications/views/NotificationsView';
 import { ProfileView } from '../features/profile/views/ProfileView';
@@ -21,8 +32,10 @@ const TabIcon = ({ name, focused, color }: { name: string; focused: boolean; col
   const strokeWidth = focused ? 2.5 : 2;
 
   let IconComponent = Home;
+  if (name === 'Mapa') IconComponent = MapPin;
   if (name === 'Eventos') IconComponent = Calendar;
   if (name === 'Donaciones') IconComponent = HeartHandshake;
+  if (name === 'Dashboard') IconComponent = LayoutDashboard;
   if (name === 'Solicitudes') IconComponent = ClipboardList;
   if (name === 'Notificaciones') IconComponent = Bell;
   if (name === 'Perfil') IconComponent = User;
@@ -53,7 +66,7 @@ export const BottomTabNavigator = () => {
           paddingTop: 6,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
         },
         tabBarIcon: ({ focused, color }) => (
@@ -62,12 +75,10 @@ export const BottomTabNavigator = () => {
       })}
     >
       <Tab.Screen name="Inicio" component={HomeScreen} />
+      <Tab.Screen name="Mapa" component={MapaSocialView} />
       <Tab.Screen name="Eventos" component={EventsListView} />
       <Tab.Screen name="Donaciones" component={DonationsListView} />
-      {isBeneficiary ? (
-        <Tab.Screen name="Solicitudes" component={BeneficiaryRequestsView} />
-      ) : null}
-      <Tab.Screen name="Notificaciones" component={NotificationsView} />
+      <Tab.Screen name="Dashboard" component={DashboardView} />
       <Tab.Screen name="Perfil" component={ProfileView} />
     </Tab.Navigator>
   );

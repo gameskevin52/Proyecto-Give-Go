@@ -8,14 +8,19 @@ export interface RegisterVolunteerPayload {
   nombre2?: string;
   apellido1: string;
   apellido2?: string;
+  tipo_documento?: string;
+  num_documento?: string;
+  fecha_nacimiento?: string;
   correo: string;
   password: string;
-  telefono?: string;
+  telefono: string;
   direccion?: string;
   barrio?: string;
   localidad?: string;
   ciudad?: string;
-  rol: 'Voluntario';
+  departamento?: string;
+  pais?: string;
+  rol: 'Voluntario' | 'voluntario';
 }
 
 export interface RegisterBeneficiaryPayload {
@@ -23,16 +28,42 @@ export interface RegisterBeneficiaryPayload {
   nombre2?: string;
   apellido1: string;
   apellido2?: string;
+  tipo_documento?: string;
+  num_documento?: string;
+  fecha_nacimiento?: string;
   correo: string;
   password: string;
-  telefono?: string;
+  telefono: string;
   direccion?: string;
   barrio?: string;
   localidad?: string;
   ciudad?: string;
-  rol: 'Beneficiario';
+  departamento?: string;
+  pais?: string;
+  rol: 'Beneficiario' | 'beneficiario';
+}
+
+export interface RegisterOrganizationPayload {
+  nombre: string;
+  direccion: string;
+  correo: string;
+  password: string;
+  telefono?: string;
+  descripcion?: string;
+  nit?: string;
+  representante_legal?: string;
+  barrio?: string;
+  localidad?: string;
+  ciudad?: string;
+  departamento?: string;
+  pais?: string;
+  categoria?: string;
+  latitud?: number | null;
+  longitud?: number | null;
 }
 
 export interface ForgotPasswordPayload {
   correo: string;
+  nuevaPassword?: string;
 }
+

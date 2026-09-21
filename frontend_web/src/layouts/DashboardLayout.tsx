@@ -99,6 +99,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
           { label: 'Mi Perfil', path: '/profile', icon: <User className="w-5 h-5 shrink-0" /> },
           { label: 'Gestionar Eventos', path: '/org/events', icon: <Calendar className="w-5 h-5 shrink-0" /> },
           { label: 'Donaciones Recibidas', path: '/org/campaigns', icon: <Heart className="w-5 h-5 shrink-0" /> },
+          { label: 'Realizar Donación', path: '/donations', icon: <Sparkles className="w-5 h-5 shrink-0 text-rose-500" /> },
           { label: 'Personas Vinculadas', path: '/org/volunteers', icon: <Users className="w-5 h-5 shrink-0" /> },
         ];
       default:

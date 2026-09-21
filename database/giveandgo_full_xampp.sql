@@ -1,135 +1,382 @@
 -- =========================================================================
--- GIVE&GO - BASE DE DATOS COMPLETA PARA XAMPP (MySQL / phpMyAdmin)
+-- GIVE&GO - SISTEMA DE GESTIÓN SOCIAL COMUNITARIA (LOCALIDAD DE KENNEDY)
+-- ARCHIVO MAESTRO COMPLETO PARA INSTALACIÓN EN XAMPP / MYSQL / PHPMYADMIN
+-- Versión: 3.1 (Normalizado 1FN, 2FN, 3FN, BCNF)
 -- =========================================================================
--- Este archivo crea la base de datos `giveandgo_v2`, todas sus tablas,
--- relaciones de clave foránea e inserta los datos iniciales necesarios.
---
--- Instrucciones para importar en XAMPP:
--- 1. Abre el Panel de Control de XAMPP e inicia los módulos Apache y MySQL.
--- 2. Abre tu navegador y ve a: http://localhost/phpmyadmin
--- 3. Haz clic en la pestaña "Importar" (o "Import").
--- 4. Selecciona este archivo (`giveandgo_full_xampp.sql`) y presiona "Continuar".
+-- 1. Base de datos delimitada a la Localidad de Kennedy (Bogotá, Colombia).
+-- 2. No se solicitan documentos personales a personas individuales.
+-- 3. Documentos legales conservados exclusivamente para verificación institucional (RUT, Cámara de Comercio).
+-- 4. Redes sociales y perfiles públicos reservados únicamente para organizaciones.
 -- =========================================================================
 
 CREATE DATABASE IF NOT EXISTS `giveandgo_v2` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `giveandgo_v2`;
 
 SET FOREIGN_KEY_CHECKS = 0;
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
 
 -- --------------------------------------------------------
--- 1. Tabla: Categorías
+-- TABLA: roles (3FN)
 -- --------------------------------------------------------
-DROP TABLE IF EXISTS `categorias`;
-CREATE TABLE `categorias` (
-  `id_categoria` INT AUTO_INCREMENT PRIMARY KEY,
-  `nombre` VARCHAR(100) NOT NULL,
+DROP TABLE IF EXISTS `roles`;
+CREATE TABLE `roles` (
+  `id_rol` INT AUTO_INCREMENT PRIMARY KEY,
+  `codigo` VARCHAR(30) NOT NULL UNIQUE,
+  `nombre` VARCHAR(50) NOT NULL,
   `descripcion` TEXT DEFAULT NULL,
   `estado` TINYINT DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `roles` (`id_rol`, `codigo`, `nombre`, `descripcion`, `estado`) VALUES
+(1, 'Admin', 'Administrador', 'Control total de la plataforma y auditoría', 1),
+(2, 'Voluntario', 'Voluntario', 'Participante comunitario en causas y donante', 1),
+(3, 'Beneficiario', 'Beneficiario', 'Receptor de asistencia social y ayudas', 1),
+(4, 'Organizacion', 'Organización', 'Fundación o entidad gestora de causas', 1)
+ON DUPLICATE KEY UPDATE `nombre`=VALUES(`nombre`);
+
 -- --------------------------------------------------------
--- 2. Tabla: Usuarios
+-- TABLA: metodos_pago (3FN)
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `metodos_pago`;
+CREATE TABLE `metodos_pago` (
+  `id_metodo_pago` INT AUTO_INCREMENT PRIMARY KEY,
+  `codigo` VARCHAR(30) NOT NULL UNIQUE,
+  `nombre` VARCHAR(50) NOT NULL,
+  `descripcion` TEXT DEFAULT NULL,
+  `estado` TINYINT DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `metodos_pago` (`id_metodo_pago`, `codigo`, `nombre`, `descripcion`, `estado`) VALUES
+(1, 'tarjeta', 'Tarjeta de Crédito/Débito', 'Pasarela electrónica PSE/Visa/MasterCard', 1),
+(2, 'nequi', 'Nequi', 'Billetera digital Bancolombia', 1),
+(3, 'daviplata', 'Daviplata', 'Billetera digital Davivienda', 1),
+(4, 'transferencia', 'Transferencia Bancaria', 'Cuenta corriente o ahorros empresarial', 1),
+(5, 'efectivo', 'Efectivo / Punto Físico', 'Entrega directa en la sede de la entidad', 1)
+ON DUPLICATE KEY UPDATE `nombre`=VALUES(`nombre`);
+
+-- --------------------------------------------------------
+-- TABLA: estados_postulacion (3FN)
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `estados_postulacion`;
+CREATE TABLE `estados_postulacion` (
+  `id_estado_postulacion` INT AUTO_INCREMENT PRIMARY KEY,
+  `codigo` VARCHAR(20) NOT NULL UNIQUE,
+  `nombre` VARCHAR(50) NOT NULL,
+  `descripcion` TEXT DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `estados_postulacion` (`id_estado_postulacion`, `codigo`, `nombre`, `descripcion`) VALUES
+(1, 'pendiente', 'Pendiente de Revisión', 'Solicitud recibida pendiente de evaluación por la organización'),
+(2, 'aprobado', 'Aprobado', 'El aspirante ha sido admitido para el evento'),
+(3, 'rechazado', 'Rechazado', 'La postulación no cumplió los requisitos o se llenó el cupo'),
+(4, 'confirmado', 'Asistencia Confirmada', 'El usuario ratificó su presencia en la jornada'),
+(5, 'cancelado', 'Cancelado', 'El usuario o la organización retiraron la postulación')
+ON DUPLICATE KEY UPDATE `nombre`=VALUES(`nombre`);
+
+-- --------------------------------------------------------
+-- TABLA: categorias
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `categorias`;
+CREATE TABLE `categorias` (
+  `id_categoria` INT AUTO_INCREMENT PRIMARY KEY,
+  `nombre` VARCHAR(100) NOT NULL UNIQUE,
+  `descripcion` TEXT DEFAULT NULL,
+  `estado` TINYINT DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `categorias` (`id_categoria`, `nombre`, `descripcion`, `estado`) VALUES
+(1, 'Alimentos', 'Seguridad alimentaria, comedores comunitarios y paquetes nutricionales', 1),
+(2, 'Educación', 'Tutorías escolares, alfabetización, talleres artísticos y recreativos', 1),
+(3, 'Salud', 'Jornadas preventivas, salud integral, tamizajes y acompañamiento a adultos mayores', 1),
+(4, 'Medio Ambiente', 'Recuperación de humedales, reforestación urbana, huertas y reciclaje', 1),
+(5, 'Económico', 'Fondos rotatorios de emergencia solidaria comunitaria y apoyos directos', 1),
+(6, 'Otros', 'Asistencia logística general y servicios para la comunidad', 1)
+ON DUPLICATE KEY UPDATE `nombre`=VALUES(`nombre`);
+
+-- --------------------------------------------------------
+-- TABLA: barrios (División Territorial de Kennedy)
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `barrios`;
+CREATE TABLE `barrios` (
+  `id_barrio` INT AUTO_INCREMENT PRIMARY KEY,
+  `nombre` VARCHAR(100) NOT NULL UNIQUE,
+  `codigo_postal` VARCHAR(20) DEFAULT '110821',
+  `estado` TINYINT DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `barrios` (`id_barrio`, `nombre`, `codigo_postal`, `estado`) VALUES
+(1, 'Kennedy Central', '110821', 1),
+(2, 'Castilla', '110831', 1),
+(3, 'Patio Bonito', '110871', 1),
+(4, 'El Tintal', '110841', 1),
+(5, 'Timiza', '110851', 1),
+(6, 'Mandalay', '110831', 1),
+(7, 'Carvajal', '110851', 1),
+(8, 'Pastrana', '110861', 1)
+ON DUPLICATE KEY UPDATE `nombre`=VALUES(`nombre`);
+
+-- --------------------------------------------------------
+-- TABLA: direcciones (Georreferenciación)
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `direcciones`;
+CREATE TABLE `direcciones` (
+  `id_direccion` INT AUTO_INCREMENT PRIMARY KEY,
+  `id_barrio` INT DEFAULT NULL,
+  `direccion_linea` VARCHAR(255) NOT NULL,
+  `punto_referencia` VARCHAR(255) DEFAULT NULL,
+  `latitud` DECIMAL(10,8) DEFAULT NULL,
+  `longitud` DECIMAL(11,8) DEFAULT NULL,
+  FOREIGN KEY (`id_barrio`) REFERENCES `barrios` (`id_barrio`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `direcciones` (`id_direccion`, `id_barrio`, `direccion_linea`, `punto_referencia`, `latitud`, `longitud`) VALUES
+(1, 1, 'Calle 38 Sur # 78-45', 'Frente al Parque Central de Kennedy', 4.61900000, -74.15200000),
+(2, 2, 'Carrera 80 # 40B Sur-12', 'Diagonal al Polideportivo Castilla', 4.63850000, -74.14800000),
+(3, 3, 'Avenida Ciudad de Cali # 13-08', 'Estación TM Patio Bonito', 4.62800000, -74.16800000),
+(4, 4, 'Avenida Las Américas # 86-20', 'Biblioteca Pública El Tintal', 4.63100000, -74.15800000)
+ON DUPLICATE KEY UPDATE `direccion_linea`=VALUES(`direccion_linea`);
+
+-- --------------------------------------------------------
+-- TABLA: usuarios (1FN / 2FN / 3FN)
+-- (Sin documentos de identidad personales)
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `usuarios`;
 CREATE TABLE `usuarios` (
   `id_usuario` INT AUTO_INCREMENT PRIMARY KEY,
+  `id_rol` INT DEFAULT NULL,
   `rol` ENUM('Admin', 'Voluntario', 'Beneficiario', 'Organizacion') NOT NULL,
   `nombre1` VARCHAR(50) NOT NULL,
   `nombre2` VARCHAR(50) DEFAULT NULL,
   `apellido1` VARCHAR(50) NOT NULL,
   `apellido2` VARCHAR(50) DEFAULT NULL,
-  `tipo_documento` VARCHAR(20) DEFAULT NULL,
-  `num_documento` VARCHAR(50) DEFAULT NULL,
   `fecha_nacimiento` DATE DEFAULT NULL,
   `telefono` VARCHAR(20) DEFAULT NULL,
   `correo` VARCHAR(100) NOT NULL UNIQUE,
   `password` VARCHAR(255) NOT NULL,
+  `id_barrio` INT DEFAULT NULL,
   `direccion` VARCHAR(255) DEFAULT NULL,
   `barrio` VARCHAR(100) DEFAULT NULL,
-  `localidad` VARCHAR(100) DEFAULT NULL,
-  `ciudad` VARCHAR(100) DEFAULT 'Bogotá',
-  `departamento` VARCHAR(100) DEFAULT 'Bogotá D.C.',
-  `pais` VARCHAR(100) DEFAULT 'Colombia',
-  `codigo_postal` VARCHAR(20) DEFAULT NULL,
   `foto` TEXT DEFAULT NULL,
-  `foto_portada` TEXT DEFAULT NULL,
   `biografia` TEXT DEFAULT NULL,
-  `sitio_web` VARCHAR(255) DEFAULT NULL,
-  `redes_sociales` TEXT DEFAULT NULL,
-  `privacidad` TEXT DEFAULT NULL,
-  `mision` TEXT DEFAULT NULL,
-  `vision` TEXT DEFAULT NULL,
   `estado` TINYINT DEFAULT 1,
-  `fecha_registro` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  `fecha_registro` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_usuario_correo` (`correo`),
+  FOREIGN KEY (`id_rol`) REFERENCES `roles` (`id_rol`) ON DELETE SET NULL,
+  FOREIGN KEY (`id_barrio`) REFERENCES `barrios` (`id_barrio`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `usuarios` (
+  `id_usuario`, `id_rol`, `rol`, `nombre1`, `nombre2`, `apellido1`, `apellido2`,
+  `fecha_nacimiento`, `telefono`, `correo`, `password`,
+  `id_barrio`, `direccion`, `barrio`, `foto`, `biografia`, `estado`
+) VALUES
+(1, 1, 'Admin', 'Administrador', 'General', 'General', NULL, '1985-05-12', '+57 300 123 4567', 'admin@giveandgo.com', '$2b$10$tZ9C.mJjXNco/e.e2jV9SeAAL68L16S78A9oGv2o62H9R1pW61qE.', 1, 'Calle 38 Sur # 78-45', 'Kennedy Central', NULL, 'Administrador general de la plataforma comunitaria.', 1),
+(999, 2, 'Voluntario', 'Donante', NULL, 'Anónimo', NULL, '1990-01-01', NULL, 'anonimo@giveandgo.com', 'none', 1, 'Calle 38 Sur # 78-45', 'Kennedy Central', NULL, 'Perfil genérico para donaciones anónimas.', 1),
+(2, 2, 'Voluntario', 'Carlos', 'Andrés', 'Mendoza', 'Castro', '1995-08-20', '+57 310 987 6543', 'carlos@volunteer.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 2, 'Carrera 80 # 40B Sur-12', 'Castilla', NULL, 'Voluntario con vocación social en Kennedy.', 1),
+(3, 2, 'Voluntario', 'Sofía', NULL, 'Pérez', NULL, '1998-11-15', '+57 315 222 3333', 'sofia@volunteer.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 4, 'Avenida Las Américas # 86-20', 'El Tintal', NULL, 'Líder juvenil comunitaria en El Tintal.', 1),
+(4, 3, 'Beneficiario', 'Juan', NULL, 'Gómez', NULL, '1982-03-10', '+57 320 444 5555', 'juan@beneficiary.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 3, 'Carrera 86 # 38 Sur-25', 'Patio Bonito', NULL, 'Padre de familia residente en Patio Bonito.', 1),
+(5, 3, 'Beneficiario', 'María', NULL, 'Rodríguez', NULL, '1979-09-24', '+57 301 555 6666', 'maria@beneficiary.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 2, 'Calle 8A con Carrera 82', 'Castilla', NULL, 'Madre comunitaria en Castilla.', 1),
+(101, 4, 'Organizacion', 'Fundación Manos por Kennedy', NULL, 'Organización', NULL, NULL, '+57 300 000 0000', 'contacto@manosporkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1, 'Calle 38 Sur # 78-45', 'Kennedy Central', NULL, 'Cuenta puente institucional.', 1),
+(102, 4, 'Organizacion', 'Fundación Bogotá Solidaria', NULL, 'Organización', NULL, NULL, '+57 300 000 0000', 'info@bogotasolidaria.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 2, 'Carrera 80 # 40B Sur-12', 'Castilla', NULL, 'Cuenta puente institucional.', 1),
+(103, 4, 'Organizacion', 'Asociación Social Ciudad Kennedy', NULL, 'Organización', NULL, NULL, '+57 300 000 0000', 'hola@ciudadkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 3, 'Avenida Ciudad de Cali # 13-08', 'Patio Bonito', NULL, 'Cuenta puente institucional.', 1)
+ON DUPLICATE KEY UPDATE `correo`=VALUES(`correo`);
+
+-- Subtipos EER
+DROP TABLE IF EXISTS `perfiles_voluntarios`;
+CREATE TABLE `perfiles_voluntarios` (
+  `usuario_id` INT PRIMARY KEY,
+  `habilidades` TEXT DEFAULT NULL,
+  `intereses` TEXT DEFAULT NULL,
+  `disponibilidad` VARCHAR(100) DEFAULT NULL,
+  `horas_acumuladas` DECIMAL(8,2) DEFAULT 0.00,
+  `eventos_asistidos` INT DEFAULT 0,
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `perfiles_voluntarios` (`usuario_id`, `habilidades`, `intereses`, `disponibilidad`, `horas_acumuladas`, `eventos_asistidos`) VALUES
+(2, 'Primeros auxilios, logística, pedagogía básica', 'Seguridad alimentaria, reforestación', 'Fines de semana mañanas', 36.50, 6),
+(3, 'Tutoría infantil, arte, organización de eventos', 'Educación comunitaria, infancia', 'Tardes entre semana', 18.00, 3)
+ON DUPLICATE KEY UPDATE `horas_acumuladas`=VALUES(`horas_acumuladas`);
+
+DROP TABLE IF EXISTS `perfiles_beneficiarios`;
+CREATE TABLE `perfiles_beneficiarios` (
+  `usuario_id` INT PRIMARY KEY,
+  `condicion_especial` VARCHAR(150) DEFAULT NULL,
+  `personas_a_cargo` INT DEFAULT 0,
+  `necesidades_urgentes` TEXT DEFAULT NULL,
+  `prioridad` ENUM('alta', 'media', 'baja') DEFAULT 'media',
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `perfiles_beneficiarios` (`usuario_id`, `condicion_especial`, `personas_a_cargo`, `necesidades_urgentes`, `prioridad`) VALUES
+(4, 'Madre/Padre cabeza de hogar', 4, 'Mercado no perecedero, pañales y útiles de aseo', 'alta'),
+(5, 'Adulto mayor sin pensión', 2, 'Medicamentos hipertensión, ropa abrigada y alimentos', 'alta')
+ON DUPLICATE KEY UPDATE `personas_a_cargo`=VALUES(`personas_a_cargo`);
+
 -- --------------------------------------------------------
--- 3. Tabla: Organizaciones
+-- TABLA: organizaciones (1FN / 3FN)
+-- (Con Perfil Público Completo y Redes Sociales Institucionales)
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `organizaciones`;
 CREATE TABLE `organizaciones` (
   `id_organizacion` INT AUTO_INCREMENT PRIMARY KEY,
+  `id_usuario_representante` INT DEFAULT NULL,
   `nombre` VARCHAR(150) NOT NULL,
+  `nit` VARCHAR(50) DEFAULT NULL,
+  `representante_legal` VARCHAR(150) DEFAULT NULL,
+  `id_categoria` INT DEFAULT NULL,
+  `categoria` VARCHAR(100) DEFAULT NULL,
+  `id_barrio` INT DEFAULT NULL,
   `direccion` VARCHAR(255) DEFAULT NULL,
+  `barrio` VARCHAR(100) DEFAULT NULL,
   `telefono` VARCHAR(20) DEFAULT NULL,
   `correo` VARCHAR(100) NOT NULL UNIQUE,
   `password` VARCHAR(255) NOT NULL,
   `descripcion` TEXT DEFAULT NULL,
-  `nit` VARCHAR(50) DEFAULT NULL,
-  `representante_legal` VARCHAR(150) DEFAULT NULL,
-  `barrio` VARCHAR(100) DEFAULT NULL,
-  `localidad` VARCHAR(100) DEFAULT NULL,
-  `ciudad` VARCHAR(100) DEFAULT 'Bogotá',
-  `departamento` VARCHAR(100) DEFAULT 'Bogotá D.C.',
-  `pais` VARCHAR(100) DEFAULT 'Colombia',
-  `categoria` VARCHAR(100) DEFAULT NULL,
-  `logo` TEXT DEFAULT NULL,
-  `foto_portada` TEXT DEFAULT NULL,
   `mision` TEXT DEFAULT NULL,
   `vision` TEXT DEFAULT NULL,
   `sitio_web` VARCHAR(255) DEFAULT NULL,
   `redes_sociales` TEXT DEFAULT NULL,
+  `logo` TEXT DEFAULT NULL,
+  `foto_portada` TEXT DEFAULT NULL,
   `latitud` DECIMAL(10,8) DEFAULT NULL,
   `longitud` DECIMAL(11,8) DEFAULT NULL,
   `verificada` TINYINT DEFAULT 0,
   `estado_verificacion` VARCHAR(50) DEFAULT 'no_solicitado',
   `estado` TINYINT DEFAULT 1,
-  `fecha_registro` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  `fecha_registro` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_org_correo` (`correo`),
+  INDEX `idx_org_nit` (`nit`),
+  FOREIGN KEY (`id_usuario_representante`) REFERENCES `usuarios` (`id_usuario`) ON DELETE SET NULL,
+  FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id_categoria`) ON DELETE SET NULL,
+  FOREIGN KEY (`id_barrio`) REFERENCES `barrios` (`id_barrio`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `organizaciones` (
+  `id_organizacion`, `id_usuario_representante`, `nombre`, `nit`, `representante_legal`,
+  `id_categoria`, `categoria`, `id_barrio`, `direccion`, `barrio`,
+  `telefono`, `correo`, `password`, `descripcion`, `mision`, `vision`, `sitio_web`,
+  `latitud`, `longitud`, `verificada`, `estado_verificacion`, `estado`
+) VALUES
+(
+  1, 101, 'Fundación Manos por Kennedy', '901.456.789-1', 'Claudia Marcela Rincón',
+  1, 'Alimentos', 1, 'Calle 38 Sur # 78-45', 'Kennedy Central',
+  '+57 300 000 0000', 'contacto@manosporkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.',
+  'Institución comunitaria enfocada en brindar seguridad alimentaria y comedores en Kennedy Central.',
+  'Erradicar el hambre en la localidad de Kennedy mediante redes solidarias comunitarias.',
+  'Ser el banco de alimentos comunitario modelo en Bogotá para el 2030.',
+  'https://manosporkennedy.org', 4.61900000, -74.15200000, 1, 'aprobada', 1
+),
+(
+  2, 102, 'Fundación Bogotá Solidaria', '900.890.123-4', 'Javier Eduardo Morales',
+  3, 'Salud', 2, 'Carrera 80 # 40B Sur-12', 'Castilla',
+  '+57 300 000 0000', 'info@bogotasolidaria.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.',
+  'Fundación sin ánimo de lucro enfocada en desarrollo, salud básica y asistencia a adultos mayores en Castilla.',
+  'Promover el bienestar integral de la población de la tercera edad vulnerable.',
+  'Consolidar centros de atención comunitaria integral en todo el suroccidente de Bogotá.',
+  'https://bogotasolidaria.org', 4.63850000, -74.14800000, 1, 'aprobada', 1
+),
+(
+  3, 103, 'Asociación Social Ciudad Kennedy', '901.112.334-5', 'Marta Liliana Bermúdez',
+  4, 'Medio Ambiente', 3, 'Avenida Ciudad de Cali # 13-08', 'Patio Bonito',
+  '+57 300 000 0000', 'hola@ciudadkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.',
+  'Organización barrial para la recuperación ambiental de humedales y apoyo pedagógico comunitario.',
+  'Recuperar los ecosistemas hídricos de Kennedy y fomentar la educación ambiental infantil.',
+  'Tener humedales protegidos y niños líderes ambientales en cada UPZ de Kennedy.',
+  'https://ciudadkennedy.org', 4.62800000, -74.16800000, 0, 'pendiente', 1
+)
+ON DUPLICATE KEY UPDATE `nombre`=VALUES(`nombre`);
+
+DROP TABLE IF EXISTS `organizacion_redes_sociales`;
+CREATE TABLE `organizacion_redes_sociales` (
+  `id_red` INT AUTO_INCREMENT PRIMARY KEY,
+  `organizacion_id` INT NOT NULL,
+  `plataforma` ENUM('facebook', 'instagram', 'twitter', 'linkedin', 'youtube', 'tiktok', 'otra') NOT NULL,
+  `url_perfil` VARCHAR(255) NOT NULL,
+  UNIQUE KEY `uq_org_plataforma` (`organizacion_id`, `plataforma`),
+  FOREIGN KEY (`organizacion_id`) REFERENCES `organizaciones` (`id_organizacion`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `organizacion_redes_sociales` (`organizacion_id`, `plataforma`, `url_perfil`) VALUES
+(1, 'facebook', 'https://facebook.com/manosporkennedy'),
+(1, 'instagram', 'https://instagram.com/manosporkennedy'),
+(2, 'facebook', 'https://facebook.com/bogotasolidaria'),
+(3, 'twitter', 'https://twitter.com/ciudadkennedy_org')
+ON DUPLICATE KEY UPDATE `url_perfil`=VALUES(`url_perfil`);
+
 -- --------------------------------------------------------
--- 4. Tabla: Eventos
+-- TABLA: eventos
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `eventos`;
 CREATE TABLE `eventos` (
   `id_evento` INT AUTO_INCREMENT PRIMARY KEY,
   `nombre` VARCHAR(150) NOT NULL,
   `id_categoria` INT NOT NULL,
-  `descripcion` TEXT DEFAULT NULL,
-  `direccion` VARCHAR(255) DEFAULT NULL,
-  `fecha` DATETIME NOT NULL,
-  `cupo` INT DEFAULT 0,
-  `vacantes_voluntarios` INT DEFAULT 0,
-  `vacantes_beneficiarios` INT DEFAULT 0,
-  `ayuda_ofrecida` TEXT DEFAULT NULL,
-  `estado` TINYINT DEFAULT 1,
   `organizacion_id` INT NOT NULL,
+  `descripcion` TEXT DEFAULT NULL,
+  `id_barrio` INT DEFAULT NULL,
+  `direccion` VARCHAR(255) DEFAULT NULL,
   `barrio` VARCHAR(100) DEFAULT NULL,
-  `localidad` VARCHAR(100) DEFAULT NULL,
-  `ciudad` VARCHAR(100) DEFAULT 'Bogotá',
-  `departamento` VARCHAR(100) DEFAULT 'Bogotá D.C.',
-  `pais` VARCHAR(100) DEFAULT 'Colombia',
   `punto_referencia` VARCHAR(255) DEFAULT NULL,
   `nombre_lugar` VARCHAR(150) DEFAULT NULL,
   `latitud` DECIMAL(10,8) DEFAULT NULL,
   `longitud` DECIMAL(11,8) DEFAULT NULL,
+  `fecha` DATETIME NOT NULL,
+  `fecha_fin` DATETIME DEFAULT NULL,
+  `cupo` INT DEFAULT 0,
+  `vacantes_voluntarios` INT DEFAULT 0,
+  `vacantes_beneficiarios` INT DEFAULT 0,
+  `ayuda_ofrecida` TEXT DEFAULT NULL,
   `imagen` TEXT DEFAULT NULL,
+  `estado` TINYINT DEFAULT 1,
+  `fecha_creacion` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_evento_fecha` (`fecha`),
+  INDEX `idx_evento_org` (`organizacion_id`),
   FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id_categoria`) ON DELETE RESTRICT,
-  FOREIGN KEY (`organizacion_id`) REFERENCES `organizaciones` (`id_organizacion`) ON DELETE CASCADE
+  FOREIGN KEY (`organizacion_id`) REFERENCES `organizaciones` (`id_organizacion`) ON DELETE CASCADE,
+  FOREIGN KEY (`id_barrio`) REFERENCES `barrios` (`id_barrio`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `eventos` (
+  `id_evento`, `nombre`, `id_categoria`, `organizacion_id`, `descripcion`,
+  `id_barrio`, `direccion`, `barrio`,
+  `punto_referencia`, `nombre_lugar`, `latitud`, `longitud`, `fecha`, `cupo`,
+  `vacantes_voluntarios`, `vacantes_beneficiarios`, `ayuda_ofrecida`, `estado`
+) VALUES
+(
+  1, 'Jornada de Donación en Kennedy Central', 1, 1,
+  'Ayúdanos a clasificar y empaquetar alimentos recibidos para las familias vulnerables de la localidad de Kennedy.',
+  1, 'Calle 38 Sur # 78-45', 'Kennedy Central',
+  'A una cuadra de la Plaza Central de Kennedy', 'Sede Comunitaria Manos por Kennedy', 4.61900000, -74.15200000,
+  '2026-07-15 09:00:00', 50, 20, 30, 'Paquete nutricional no perecedero para 3 semanas.', 1
+),
+(
+  2, 'Campaña Solidaria Patio Bonito', 2, 1,
+  'Buscamos voluntarios para apoyar en el reforzamiento escolar y tutorías los fines de semana para niños de básica primaria.',
+  3, 'Avenida Ciudad de Cali # 13-08', 'Patio Bonito',
+  'Frente a la estación de TransMilenio Patio Bonito', 'Salón Comunal Sector 2', 4.62800000, -74.16800000,
+  '2026-07-20 08:00:00', 20, 10, 10, 'Kits de útiles escolares y refrigerio pedagógico.', 1
+),
+(
+  3, 'Reforestación del Humedal El Burro', 4, 3,
+  'Jornada ecológica de siembra de 100 especies arbóreas nativas y recolección de residuos en la ronda del Humedal El Burro.',
+  2, 'Calle 8A con Carrera 82', 'Castilla',
+  'Entrada principal por el sendero peatonal', 'Reserva Humedal El Burro', 4.64200000, -74.15600000,
+  '2026-08-05 07:00:00', 100, 80, 20, 'Capacitación en botánica nativa, herramientas y refrigerio.', 1
+),
+(
+  4, 'Jornada Comunitaria Castilla', 3, 2,
+  'Campaña de salud básica preventiva, toma de presión, tamizaje nutricional y entrega de kits de aseo para adultos mayores.',
+  2, 'Carrera 80 # 40B Sur-12', 'Castilla',
+  'Al lado del Polideportivo Castilla', 'Centro de Vida San Jerónimo', 4.63850000, -74.14800000,
+  '2026-06-30 09:00:00', 30, 15, 15, 'Atención médica general básica y kit de aseo personal.', 1
+)
+ON DUPLICATE KEY UPDATE `nombre`=VALUES(`nombre`);
+
 -- --------------------------------------------------------
--- 5. Tabla: Postulaciones
+-- TABLA: tabla_postulaciones (2FN / BCNF)
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `tabla_postulaciones`;
 CREATE TABLE `tabla_postulaciones` (
@@ -137,18 +384,32 @@ CREATE TABLE `tabla_postulaciones` (
   `id_evento` INT NOT NULL,
   `id_usuario` INT NOT NULL,
   `tipo_postulacion` ENUM('voluntario', 'beneficiario') NOT NULL,
+  `id_estado_postulacion` INT DEFAULT NULL,
   `estado_postulacion` ENUM('pendiente', 'aprobado', 'rechazado', 'confirmado', 'cancelado') DEFAULT 'pendiente',
   `fecha_postulacion` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `fecha_aprobacion` DATETIME DEFAULT NULL,
   `fecha_confirmacion` DATETIME DEFAULT NULL,
+  `asistencia_confirmada` TINYINT(1) DEFAULT 0,
+  `horas_acreditadas` DECIMAL(5,2) DEFAULT 0.00,
   `observaciones` TEXT DEFAULT NULL,
   UNIQUE KEY `unique_postulacion` (`id_evento`, `id_usuario`, `tipo_postulacion`),
   FOREIGN KEY (`id_evento`) REFERENCES `eventos` (`id_evento`) ON DELETE CASCADE,
-  FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE
+  FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE,
+  FOREIGN KEY (`id_estado_postulacion`) REFERENCES `estados_postulacion` (`id_estado_postulacion`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `tabla_postulaciones` (
+  `id_postulacion`, `id_evento`, `id_usuario`, `tipo_postulacion`, `id_estado_postulacion`,
+  `estado_postulacion`, `fecha_postulacion`, `fecha_aprobacion`, `asistencia_confirmada`, `horas_acreditadas`, `observaciones`
+) VALUES
+(1, 1, 2, 'voluntario', 2, 'aprobado', '2026-07-01 10:00:00', '2026-07-02 14:00:00', 1, 4.00, 'Voluntario con experiencia en clasificación logística'),
+(2, 1, 4, 'beneficiario', 2, 'aprobado', '2026-07-01 11:30:00', '2026-07-02 14:15:00', 1, 0.00, 'Beneficiario con núcleo de 4 personas registrado'),
+(3, 3, 2, 'voluntario', 2, 'aprobado', '2026-07-05 09:15:00', '2026-07-06 11:00:00', 0, 0.00, 'Inscrito para equipo de siembra matutina'),
+(4, 2, 3, 'voluntario', 1, 'pendiente', '2026-07-08 16:20:00', NULL, 0, 0.00, 'Postulación para pedagogía y refuerzo de lectura')
+ON DUPLICATE KEY UPDATE `estado_postulacion`=VALUES(`estado_postulacion`);
+
 -- --------------------------------------------------------
--- 6. Tabla: Seguimiento de Eventos
+-- TABLA: seguimiento_eventos
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `seguimiento_eventos`;
 CREATE TABLE `seguimiento_eventos` (
@@ -161,166 +422,315 @@ CREATE TABLE `seguimiento_eventos` (
   FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------
--- 7. Tabla: Donaciones
--- --------------------------------------------------------
-DROP TABLE IF EXISTS `donaciones`;
-CREATE TABLE `donaciones` (
-  `id_donacion` INT AUTO_INCREMENT PRIMARY KEY,
-  `categoria` VARCHAR(100) DEFAULT NULL,
-  `tipo` ENUM('Monetaria', 'Objeto') NOT NULL,
-  `fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `usuario_id` INT NOT NULL,
-  `organizacion_id` INT NOT NULL,
-  `estado` TINYINT DEFAULT 1,
-  `observaciones` TEXT DEFAULT NULL,
-  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE,
-  FOREIGN KEY (`organizacion_id`) REFERENCES `organizaciones` (`id_organizacion`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+INSERT INTO `seguimiento_eventos` (`id_seguimiento`, `evento_id`, `usuario_id`) VALUES
+(1, 1, 2),
+(2, 1, 4)
+ON DUPLICATE KEY UPDATE `fecha`=CURRENT_TIMESTAMP;
 
 -- --------------------------------------------------------
--- 8. Tabla: Donaciones Monetarias
--- --------------------------------------------------------
-DROP TABLE IF EXISTS `donaciones_monetarias`;
-CREATE TABLE `donaciones_monetarias` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `metodo` VARCHAR(50) NOT NULL,
-  `cuenta` VARCHAR(50) NOT NULL,
-  `valor` DECIMAL(15,2) NOT NULL,
-  `donacion_id` INT NOT NULL,
-  FOREIGN KEY (`donacion_id`) REFERENCES `donaciones` (`id_donacion`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
--- 9. Tabla: Donaciones de Objetos
--- --------------------------------------------------------
-DROP TABLE IF EXISTS `donaciones_objetos`;
-CREATE TABLE `donaciones_objetos` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `categoria` VARCHAR(100) NOT NULL,
-  `descripcion` TEXT NOT NULL,
-  `cantidad` INT NOT NULL,
-  `donacion_id` INT NOT NULL,
-  FOREIGN KEY (`donacion_id`) REFERENCES `donaciones` (`id_donacion`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
--- 10. Tabla: Solicitudes de Beneficiarios
+-- TABLA: solicitudes
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `solicitudes`;
 CREATE TABLE `solicitudes` (
   `id_solicitud` INT AUTO_INCREMENT PRIMARY KEY,
   `usuario_id` INT NOT NULL,
+  `id_categoria` INT DEFAULT NULL,
   `titulo` VARCHAR(150) DEFAULT NULL,
   `descripcion` TEXT DEFAULT NULL,
   `estado` ENUM('Pendiente', 'Aprobada', 'Rechazada') DEFAULT 'Pendiente',
   `fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE,
+  FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id_categoria`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `solicitudes` (`id_solicitud`, `usuario_id`, `id_categoria`, `titulo`, `descripcion`, `estado`) VALUES
+(1, 4, 1, 'Apoyo alimentario en Patio Bonito', 'Solicito mercado básico no perecedero para mi núcleo familiar de 4 personas en el barrio Patio Bonito, Kennedy.', 'Pendiente'),
+(2, 5, 2, 'Útiles escolares en Castilla', 'Necesito cuadernos, lápices y útiles escolares para mis dos hijos de primaria en Castilla.', 'Aprobada'),
+(3, 4, 3, 'Kit de medicamentos esenciales', 'Solicitud de apoyo para adquirir medicamentos de control diario para un adulto mayor en el barrio Kennedy Central.', 'Rechazada')
+ON DUPLICATE KEY UPDATE `titulo`=VALUES(`titulo`);
+
 -- --------------------------------------------------------
--- 11. Tabla: Auditorías
+-- TABLAS: donaciones (1FN / 2FN / 3FN)
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `donaciones`;
+CREATE TABLE `donaciones` (
+  `id_donacion` INT AUTO_INCREMENT PRIMARY KEY,
+  `id_categoria` INT DEFAULT NULL,
+  `categoria` VARCHAR(100) DEFAULT NULL,
+  `tipo` ENUM('Monetaria', 'Objeto') NOT NULL,
+  `usuario_id` INT NOT NULL,
+  `organizacion_id` INT NOT NULL,
+  `fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `estado` TINYINT DEFAULT 1,
+  `observaciones` TEXT DEFAULT NULL,
+  INDEX `idx_donacion_fecha` (`fecha`),
+  FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id_categoria`) ON DELETE SET NULL,
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE,
+  FOREIGN KEY (`organizacion_id`) REFERENCES `organizaciones` (`id_organizacion`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `donaciones` (`id_donacion`, `id_categoria`, `categoria`, `tipo`, `usuario_id`, `organizacion_id`, `estado`, `observaciones`) VALUES
+(1, 5, 'Económico', 'Monetaria', 2, 1, 1, 'Donación para la compra de suministros alimentarios y verduras frescas.'),
+(2, 1, 'Alimentos', 'Objeto', 3, 2, 1, 'Aporte en especie para el centro de adultos mayores de Castilla.')
+ON DUPLICATE KEY UPDATE `tipo`=VALUES(`tipo`);
+
+DROP TABLE IF EXISTS `donaciones_monetarias`;
+CREATE TABLE `donaciones_monetarias` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `donacion_id` INT NOT NULL,
+  `id_metodo_pago` INT DEFAULT NULL,
+  `metodo` VARCHAR(50) NOT NULL,
+  `cuenta` VARCHAR(50) NOT NULL,
+  `referencia_transaccion` VARCHAR(100) DEFAULT NULL,
+  `valor` DECIMAL(15,2) NOT NULL,
+  FOREIGN KEY (`donacion_id`) REFERENCES `donaciones` (`id_donacion`) ON DELETE CASCADE,
+  FOREIGN KEY (`id_metodo_pago`) REFERENCES `metodos_pago` (`id_metodo_pago`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `donaciones_monetarias` (`id`, `donacion_id`, `id_metodo_pago`, `metodo`, `cuenta`, `referencia_transaccion`, `valor`) VALUES
+(1, 1, 1, 'tarjeta', '**** **** **** 4321', 'TX-GIVE-2026-98124', 150000.00)
+ON DUPLICATE KEY UPDATE `valor`=VALUES(`valor`);
+
+DROP TABLE IF EXISTS `donaciones_objetos`;
+CREATE TABLE `donaciones_objetos` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `donacion_id` INT NOT NULL,
+  `id_categoria` INT DEFAULT NULL,
+  `categoria` VARCHAR(100) NOT NULL,
+  `descripcion` TEXT NOT NULL,
+  `cantidad` INT NOT NULL,
+  `unidad_medida` VARCHAR(30) DEFAULT 'unidades',
+  `estado_conservacion` ENUM('nuevo', 'usado_excelente', 'usado_bueno', 'no_perecedero') DEFAULT 'nuevo',
+  FOREIGN KEY (`donacion_id`) REFERENCES `donaciones` (`id_donacion`) ON DELETE CASCADE,
+  FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id_categoria`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `donaciones_objetos` (`id`, `donacion_id`, `id_categoria`, `categoria`, `descripcion`, `cantidad`, `unidad_medida`, `estado_conservacion`) VALUES
+(1, 2, 1, 'Alimentos', '10 kg de arroz Diana, 5 kg de lentejas y 3 botellas de aceite vegetal', 15, 'kg / botellas', 'no_perecedero')
+ON DUPLICATE KEY UPDATE `cantidad`=VALUES(`cantidad`);
+
+-- --------------------------------------------------------
+-- TABLA: auditorias (3FN)
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `auditorias`;
 CREATE TABLE `auditorias` (
   `id_audit` INT AUTO_INCREMENT PRIMARY KEY,
-  `fecha` VARCHAR(50) NOT NULL,
-  `accion` VARCHAR(255) NOT NULL,
   `id_usuario` INT NOT NULL,
-  `nombre_usuario` VARCHAR(150) NOT NULL,
-  `rol_usuario` VARCHAR(50) NOT NULL,
+  `accion` VARCHAR(255) NOT NULL,
+  `modulo_afectado` VARCHAR(50) DEFAULT 'general',
+  `direccion_ip` VARCHAR(45) DEFAULT NULL,
+  `detalles` TEXT DEFAULT NULL,
+  `fecha` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `nombre_usuario` VARCHAR(150) DEFAULT NULL,
+  `rol_usuario` VARCHAR(50) DEFAULT NULL,
+  INDEX `idx_audit_usuario` (`id_usuario`),
+  INDEX `idx_audit_fecha` (`fecha`),
   FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+INSERT INTO `auditorias` (`id_usuario`, `accion`, `modulo_afectado`, `direccion_ip`, `detalles`, `nombre_usuario`, `rol_usuario`) VALUES
+(1, 'Inicio de sesión exitoso del Administrador', 'autenticacion', '192.168.1.10', 'Acceso desde panel administrativo', 'Administrador General', 'Admin'),
+(1, 'Creación de convocatoria comunitaria en Kennedy Central', 'eventos', '192.168.1.10', 'ID Evento: 1 - Jornada de Donación', 'Administrador General', 'Admin'),
+(2, 'Inscripción confirmada como voluntario', 'postulaciones', '186.84.90.12', 'Evento: Reforestación Humedal El Burro', 'Carlos Andrés Mendoza', 'Voluntario'),
+(2, 'Donación monetaria procesada exitosamente', 'donaciones', '186.84.90.12', 'Monto: $150,000 COP via Pasarela', 'Carlos Andrés Mendoza', 'Voluntario');
+
 -- --------------------------------------------------------
--- 12. Tabla: Solicitudes de Verificación
+-- TABLAS: solicitudes_verificacion y documentos_verificacion (1FN / 3FN)
+-- (Exclusivos para Organizaciones)
 -- --------------------------------------------------------
 DROP TABLE IF EXISTS `solicitudes_verificacion`;
 CREATE TABLE `solicitudes_verificacion` (
   `id_solicitud` INT AUTO_INCREMENT PRIMARY KEY,
   `organizacion_id` INT NOT NULL,
-  `nombre_organizacion` VARCHAR(150) NOT NULL,
-  `correo_organizacion` VARCHAR(100) NOT NULL,
-  `nit` VARCHAR(50) DEFAULT NULL,
   `mensaje` TEXT DEFAULT NULL,
-  `documentos` TEXT DEFAULT NULL,
   `estado` ENUM('pendiente', 'aprobada', 'rechazada') DEFAULT 'pendiente',
   `respuesta_admin` TEXT DEFAULT NULL,
+  `admin_revisor_id` INT DEFAULT NULL,
   `fecha_solicitud` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `fecha_respuesta` DATETIME DEFAULT NULL,
-  FOREIGN KEY (`organizacion_id`) REFERENCES `organizaciones` (`id_organizacion`) ON DELETE CASCADE
+  `nombre_organizacion` VARCHAR(150) DEFAULT NULL,
+  `correo_organizacion` VARCHAR(100) DEFAULT NULL,
+  `nit` VARCHAR(50) DEFAULT NULL,
+  `documentos` TEXT DEFAULT NULL,
+  FOREIGN KEY (`organizacion_id`) REFERENCES `organizaciones` (`id_organizacion`) ON DELETE CASCADE,
+  FOREIGN KEY (`admin_revisor_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- =========================================================================
--- DATOS INICIALES (SEEDS)
--- =========================================================================
+INSERT INTO `solicitudes_verificacion` (
+  `id_solicitud`, `organizacion_id`, `mensaje`, `estado`, `respuesta_admin`, `admin_revisor_id`, `fecha_solicitud`, `fecha_respuesta`,
+  `nombre_organizacion`, `correo_organizacion`, `nit`, `documentos`
+) VALUES
+(
+  1, 1, 'Adjunto el RUT 2026 y la certificación de existencia de la Cámara de Comercio de Bogotá para certificar a Fundación Manos por Kennedy.',
+  'aprobada', 'Documentación legal verificada exitosamente. Entidad certificada.', 1, '2026-06-01 10:00:00', '2026-06-02 15:30:00',
+  'Fundación Manos por Kennedy', 'contacto@manosporkennedy.org', '901.456.789-1', 'RUT_2026.pdf, CamaraComercio_Bogota.pdf'
+),
+(
+  2, 3, 'Presentamos documentos probatorios para verificación de la Asociación Social Ciudad Kennedy.',
+  'pendiente', NULL, NULL, '2026-07-10 14:20:00', NULL,
+  'Asociación Social Ciudad Kennedy', 'hola@ciudadkennedy.org', '901.112.334-5', 'RUT_Asociacion.pdf'
+)
+ON DUPLICATE KEY UPDATE `estado`=VALUES(`estado`);
 
--- 1. Categorías
-INSERT INTO `categorias` (`id_categoria`, `nombre`, `descripcion`, `estado`) VALUES
-(1, 'Alimentos', 'Donaciones de alimentos y canastas básicas', 1),
-(2, 'Educación', 'Apoyo educativo y tutorías', 1),
-(3, 'Salud', 'Campañas de salud preventiva y kits médicos', 1),
-(4, 'Medio Ambiente', 'Reforestación y cuidado ambiental', 1),
-(5, 'Económico', 'Aportaciones monetarias a causas', 1);
+DROP TABLE IF EXISTS `documentos_verificacion`;
+CREATE TABLE `documentos_verificacion` (
+  `id_documento` INT AUTO_INCREMENT PRIMARY KEY,
+  `solicitud_id` INT NOT NULL,
+  `tipo_documento` ENUM('rut', 'camara_comercio', 'cedula_representante', 'estados_financieros', 'otro') NOT NULL,
+  `nombre_archivo` VARCHAR(255) NOT NULL,
+  `url_archivo` TEXT NOT NULL,
+  `fecha_subida` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`solicitud_id`) REFERENCES `solicitudes_verificacion` (`id_solicitud`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 2. Usuarios Base
--- Passwords:
--- admin@giveandgo.com -> Admin123*
--- carlos@volunteer.com, sofia@volunteer.com, juan@beneficiary.com, etc. -> User123*
-INSERT INTO `usuarios` (`id_usuario`, `rol`, `nombre1`, `nombre2`, `apellido1`, `apellido2`, `telefono`, `correo`, `password`, `estado`) VALUES
-(1, 'Admin', 'Administrador', 'General', 'General', NULL, '+57 300 123 4567', 'admin@giveandgo.com', '$2b$10$tZ9C.mJjXNco/e.e2jV9SeAAL68L16S78A9oGv2o62H9R1pW61qE.', 1),
-(999, 'Voluntario', 'Donante', NULL, 'Anónimo', NULL, NULL, 'anonimo@giveandgo.com', 'none', 1),
-(2, 'Voluntario', 'Carlos', 'Andrés', 'Mendoza', 'Castro', '+57 310 987 6543', 'carlos@volunteer.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
-(3, 'Voluntario', 'Sofía', NULL, 'Pérez', NULL, '+57 315 222 3333', 'sofia@volunteer.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
-(4, 'Beneficiario', 'Juan', NULL, 'Gómez', NULL, '+57 320 444 5555', 'juan@beneficiary.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
-(5, 'Beneficiario', 'María', NULL, 'Rodríguez', NULL, '+57 301 555 6666', 'maria@beneficiary.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
-(101, 'Organizacion', 'Fundación Manos por Kennedy', NULL, 'Organización', NULL, '+57 300 000 0000', 'contacto@manosporkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
-(102, 'Organizacion', 'Fundación Bogotá Solidaria', NULL, 'Organización', NULL, '+57 300 000 0000', 'info@bogotasolidaria.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1),
-(103, 'Organizacion', 'Asociación Social Ciudad Kennedy', NULL, 'Organización', NULL, '+57 300 000 0000', 'hola@ciudadkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1);
+INSERT INTO `documentos_verificacion` (`id_documento`, `solicitud_id`, `tipo_documento`, `nombre_archivo`, `url_archivo`) VALUES
+(1, 1, 'rut', 'RUT_2026_ManosPorKennedy.pdf', 'https://storage.giveandgo.org/docs/rut_manos_2026.pdf'),
+(2, 1, 'camara_comercio', 'Certificado_CamaraComercio_2026.pdf', 'https://storage.giveandgo.org/docs/camara_comercio_manos.pdf'),
+(3, 2, 'rut', 'RUT_CiudadKennedy.pdf', 'https://storage.giveandgo.org/docs/rut_ciudad_kennedy.pdf')
+ON DUPLICATE KEY UPDATE `nombre_archivo`=VALUES(`nombre_archivo`);
 
--- 3. Organizaciones
-INSERT INTO `organizaciones` (`id_organizacion`, `nombre`, `direccion`, `telefono`, `correo`, `password`, `descripcion`, `verificada`, `estado_verificacion`, `estado`, `latitud`, `longitud`, `barrio`, `localidad`, `ciudad`, `categoria`) VALUES
-(1, 'Fundación Manos por Kennedy', 'Calle 38 Sur # 78-45, Kennedy Central, Bogotá D.C.', '+57 300 000 0000', 'contacto@manosporkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 'Institución comunitaria enfocada en brindar seguridad alimentaria en Kennedy.', 1, 'aprobada', 1, 4.6186, -74.1481, 'Kennedy Central', 'Kennedy', 'Bogotá', 'Alimentos'),
-(2, 'Fundación Bogotá Solidaria', 'Carrera 80 # 40B Sur-12, Castilla, Bogotá D.C.', '+57 300 000 0000', 'info@bogotasolidaria.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 'Fundación sin ánimo de lucro enfocada en desarrollo y asistencia a adultos mayores.', 1, 'aprobada', 1, 4.6445, -74.1412, 'Castilla', 'Kennedy', 'Bogotá', 'Salud'),
-(3, 'Asociación Social Ciudad Kennedy', 'Avenida Ciudad de Cali # 13-08, Patio Bonito, Bogotá D.C.', '+57 300 000 0000', 'hola@ciudadkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 'Organización para la recuperación ambiental y el apoyo pedagógico.', 0, 'pendiente', 1, 4.6288, -74.1620, 'Patio Bonito', 'Kennedy', 'Bogotá', 'Medio Ambiente');
+-- --------------------------------------------------------
+-- VISTAS SQL DE COMPATIBILIDAD (VIEWS)
+-- --------------------------------------------------------
+CREATE OR REPLACE VIEW `v_usuarios_completo` AS
+SELECT 
+  u.id_usuario,
+  r.codigo AS rol_codigo,
+  r.nombre AS rol_nombre,
+  u.rol,
+  u.nombre1,
+  u.nombre2,
+  u.apellido1,
+  u.apellido2,
+  CONCAT(u.nombre1, IF(u.nombre2 IS NOT NULL AND u.nombre2 != '', CONCAT(' ', u.nombre2), ''), ' ', u.apellido1, IF(u.apellido2 IS NOT NULL AND u.apellido2 != '', CONCAT(' ', u.apellido2), '')) AS nombre_completo,
+  u.fecha_nacimiento,
+  u.telefono,
+  u.correo,
+  u.direccion,
+  COALESCE(b.nombre, u.barrio) AS barrio,
+  'Kennedy' AS localidad,
+  'Bogotá' AS ciudad,
+  'Bogotá D.C.' AS departamento,
+  'Colombia' AS pais,
+  COALESCE(b.codigo_postal, '110821') AS codigo_postal,
+  u.foto,
+  u.biografia,
+  u.estado,
+  u.fecha_registro,
+  pv.habilidades AS vol_habilidades,
+  pv.intereses AS vol_intereses,
+  pv.disponibilidad AS vol_disponibilidad,
+  pv.horas_acumuladas AS vol_horas_acumuladas,
+  pb.condicion_especial AS ben_condicion_especial,
+  pb.personas_a_cargo AS ben_personas_a_cargo,
+  pb.necesidades_urgentes AS ben_necesidades_urgentes
+FROM `usuarios` u
+LEFT JOIN `roles` r ON u.id_rol = r.id_rol
+LEFT JOIN `barrios` b ON u.id_barrio = b.id_barrio
+LEFT JOIN `perfiles_voluntarios` pv ON u.id_usuario = pv.usuario_id
+LEFT JOIN `perfiles_beneficiarios` pb ON u.id_usuario = pb.usuario_id;
 
--- 4. Eventos
-INSERT INTO `eventos` (`id_evento`, `nombre`, `id_categoria`, `descripcion`, `direccion`, `fecha`, `cupo`, `vacantes_voluntarios`, `vacantes_beneficiarios`, `ayuda_ofrecida`, `estado`, `organizacion_id`, `barrio`, `localidad`, `ciudad`, `latitud`, `longitud`, `imagen`) VALUES
-(1, 'Jornada de Donación en Kennedy Central', 1, 'Ayúdanos a clasificar y empaquetar alimentos recibidos para las familias vulnerables de la localidad de Kennedy.', 'Calle 38 Sur # 78-45, Kennedy Central', '2026-07-15 09:00:00', 50, 20, 30, 'Paquete nutricional no perecedero con arroz, granos y aceite.', 1, 1, 'Kennedy Central', 'Kennedy', 'Bogotá', 4.6186, -74.1481, 'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=1000'),
-(2, 'Campaña Solidaria Patio Bonito', 2, 'Buscamos voluntarios para apoyar en el reforzamiento escolar y tutorías los fines de semana para niños.', 'Avenida Ciudad de Cali # 13-08', '2026-07-20 08:00:00', 20, 10, 10, 'Kits de útiles escolares y tutorías pedagógicas.', 1, 1, 'Patio Bonito', 'Kennedy', 'Bogotá', 4.6288, -74.1620, 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=1000'),
-(3, 'Reforestación del Humedal El Burro', 4, 'Jornada de siembra de especies nativas y limpieza en el Humedal El Burro de Kennedy.', 'Calle 8A con Carrera 82, Humedal El Burro', '2026-08-05 07:00:00', 100, 80, 20, 'Capacitación ambiental, refrigerios y siembra de plantas.', 1, 3, 'Castilla', 'Kennedy', 'Bogotá', 4.6421, -74.1485, 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&q=80&w=1000'),
-(4, 'Jornada Comunitaria Castilla', 3, 'Campaña de salud básica preventiva y entrega de kits de aseo para adultos mayores.', 'Carrera 80 # 40B Sur-12, Castilla', '2026-06-30 09:00:00', 30, 15, 15, 'Atención médica básica preventiva y kits de aseo.', 1, 2, 'Castilla', 'Kennedy', 'Bogotá', 4.6445, -74.1412, 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1000');
+CREATE OR REPLACE VIEW `v_organizaciones_completo` AS
+SELECT 
+  o.id_organizacion,
+  o.nombre,
+  o.nit,
+  o.representante_legal,
+  c_cat.nombre AS categoria_nombre,
+  COALESCE(c_cat.nombre, o.categoria) AS categoria,
+  o.direccion,
+  COALESCE(b.nombre, o.barrio) AS barrio,
+  'Kennedy' AS localidad,
+  'Bogotá' AS ciudad,
+  'Bogotá D.C.' AS departamento,
+  'Colombia' AS pais,
+  o.telefono,
+  o.correo,
+  o.descripcion,
+  o.mision,
+  o.vision,
+  o.sitio_web,
+  o.redes_sociales,
+  o.logo,
+  o.foto_portada,
+  o.latitud,
+  o.longitud,
+  o.verificada,
+  o.estado_verificacion,
+  o.estado,
+  o.fecha_registro
+FROM `organizaciones` o
+LEFT JOIN `categorias` c_cat ON o.id_categoria = c_cat.id_categoria
+LEFT JOIN `barrios` b ON o.id_barrio = b.id_barrio;
 
--- 5. Postulaciones a Eventos
-INSERT INTO `tabla_postulaciones` (`id_postulacion`, `id_evento`, `id_usuario`, `tipo_postulacion`, `estado_postulacion`, `fecha_postulacion`, `fecha_aprobacion`, `observaciones`) VALUES
-(1, 1, 4, 'beneficiario', 'aprobado', '2026-06-21 10:00:00', '2026-06-22 08:30:00', 'Aprobado para entrega de kit nutricional familiar.'),
-(2, 2, 5, 'beneficiario', 'pendiente', '2026-06-25 14:15:00', NULL, 'Postulante para kits de útiles escolares.'),
-(3, 3, 2, 'voluntario', 'confirmado', '2026-06-20 09:00:00', '2026-06-20 11:00:00', 'Voluntario confirmado para logística.');
+CREATE OR REPLACE VIEW `v_eventos_detalle` AS
+SELECT 
+  e.id_evento,
+  e.nombre,
+  e.id_categoria,
+  cat.nombre AS categoria_nombre,
+  e.organizacion_id,
+  o.nombre AS organizacion_nombre,
+  o.verificada AS organizacion_verificada,
+  e.descripcion,
+  e.direccion,
+  COALESCE(b.nombre, e.barrio) AS barrio,
+  'Kennedy' AS localidad,
+  'Bogotá' AS ciudad,
+  'Bogotá D.C.' AS departamento,
+  'Colombia' AS pais,
+  e.punto_referencia,
+  e.nombre_lugar,
+  e.latitud,
+  e.longitud,
+  e.fecha,
+  e.fecha_fin,
+  e.cupo,
+  e.vacantes_voluntarios,
+  e.vacantes_beneficiarios,
+  e.ayuda_ofrecida,
+  e.imagen,
+  e.estado,
+  e.fecha_creacion
+FROM `eventos` e
+INNER JOIN `categorias` cat ON e.id_categoria = cat.id_categoria
+INNER JOIN `organizaciones` o ON e.organizacion_id = o.id_organizacion
+LEFT JOIN `barrios` b ON e.id_barrio = b.id_barrio;
 
--- 6. Solicitudes de Beneficiarios
-INSERT INTO `solicitudes` (`id_solicitud`, `usuario_id`, `titulo`, `descripcion`, `estado`, `fecha`) VALUES
-(1, 4, 'Apoyo alimentario en Patio Bonito', 'Solicito mercado básico no perecedero para mi núcleo familiar de 4 personas.', 'Pendiente', '2026-06-20 12:00:00'),
-(2, 5, 'Útiles escolares en Castilla', 'Necesito cuadernos y lápices para mis dos hijos de primaria.', 'Aprobada', '2026-06-18 10:00:00'),
-(3, 4, 'Kit de medicamentos esenciales', 'Solicitud de medicamentos de control diario para adulto mayor.', 'Rechazada', '2026-06-10 09:00:00');
+CREATE OR REPLACE VIEW `v_auditorias_completo` AS
+SELECT 
+  a.id_audit,
+  a.fecha,
+  a.accion,
+  a.modulo_afectado,
+  a.direccion_ip,
+  a.id_usuario,
+  COALESCE(
+    CONCAT(u.nombre1, IF(u.nombre2 IS NOT NULL AND u.nombre2 != '', CONCAT(' ', u.nombre2), ''), ' ', u.apellido1),
+    a.nombre_usuario,
+    'Usuario Desconocido'
+  ) AS nombre_usuario,
+  COALESCE(r.nombre, u.rol, a.rol_usuario, 'General') AS rol_usuario
+FROM `auditorias` a
+LEFT JOIN `usuarios` u ON a.id_usuario = u.id_usuario
+LEFT JOIN `roles` r ON u.id_rol = r.id_rol;
 
--- 7. Donaciones
-INSERT INTO `donaciones` (`id_donacion`, `categoria`, `tipo`, `usuario_id`, `organizacion_id`, `estado`, `observaciones`, `fecha`) VALUES
-(1, 'Económico', 'Monetaria', 2, 1, 1, 'Donación para la compra de suministros alimentarios.', '2026-06-22 10:00:00'),
-(2, 'Alimentos', 'Objeto', 3, 2, 1, 'Aporte en especie para el asilo de Castilla.', '2026-06-24 15:30:00');
-
-INSERT INTO `donaciones_monetarias` (`id`, `metodo`, `cuenta`, `valor`, `donacion_id`) VALUES
-(1, 'tarjeta', '**** **** **** 4321', 150000.00, 1);
-
-INSERT INTO `donaciones_objetos` (`id`, `categoria`, `descripcion`, `cantidad`, `donacion_id`) VALUES
-(1, 'Alimentos', '10 kg de arroz, 5 kg de legumbres y aceite vegetal', 15, 2);
-
--- 8. Auditorías
-INSERT INTO `auditorias` (`fecha`, `accion`, `id_usuario`, `nombre_usuario`, `rol_usuario`) VALUES
-('2026-07-16T10:00:00.000Z', 'Inicio de sesión exitoso del Administrador', 1, 'Administrador General', 'Admin'),
-('2026-07-16T11:15:00.000Z', 'Creación de convocatoria: Reforestación del Humedal El Burro', 1, 'Administrador General', 'Admin'),
-('2026-07-16T12:30:00.000Z', 'Inscripción de voluntario en el evento de Reforestación', 2, 'Carlos Mendoza', 'Voluntario'),
-('2026-07-16T13:45:00.000Z', 'Registro de nueva donación monetaria', 2, 'Carlos Mendoza', 'Voluntario');
+CREATE OR REPLACE VIEW `v_solicitudes_verificacion_detalle` AS
+SELECT 
+  sv.id_solicitud,
+  sv.organizacion_id,
+  COALESCE(o.nombre, sv.nombre_organizacion) AS nombre_organizacion,
+  COALESCE(o.correo, sv.correo_organizacion) AS correo_organizacion,
+  COALESCE(o.nit, sv.nit) AS nit,
+  sv.mensaje,
+  sv.documentos,
+  sv.estado,
+  sv.respuesta_admin,
+  sv.admin_revisor_id,
+  sv.fecha_solicitud,
+  sv.fecha_respuesta
+FROM `solicitudes_verificacion` sv
+LEFT JOIN `organizaciones` o ON sv.organizacion_id = o.id_organizacion;
 
 SET FOREIGN_KEY_CHECKS = 1;
-
--- Fin del script
+COMMIT;

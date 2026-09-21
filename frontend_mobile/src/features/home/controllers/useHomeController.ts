@@ -42,12 +42,28 @@ export function useHomeController(navigation?: any) {
 
   const quickActions: HomeQuickAction[] = [
     {
+      id: 'map',
+      title: 'Mapa Social',
+      subtitle: 'Causas y fundaciones en Kennedy',
+      iconName: 'map-pin',
+      color: '#0284C7',
+      route: 'Mapa',
+    },
+    {
+      id: 'dashboard',
+      title: 'Panel de Control',
+      subtitle: 'Métricas, impacto y auditoría',
+      iconName: 'layout-dashboard',
+      color: '#7C3AED',
+      route: 'Dashboard',
+    },
+    {
       id: 'events',
-      title: 'Explorar Eventos',
+      title: 'Convocatorias',
       subtitle: 'Voluntariado y ayuda social',
       iconName: 'calendar',
       color: '#DC2626',
-      route: 'Events',
+      route: 'Eventos',
     },
     {
       id: 'donations',
@@ -55,23 +71,15 @@ export function useHomeController(navigation?: any) {
       subtitle: 'Aporta a causas solidarias',
       iconName: 'heart',
       color: '#16A34A',
-      route: 'Donations',
-    },
-    {
-      id: 'beneficiary',
-      title: 'Solicitar Ayuda',
-      subtitle: 'Gestión de necesidades',
-      iconName: 'help-circle',
-      color: '#2563EB',
-      route: 'Beneficiary',
+      route: 'Donaciones',
     },
     {
       id: 'profile',
       title: 'Mi Perfil',
       subtitle: 'Certificados y configuración',
       iconName: 'user',
-      color: '#9333EA',
-      route: 'Profile',
+      color: '#4B5563',
+      route: 'Perfil',
     },
   ];
 
@@ -83,7 +91,8 @@ export function useHomeController(navigation?: any) {
 
   const handleEventPress = (eventId: string) => {
     if (navigation?.navigate) {
-      navigation.navigate('Events', { screen: 'EventDetail', params: { eventId } });
+      const idNum = typeof eventId === 'string' ? parseInt(eventId.replace('evt_', ''), 10) || 1 : eventId;
+      navigation.navigate('EventDetail', { eventId: idNum });
     }
   };
 

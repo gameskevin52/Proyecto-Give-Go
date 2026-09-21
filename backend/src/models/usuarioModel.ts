@@ -2,34 +2,23 @@ import { db } from '../config/db';
 
 export interface UsuarioDB {
   id_usuario: number;
+  id_rol?: number;
   rol: 'Admin' | 'Voluntario' | 'Beneficiario' | 'Organizacion';
   nombre1: string;
   nombre2?: string;
   apellido1: string;
   apellido2?: string;
+  fecha_nacimiento?: string;
   telefono?: string;
   correo: string;
   password?: string;
-  estado: number; // 1 = activo, 0 = inactivo
-  fecha_registro?: string;
-  tipo_documento?: string;
-  num_documento?: string;
-  fecha_nacimiento?: string;
+  id_barrio?: number;
   direccion?: string;
   barrio?: string;
-  localidad?: string;
-  ciudad?: string;
-  departamento?: string;
-  pais?: string;
-  codigo_postal?: string;
   foto?: string;
   biografia?: string;
-  foto_portada?: string;
-  sitio_web?: string;
-  redes_sociales?: string;
-  privacidad?: string;
-  mision?: string;
-  vision?: string;
+  estado: number; // 1 = activo, 0 = inactivo
+  fecha_registro?: string;
 }
 
 export const UsuarioModel = {
@@ -70,11 +59,13 @@ export const UsuarioModel = {
       const [result] = await db.query(
         `INSERT INTO usuarios (
           rol, nombre1, nombre2, apellido1, apellido2, telefono, correo, password, estado,
-          tipo_documento, num_documento, fecha_nacimiento, direccion, barrio, localidad, ciudad, departamento, pais, codigo_postal, foto
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          fecha_nacimiento, direccion, barrio, foto, biografia
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          data.rol, data.nombre1, data.nombre2 || null, data.apellido1, data.apellido2 || null, data.telefono || null, data.correo, data.password, estado,
-          data.tipo_documento || null, data.num_documento || null, data.fecha_nacimiento || null, data.direccion || null, data.barrio || null, data.localidad || null, data.ciudad || null, data.departamento || null, data.pais || null, data.codigo_postal || null, data.foto || null
+          data.rol, data.nombre1, data.nombre2 || null, data.apellido1, data.apellido2 || null,
+          data.telefono || null, data.correo, data.password, estado,
+          data.fecha_nacimiento || null, data.direccion || null, data.barrio || null,
+          data.foto || null, data.biografia || null
         ]
       );
       return (result as any).insertId;
@@ -93,17 +84,11 @@ export const UsuarioModel = {
         password: data.password,
         estado,
         fecha_registro: new Date().toISOString(),
-        tipo_documento: data.tipo_documento || '',
-        num_documento: data.num_documento || '',
         fecha_nacimiento: data.fecha_nacimiento || '',
         direccion: data.direccion || '',
-        barrio: data.barrio || '',
-        localidad: data.localidad || '',
-        ciudad: data.ciudad || '',
-        departamento: data.departamento || '',
-        pais: data.pais || '',
-        codigo_postal: data.codigo_postal || '',
-        foto: data.foto || ''
+        barrio: data.barrio || 'Kennedy Central',
+        foto: data.foto || '',
+        biografia: data.biografia || ''
       };
       users.push(newUser);
       db.saveFallbackData();
@@ -112,12 +97,18 @@ export const UsuarioModel = {
   },
 
   async update(id: number, data: Partial<Omit<UsuarioDB, 'id_usuario' | 'fecha_registro'>>): Promise<boolean> {
+    const allowedColumns = [
+      'rol', 'nombre1', 'nombre2', 'apellido1', 'apellido2', 'fecha_nacimiento',
+      'telefono', 'correo', 'password', 'id_barrio', 'direccion', 'barrio',
+      'foto', 'biografia', 'estado', 'id_rol'
+    ];
+
     if (db.isMySQLConnected()) {
       const fields: string[] = [];
       const values: any[] = [];
       
       Object.entries(data).forEach(([key, val]) => {
-        if (val !== undefined) {
+        if (val !== undefined && allowedColumns.includes(key)) {
           fields.push(`${key} = ?`);
           values.push(val);
         }

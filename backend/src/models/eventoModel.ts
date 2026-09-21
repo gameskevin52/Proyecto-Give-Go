@@ -81,8 +81,8 @@ export const EventoModel = {
       const [result] = await db.query(
         `INSERT INTO eventos (
           nombre, id_categoria, descripcion, direccion, fecha, cupo, vacantes_voluntarios, vacantes_beneficiarios, ayuda_ofrecida, estado, organizacion_id,
-          barrio, localidad, ciudad, departamento, pais, punto_referencia, nombre_lugar, latitud, longitud, imagen
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          barrio, punto_referencia, nombre_lugar, latitud, longitud, imagen
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.nombre,
           data.id_categoria,
@@ -95,15 +95,11 @@ export const EventoModel = {
           data.ayuda_ofrecida || null,
           estado,
           data.organizacion_id,
-          data.barrio || null,
-          data.localidad || null,
-          data.ciudad || 'Bogotá',
-          data.departamento || 'Bogotá D.C.',
-          data.pais || 'Colombia',
+          data.barrio || 'Kennedy Central',
           data.punto_referencia || null,
           data.nombre_lugar || null,
-          data.latitud !== undefined ? data.latitud : null,
-          data.longitud !== undefined ? data.longitud : null,
+          data.latitud !== undefined && data.latitud !== null ? data.latitud : null,
+          data.longitud !== undefined && data.longitud !== null ? data.longitud : null,
           data.imagen || null
         ]
       );
@@ -124,11 +120,11 @@ export const EventoModel = {
         ayuda_ofrecida: data.ayuda_ofrecida || '',
         estado,
         organizacion_id: data.organizacion_id,
-        barrio: data.barrio || '',
-        localidad: data.localidad || '',
-        ciudad: data.ciudad || 'Bogotá',
-        departamento: data.departamento || 'Bogotá D.C.',
-        pais: data.pais || 'Colombia',
+        barrio: data.barrio || 'Kennedy Central',
+        localidad: 'Kennedy',
+        ciudad: 'Bogotá',
+        departamento: 'Bogotá D.C.',
+        pais: 'Colombia',
         punto_referencia: data.punto_referencia || '',
         nombre_lugar: data.nombre_lugar || '',
         latitud: data.latitud !== undefined ? data.latitud : null,
@@ -142,12 +138,19 @@ export const EventoModel = {
   },
 
   async update(id: number, data: Partial<Omit<EventoDB, 'id_evento'>>): Promise<boolean> {
+    const allowedColumns = [
+      'nombre', 'id_categoria', 'descripcion', 'direccion', 'fecha', 'fecha_fin',
+      'cupo', 'vacantes_voluntarios', 'vacantes_beneficiarios', 'ayuda_ofrecida',
+      'estado', 'organizacion_id', 'id_barrio', 'barrio', 'punto_referencia',
+      'nombre_lugar', 'latitud', 'longitud', 'imagen'
+    ];
+
     if (db.isMySQLConnected()) {
       const fields: string[] = [];
       const values: any[] = [];
       
       Object.entries(data).forEach(([key, val]) => {
-        if (val !== undefined) {
+        if (val !== undefined && allowedColumns.includes(key)) {
           fields.push(`${key} = ?`);
           values.push(val);
         }

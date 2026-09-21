@@ -22,6 +22,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ navigation }) => {
     handleLogin,
     navigateToRegisterVolunteer,
     navigateToRegisterBeneficiary,
+    navigateToRegisterOrganization,
     navigateToForgotPassword,
   } = useLoginController(navigation);
 
@@ -61,6 +62,53 @@ export const LoginView: React.FC<LoginViewProps> = ({ navigation }) => {
             <Text style={loginStyles.forgotText}>¿Olvidaste tu contraseña?</Text>
           </TouchableOpacity>
 
+          {/* Cuentas de Acceso Rápido / Pruebas */}
+          <View style={{ marginVertical: 8 }}>
+            <Text style={{ fontSize: 11, color: '#64748B', fontWeight: '600', marginBottom: 6 }}>
+              Acceso Rápido de Prueba:
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  setCorreo('admin@giveandgo.com');
+                  setPassword('Admin123*');
+                }}
+                style={{
+                  flex: 1,
+                  paddingVertical: 6,
+                  paddingHorizontal: 8,
+                  backgroundColor: '#FEF2F2',
+                  borderWidth: 1,
+                  borderColor: '#FECACA',
+                  borderRadius: 6,
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 11, fontWeight: '700', color: '#DC2626' }}>👑 Admin</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  setCorreo('carlos@volunteer.com');
+                  setPassword('User123*');
+                }}
+                style={{
+                  flex: 1,
+                  paddingVertical: 6,
+                  paddingHorizontal: 8,
+                  backgroundColor: '#EFF6FF',
+                  borderWidth: 1,
+                  borderColor: '#BFDBFE',
+                  borderRadius: 6,
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 11, fontWeight: '700', color: '#2563EB' }}>🤝 Voluntario</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
           <AppButton
             title="Ingresar a la Plataforma"
             onPress={handleLogin}
@@ -74,18 +122,26 @@ export const LoginView: React.FC<LoginViewProps> = ({ navigation }) => {
             <View style={loginStyles.dividerLine} />
           </View>
 
-          <View style={loginStyles.registerRow}>
+          <View style={{ gap: 8, marginTop: 4 }}>
+            <View style={loginStyles.registerRow}>
+              <AppButton
+                title="Ser Voluntario"
+                variant="outline"
+                onPress={navigateToRegisterVolunteer}
+                style={loginStyles.registerButton}
+              />
+              <AppButton
+                title="Soy Beneficiario"
+                variant="secondary"
+                onPress={navigateToRegisterBeneficiary}
+                style={loginStyles.registerButton}
+              />
+            </View>
             <AppButton
-              title="Ser Voluntario"
+              title="Registrar Organización / Fundación"
               variant="outline"
-              onPress={navigateToRegisterVolunteer}
-              style={loginStyles.registerButton}
-            />
-            <AppButton
-              title="Soy Beneficiario"
-              variant="secondary"
-              onPress={navigateToRegisterBeneficiary}
-              style={loginStyles.registerButton}
+              onPress={navigateToRegisterOrganization}
+              style={{ width: '100%', borderColor: '#CBD5E1' }}
             />
           </View>
         </View>

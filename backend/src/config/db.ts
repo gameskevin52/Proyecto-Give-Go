@@ -36,7 +36,7 @@ const seedFallbackData = () => {
         apellido1: 'General',
         correo: 'admin@giveandgo.com',
         // Hash de 'Admin123*'
-        password: '$2b$10$tZ9C.mJjXNco/e.e2jV9SeAAL68L16S78A9oGv2o62H9R1pW61qE.',
+        password: '$2b$10$xVK7r4miivUWhUwOiux05eY3uZzog8srNjpT4LZm5sxGf6NS.P7R6',
         telefono: '+57 300 123 4567',
         estado: 1,
         fecha_registro: new Date().toISOString()
@@ -557,32 +557,21 @@ export const initDB = async () => {
       await connection.query(`
         CREATE TABLE IF NOT EXISTS usuarios (
           id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+          id_rol INT DEFAULT NULL,
           rol ENUM('Admin', 'Voluntario', 'Beneficiario', 'Organizacion') NOT NULL,
           nombre1 VARCHAR(50) NOT NULL,
           nombre2 VARCHAR(50) DEFAULT NULL,
           apellido1 VARCHAR(50) NOT NULL,
           apellido2 VARCHAR(50) DEFAULT NULL,
-          tipo_documento VARCHAR(20) DEFAULT NULL,
-          num_documento VARCHAR(50) DEFAULT NULL,
           fecha_nacimiento DATE DEFAULT NULL,
           telefono VARCHAR(20) DEFAULT NULL,
           correo VARCHAR(100) NOT NULL UNIQUE,
           password VARCHAR(255) NOT NULL,
+          id_barrio INT DEFAULT NULL,
           direccion VARCHAR(255) DEFAULT NULL,
-          barrio VARCHAR(100) DEFAULT NULL,
-          localidad VARCHAR(100) DEFAULT NULL,
-          ciudad VARCHAR(100) DEFAULT 'Bogotá',
-          departamento VARCHAR(100) DEFAULT 'Bogotá D.C.',
-          pais VARCHAR(100) DEFAULT 'Colombia',
-          codigo_postal VARCHAR(20) DEFAULT NULL,
+          barrio VARCHAR(100) DEFAULT 'Kennedy Central',
           foto TEXT DEFAULT NULL,
-          foto_portada TEXT DEFAULT NULL,
           biografia TEXT DEFAULT NULL,
-          sitio_web VARCHAR(255) DEFAULT NULL,
-          redes_sociales TEXT DEFAULT NULL,
-          privacidad TEXT DEFAULT NULL,
-          mision TEXT DEFAULT NULL,
-          vision TEXT DEFAULT NULL,
           estado TINYINT DEFAULT 1,
           fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -591,26 +580,25 @@ export const initDB = async () => {
       await connection.query(`
         CREATE TABLE IF NOT EXISTS organizaciones (
           id_organizacion INT AUTO_INCREMENT PRIMARY KEY,
+          id_usuario_representante INT DEFAULT NULL,
           nombre VARCHAR(150) NOT NULL,
+          nit VARCHAR(50) DEFAULT NULL,
+          representante_legal VARCHAR(150) DEFAULT NULL,
+          id_categoria INT DEFAULT NULL,
+          categoria VARCHAR(100) DEFAULT NULL,
+          id_barrio INT DEFAULT NULL,
           direccion VARCHAR(255) DEFAULT NULL,
+          barrio VARCHAR(100) DEFAULT 'Kennedy Central',
           telefono VARCHAR(20) DEFAULT NULL,
           correo VARCHAR(100) NOT NULL UNIQUE,
           password VARCHAR(255) NOT NULL,
           descripcion TEXT DEFAULT NULL,
-          nit VARCHAR(50) DEFAULT NULL,
-          representante_legal VARCHAR(150) DEFAULT NULL,
-          barrio VARCHAR(100) DEFAULT NULL,
-          localidad VARCHAR(100) DEFAULT NULL,
-          ciudad VARCHAR(100) DEFAULT 'Bogotá',
-          departamento VARCHAR(100) DEFAULT 'Bogotá D.C.',
-          pais VARCHAR(100) DEFAULT 'Colombia',
-          categoria VARCHAR(100) DEFAULT NULL,
-          logo TEXT DEFAULT NULL,
-          foto_portada TEXT DEFAULT NULL,
           mision TEXT DEFAULT NULL,
           vision TEXT DEFAULT NULL,
           sitio_web VARCHAR(255) DEFAULT NULL,
           redes_sociales TEXT DEFAULT NULL,
+          logo TEXT DEFAULT NULL,
+          foto_portada TEXT DEFAULT NULL,
           latitud DECIMAL(10,8) DEFAULT NULL,
           longitud DECIMAL(11,8) DEFAULT NULL,
           verificada TINYINT DEFAULT 0,
@@ -625,25 +613,23 @@ export const initDB = async () => {
           id_evento INT AUTO_INCREMENT PRIMARY KEY,
           nombre VARCHAR(150) NOT NULL,
           id_categoria INT NOT NULL,
+          organizacion_id INT NOT NULL,
           descripcion TEXT DEFAULT NULL,
+          id_barrio INT DEFAULT NULL,
           direccion VARCHAR(255) DEFAULT NULL,
+          barrio VARCHAR(100) DEFAULT 'Kennedy Central',
+          punto_referencia VARCHAR(255) DEFAULT NULL,
+          nombre_lugar VARCHAR(150) DEFAULT NULL,
+          latitud DECIMAL(10,8) DEFAULT NULL,
+          longitud DECIMAL(11,8) DEFAULT NULL,
           fecha DATETIME NOT NULL,
           cupo INT DEFAULT 0,
           vacantes_voluntarios INT DEFAULT 0,
           vacantes_beneficiarios INT DEFAULT 0,
           ayuda_ofrecida TEXT DEFAULT NULL,
+          imagen TEXT DEFAULT NULL,
           estado TINYINT DEFAULT 1,
-          organizacion_id INT NOT NULL,
-          barrio VARCHAR(100) DEFAULT NULL,
-          localidad VARCHAR(100) DEFAULT NULL,
-          ciudad VARCHAR(100) DEFAULT 'Bogotá',
-          departamento VARCHAR(100) DEFAULT 'Bogotá D.C.',
-          pais VARCHAR(100) DEFAULT 'Colombia',
-          punto_referencia VARCHAR(255) DEFAULT NULL,
-          nombre_lugar VARCHAR(150) DEFAULT NULL,
-          latitud DECIMAL(10,8) DEFAULT NULL,
-          longitud DECIMAL(11,8) DEFAULT NULL,
-          imagen TEXT DEFAULT NULL
+          fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       `);
 
@@ -707,19 +693,15 @@ export const initDB = async () => {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       `);
 
-      // Asegurar columnas en usuarios
+      // Asegurar columnas normalizadas en usuarios (sin campos geográficos redundantes ni documentos)
       const userColumns = [
-        "tipo_documento VARCHAR(50) NULL",
-        "num_documento VARCHAR(50) NULL",
-        "fecha_nacimiento VARCHAR(50) NULL",
+        "id_barrio INT NULL",
         "direccion VARCHAR(255) NULL",
-        "barrio VARCHAR(100) NULL",
-        "localidad VARCHAR(100) NULL",
-        "ciudad VARCHAR(100) NULL",
-        "departamento VARCHAR(100) NULL",
-        "pais VARCHAR(100) NULL",
-        "codigo_postal VARCHAR(50) NULL",
-        "foto TEXT NULL"
+        "barrio VARCHAR(100) NULL DEFAULT 'Kennedy Central'",
+        "fecha_nacimiento VARCHAR(50) NULL",
+        "telefono VARCHAR(20) NULL",
+        "foto TEXT NULL",
+        "biografia TEXT NULL"
       ];
       for (const col of userColumns) {
         try {
@@ -730,19 +712,24 @@ export const initDB = async () => {
         }
       }
 
-      // Asegurar columnas en organizaciones
+      // Asegurar columnas normalizadas en organizaciones (Kennedy exclusivo)
       const orgColumns = [
         "nit VARCHAR(50) NULL",
         "representante_legal VARCHAR(150) NULL",
-        "barrio VARCHAR(100) NULL",
-        "localidad VARCHAR(100) NULL",
-        "ciudad VARCHAR(100) NULL",
-        "departamento VARCHAR(100) NULL",
-        "pais VARCHAR(100) NULL",
+        "id_barrio INT NULL",
+        "barrio VARCHAR(100) NULL DEFAULT 'Kennedy Central'",
+        "direccion VARCHAR(255) NULL",
         "categoria VARCHAR(100) NULL",
+        "mision TEXT NULL",
+        "vision TEXT NULL",
+        "sitio_web VARCHAR(255) NULL",
+        "redes_sociales TEXT NULL",
         "logo TEXT NULL",
-        "latitud DOUBLE NULL",
-        "longitud DOUBLE NULL"
+        "foto_portada TEXT NULL",
+        "latitud DECIMAL(10,8) NULL",
+        "longitud DECIMAL(11,8) NULL",
+        "verificada TINYINT DEFAULT 0",
+        "estado_verificacion VARCHAR(50) DEFAULT 'no_solicitado'"
       ];
       for (const col of orgColumns) {
         try {
@@ -753,17 +740,14 @@ export const initDB = async () => {
         }
       }
 
-      // Asegurar columnas en eventos
+      // Asegurar columnas normalizadas en eventos (Kennedy exclusivo)
       const eventColumns = [
-        "barrio VARCHAR(100) NULL",
-        "localidad VARCHAR(100) NULL",
-        "ciudad VARCHAR(100) NULL DEFAULT 'Bogotá'",
-        "departamento VARCHAR(100) NULL DEFAULT 'Bogotá D.C.'",
-        "pais VARCHAR(100) NULL DEFAULT 'Colombia'",
+        "id_barrio INT NULL",
+        "barrio VARCHAR(100) NULL DEFAULT 'Kennedy Central'",
         "punto_referencia VARCHAR(255) NULL",
         "nombre_lugar VARCHAR(255) NULL",
-        "latitud DOUBLE NULL",
-        "longitud DOUBLE NULL",
+        "latitud DECIMAL(10,8) NULL",
+        "longitud DECIMAL(11,8) NULL",
         "imagen TEXT NULL",
         "vacantes_voluntarios INT DEFAULT 10",
         "vacantes_beneficiarios INT DEFAULT 25",
