@@ -4,7 +4,6 @@ import { AuthStackParamList } from './types';
 import { LoginView } from '../features/auth/views/LoginView';
 import { RegisterVolunteerView } from '../features/auth/views/RegisterVolunteerView';
 import { RegisterBeneficiaryView } from '../features/auth/views/RegisterBeneficiaryView';
-import { RegisterOrganizationView } from '../features/auth/views/RegisterOrganizationView';
 import { ForgotPasswordView } from '../features/auth/views/ForgotPasswordView';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -20,7 +19,6 @@ export const AuthNavigator = () => {
       <Stack.Screen name="Login" component={LoginView} />
       <Stack.Screen name="RegisterVolunteer" component={RegisterVolunteerView} />
       <Stack.Screen name="RegisterBeneficiary" component={RegisterBeneficiaryView} />
-      <Stack.Screen name="RegisterOrganization" component={RegisterOrganizationView} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordView} />
     </Stack.Navigator>
   );

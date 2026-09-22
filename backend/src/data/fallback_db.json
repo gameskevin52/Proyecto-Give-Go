@@ -441,26 +441,6 @@
       "organizacion_id": 2,
       "estado": 1,
       "observaciones": "Aporte en especie para el asilo de Castilla."
-    },
-    {
-      "id_donacion": 3,
-      "categoria": "Alimentos",
-      "tipo": "Monetaria",
-      "usuario_id": 101,
-      "organizacion_id": 2,
-      "estado": 1,
-      "observaciones": "",
-      "fecha": "2026-09-03T05:56:17.246Z"
-    },
-    {
-      "id_donacion": 4,
-      "categoria": "Alimentos",
-      "tipo": "Objeto",
-      "usuario_id": 101,
-      "organizacion_id": 2,
-      "estado": 1,
-      "observaciones": "",
-      "fecha": "2026-09-03T05:56:23.966Z"
     }
   ],
   "donaciones_monetarias": [
@@ -470,13 +450,6 @@
       "cuenta": "**** **** **** 4321",
       "valor": 150000,
       "donacion_id": 1
-    },
-    {
-      "id": 2,
-      "metodo": "nequi",
-      "cuenta": "3001234567",
-      "valor": 50000,
-      "donacion_id": 3
     }
   ],
   "donaciones_objetos": [
@@ -486,13 +459,6 @@
       "descripcion": "10 kg de arroz, 5 kg de legumbres y aceite vegetal",
       "cantidad": 15,
       "donacion_id": 2
-    },
-    {
-      "id": 2,
-      "categoria": "Alimentos no perecederos",
-      "descripcion": "10 Cajas de arroz y granos",
-      "cantidad": 10,
-      "donacion_id": 4
     }
   ],
   "solicitudes": [
@@ -593,98 +559,7 @@
       "id_usuario": 1001,
       "nombre_usuario": "Fundacion Bogotanadas Organización",
       "rol_usuario": "Organizacion"
-    },
-    {
-      "id_audit": 10,
-      "fecha": "2026-09-03T05:55:25.499Z",
-      "accion": "Inicio de sesión exitoso.",
-      "id_usuario": 1,
-      "nombre_usuario": "Administrador General",
-      "rol_usuario": "Admin"
-    },
-    {
-      "id_audit": 11,
-      "fecha": "2026-09-03T05:56:17.218Z",
-      "accion": "Inicio de sesión exitoso.",
-      "id_usuario": 101,
-      "nombre_usuario": "Fundación Manos por Kennedy Organización",
-      "rol_usuario": "Organizacion"
-    },
-    {
-      "id_audit": 12,
-      "fecha": "2026-09-03T05:56:17.247Z",
-      "accion": "Realizó una donación monetaria de $50000.",
-      "id_usuario": 101,
-      "nombre_usuario": "Fundación Manos por Kennedy Organización",
-      "rol_usuario": "Organizacion"
-    },
-    {
-      "id_audit": 13,
-      "fecha": "2026-09-03T05:56:23.943Z",
-      "accion": "Inicio de sesión exitoso.",
-      "id_usuario": 101,
-      "nombre_usuario": "Fundación Manos por Kennedy Organización",
-      "rol_usuario": "Organizacion"
-    },
-    {
-      "id_audit": 14,
-      "fecha": "2026-09-03T05:56:23.967Z",
-      "accion": "Realizó una donación en especie de 10 x Alimentos no perecederos.",
-      "id_usuario": 101,
-      "nombre_usuario": "Fundación Manos por Kennedy Organización",
-      "rol_usuario": "Organizacion"
-    },
-    {
-      "id_audit": 15,
-      "fecha": "2026-09-21T05:07:04.937Z",
-      "accion": "Inicio de sesión exitoso.",
-      "id_usuario": 2,
-      "nombre_usuario": "Carlos Mendoza",
-      "rol_usuario": "Voluntario"
-    },
-    {
-      "id_audit": 16,
-      "fecha": "2026-09-21T05:07:10.215Z",
-      "accion": "Inicio de sesión exitoso.",
-      "id_usuario": 1,
-      "nombre_usuario": "Administrador General",
-      "rol_usuario": "Admin"
-    },
-    {
-      "id_audit": 17,
-      "fecha": "2026-09-21T05:08:51.621Z",
-      "accion": "Inicio de sesión exitoso.",
-      "id_usuario": 1,
-      "nombre_usuario": "Administrador General",
-      "rol_usuario": "Admin"
     }
   ],
-  "solicitudes_verificacion": [
-    {
-      "id_solicitud": 1,
-      "organizacion_id": 1,
-      "nombre_organizacion": "Fundación Manos por Kennedy",
-      "correo_organizacion": "contacto@manosporkennedy.org",
-      "nit": "901.452.889-1",
-      "mensaje": "Adjuntamos RUT actualizado y Certificado de Cámara de Comercio vigente para habilitación formal en Kennedy.",
-      "documentos": "RUT_2026.pdf, CamaraComercio_Bogota.pdf",
-      "estado": "pendiente",
-      "respuesta_admin": "",
-      "fecha_solicitud": "2026-09-18T14:30:00.000Z",
-      "fecha_respuesta": null
-    },
-    {
-      "id_solicitud": 2,
-      "organizacion_id": 2,
-      "nombre_organizacion": "Asociación Semillas de Paz",
-      "correo_organizacion": "info@semillasdepaz.org",
-      "nit": "900.871.234-5",
-      "mensaje": "Solicitud para reconocimiento institucional y recepción de donaciones de insumos educativos.",
-      "documentos": "Estatutos_ONG.pdf, CertificadoRepresentacion.pdf",
-      "estado": "aprobada",
-      "respuesta_admin": "Documentación revisada y validada exitosamente según protocolo de la Alcaldía de Bogotá.",
-      "fecha_solicitud": "2026-09-10T10:15:00.000Z",
-      "fecha_respuesta": "2026-09-12T16:00:00.000Z"
-    }
-  ]
+  "solicitudes_verificacion": []
 }

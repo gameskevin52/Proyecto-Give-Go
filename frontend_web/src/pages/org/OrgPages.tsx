@@ -919,37 +919,59 @@ export const OrgEvents: React.FC = () => {
 
             {/* Address Form Fields */}
             <Input
-              label="Dirección Completa en Kennedy *"
+              label="Dirección Completa *"
               error={errors.direccion?.message}
               {...register('direccion', { required: 'La dirección completa es obligatoria' })}
-              placeholder="Ej. Calle 42 Sur # 78K - 10"
+              placeholder="Ej. Calle 26 # 50-00"
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Barrio en Kennedy *"
+                label="Barrio *"
                 error={errors.barrio?.message}
                 {...register('barrio', { required: 'El barrio es obligatorio' })}
-                placeholder="Ej. Kennedy Central, Castilla, Timiza, Patio Bonito"
+                placeholder="Ej. Ciudad Salitre"
               />
 
-              <div className="flex flex-col justify-center px-4 py-2 bg-neutral-100 rounded-xl border border-neutral-200 text-xs">
-                <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400">Zona de Cobertura</span>
-                <span className="font-bold text-neutral-800">Localidad de Kennedy — Bogotá D.C.</span>
-              </div>
+              <Input
+                label="Localidad *"
+                error={errors.localidad?.message}
+                {...register('localidad', { required: 'La localidad es obligatoria' })}
+                placeholder="Ej. Fontibón"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Input
+                label="Ciudad *"
+                error={errors.ciudad?.message}
+                {...register('ciudad', { required: 'La ciudad es obligatoria' })}
+              />
+
+              <Input
+                label="Departamento *"
+                error={errors.departamento?.message}
+                {...register('departamento', { required: 'El departamento es obligatorio' })}
+              />
+
+              <Input
+                label="País *"
+                error={errors.pais?.message}
+                {...register('pais', { required: 'El país es obligatorio' })}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Nombre del Lugar (Opcional)"
                 {...register('nombre_lugar')}
-                placeholder="Ej. Salón Comunal / Parque Timiza"
+                placeholder="Ej. Parque Simón Bolívar - Zona 3"
               />
 
               <Input
                 label="Punto de Referencia (Opcional)"
                 {...register('punto_referencia')}
-                placeholder="Ej. Frente a la estación o CAI"
+                placeholder="Ej. Al lado de la concha acústica"
               />
             </div>
 
@@ -1016,17 +1038,9 @@ export const OrgCampaigns: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-neutral-900 uppercase tracking-wider">Donaciones Recibidas</h1>
-          <p className="text-xs text-neutral-500 mt-1">Consulta los registros de apoyo y los fondos que los voluntarios han destinado a tu sede.</p>
-        </div>
-        <Link to="/donations">
-          <Button variant="primary" className="flex items-center gap-2 shadow-xs">
-            <Heart className="w-4 h-4 fill-white" />
-            <span>Hacer una Donación</span>
-          </Button>
-        </Link>
+      <div>
+        <h1 className="text-2xl font-black text-neutral-900 uppercase tracking-wider">Donaciones Recibidas</h1>
+        <p className="text-xs text-neutral-500 mt-1">Consulta los registros de apoyo y los fondos que los voluntarios han destinado a tu sede.</p>
       </div>
 
       {donations.length === 0 ? (

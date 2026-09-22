@@ -3,16 +3,6 @@ import { OrganizacionModel, OrganizacionDB } from '../models/organizacionModel';
 import { UsuarioModel } from '../models/usuarioModel';
 import { hashPassword } from '../utils/auth';
 
-const parseSafeJSON = (val: any, fallback: any = {}) => {
-  if (!val) return fallback;
-  if (typeof val === 'object') return val;
-  try {
-    return JSON.parse(val);
-  } catch {
-    return fallback;
-  }
-};
-
 const mapOrgToFrontend = (org: OrganizacionDB) => {
   return {
     id: `org_${org.id_organizacion}`,
@@ -23,18 +13,13 @@ const mapOrgToFrontend = (org: OrganizacionDB) => {
     descripcion: org.descripcion || '',
     nit: org.nit || '',
     representante_legal: org.representante_legal || '',
-    barrio: org.barrio || 'Kennedy Central',
-    localidad: 'Kennedy',
-    ciudad: 'Bogotá',
-    departamento: 'Bogotá D.C.',
-    pais: 'Colombia',
+    barrio: org.barrio || '',
+    localidad: org.localidad || '',
+    ciudad: org.ciudad || '',
+    departamento: org.departamento || '',
+    pais: org.pais || '',
     categoria: org.categoria || '',
     logo: org.logo || '',
-    fotoPortada: org.foto_portada || '',
-    sitioWeb: org.sitio_web || '',
-    redesSociales: parseSafeJSON(org.redes_sociales, {}),
-    mision: org.mision || '',
-    vision: org.vision || '',
     latitud: org.latitud !== undefined ? org.latitud : null,
     longitud: org.longitud !== undefined ? org.longitud : null,
     verificada: Boolean(org.verificada),
@@ -92,8 +77,7 @@ export const OrganizationController = {
     try {
       const { 
         nombre, direccion, correo, password, telefono, descripcion,
-        latitud, longitud, barrio, categoria, nit, representante_legal, logo, foto_portada, fotoPortada,
-        sitio_web, sitioWeb, redes_sociales, redesSociales, mision, vision
+        latitud, longitud, barrio, localidad, ciudad, departamento, pais, categoria 
       } = req.body;
       
       const existingUser = await UsuarioModel.getByEmail(correo);
@@ -118,16 +102,12 @@ export const OrganizationController = {
         estado: 1,
         latitud: latitud !== undefined ? Number(latitud) : null,
         longitud: longitud !== undefined ? Number(longitud) : null,
-        barrio: barrio || 'Kennedy Central',
-        categoria: categoria || '',
-        nit: nit || '',
-        representante_legal: representante_legal || '',
-        logo: logo || '',
-        foto_portada: foto_portada || fotoPortada || '',
-        sitio_web: sitio_web || sitioWeb || '',
-        redes_sociales: typeof (redes_sociales || redesSociales) === 'object' ? JSON.stringify(redes_sociales || redesSociales) : (redes_sociales || redesSociales || ''),
-        mision: mision || '',
-        vision: vision || ''
+        barrio: barrio || '',
+        localidad: localidad || '',
+        ciudad: ciudad || 'Bogotá',
+        departamento: departamento || 'Bogotá D.C.',
+        pais: pais || 'Colombia',
+        categoria: categoria || ''
       });
 
       // 2. Crear usuario asociado en `usuarios` para el login
@@ -138,8 +118,6 @@ export const OrganizationController = {
         telefono: telefono || '+57 300 000 0000',
         correo,
         password: hashedPassword,
-        barrio: barrio || 'Kennedy Central',
-        direccion: direccion || '',
         estado: 1
       });
 
@@ -166,8 +144,7 @@ export const OrganizationController = {
       const id = parseInt(rawId.replace('org_', ''), 10);
       const {
         nombre, direccion, correo, password, telefono, descripcion,
-        nit, representante_legal, barrio, categoria, logo, foto_portada, fotoPortada,
-        sitio_web, sitioWeb, redes_sociales, redesSociales, mision, vision,
+        nit, representante_legal, barrio, localidad, ciudad, departamento, pais, categoria, logo,
         latitud, longitud
       } = req.body;
 
@@ -190,16 +167,12 @@ export const OrganizationController = {
       if (nit !== undefined) updateData.nit = nit;
       if (representante_legal !== undefined) updateData.representante_legal = representante_legal;
       if (barrio !== undefined) updateData.barrio = barrio;
+      if (localidad !== undefined) updateData.localidad = localidad;
+      if (ciudad !== undefined) updateData.ciudad = ciudad;
+      if (departamento !== undefined) updateData.departamento = departamento;
+      if (pais !== undefined) updateData.pais = pais;
       if (categoria !== undefined) updateData.categoria = categoria;
       if (logo !== undefined) updateData.logo = logo;
-      if (foto_portada !== undefined || fotoPortada !== undefined) updateData.foto_portada = foto_portada || fotoPortada;
-      if (sitio_web !== undefined || sitioWeb !== undefined) updateData.sitio_web = sitio_web || sitioWeb;
-      if (redes_sociales !== undefined || redesSociales !== undefined) {
-        const rawRedes = redes_sociales || redesSociales;
-        updateData.redes_sociales = typeof rawRedes === 'object' ? JSON.stringify(rawRedes) : rawRedes;
-      }
-      if (mision !== undefined) updateData.mision = mision;
-      if (vision !== undefined) updateData.vision = vision;
       if (latitud !== undefined) updateData.latitud = latitud !== null ? Number(latitud) : null;
       if (longitud !== undefined) updateData.longitud = longitud !== null ? Number(longitud) : null;
       

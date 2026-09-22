@@ -5,7 +5,7 @@ import { DonationService, OrganizationService, CategoryService, DonacionCompleta
 import { Organizacion, Categoria } from '../types';
 import { Button, Input, Select, Card, Alert, ConfirmDialog, Textarea, EmptyState } from '../components/UI';
 import { Heart, CreditCard, Box, Download, ArrowRight, ShieldCheck, CheckCircle2, History, Filter } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { generateDonationPDF, DonationDetailsModal } from '../components/DonationDetailsModal';
 import { OrgDonationCard } from '../components/OrgDonationCard';
 
@@ -25,9 +25,6 @@ interface DonationFormData {
 
 export const Donations: React.FC = () => {
   const { user } = useAuth();
-  const [searchParams] = useSearchParams();
-  const urlOrgId = searchParams.get('orgId');
-
   const [organizations, setOrganizations] = useState<Organizacion[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [donations, setDonations] = useState<DonacionCompleta[]>([]);
@@ -37,7 +34,6 @@ export const Donations: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [latestDonation, setLatestDonation] = useState<DonacionCompleta | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [tempFormData, setTempFormData] = useState<DonationFormData | null>(null);
@@ -84,31 +80,15 @@ export const Donations: React.FC = () => {
     loadResourcesAndDonations();
   }, []);
 
-  // Pre-select organization destination
+  // Pre-select organization destination if user is logged in as an organization
   useEffect(() => {
-    if (organizations.length === 0) return;
-
-    if (urlOrgId) {
-      const found = organizations.find(o => o.id === urlOrgId || o.id === `org_${urlOrgId}`);
-      if (found) {
-        setValue('organizacionId', found.id);
-        setSelectedOrgId(found.id);
-        return;
+    if (user?.rol === 'organizacion' && organizations.length > 0) {
+      const matchedOrg = organizations.find(o => o.id === user.id);
+      if (matchedOrg) {
+        setValue('organizacionId', matchedOrg.id);
       }
     }
-
-    // Default preselection if none is currently selected:
-    // If the logged in user is an organization, select a different organization so they can collaborate/support
-    if (!watchedOrgId) {
-      const defaultOrg = user?.rol === 'organizacion'
-        ? (organizations.find(o => o.id !== user.id) || organizations[0])
-        : organizations[0];
-      if (defaultOrg) {
-        setValue('organizacionId', defaultOrg.id);
-        setSelectedOrgId(defaultOrg.id);
-      }
-    }
-  }, [organizations, urlOrgId, user?.id, user?.rol, watchedOrgId, setValue]);
+  }, [user, organizations, setValue]);
 
   // Beneficiaries are restricted from donating
   if (user?.rol === 'beneficiario') {
@@ -135,7 +115,6 @@ export const Donations: React.FC = () => {
   }
 
   const handlePreSubmit = (data: DonationFormData) => {
-    setErrorMessage(null);
     const selectedOrg = organizations.find(o => o.id === data.organizacionId);
     const resolvedCategory = selectedOrg?.categoria || 'General';
     setTempFormData({
@@ -149,14 +128,9 @@ export const Donations: React.FC = () => {
     if (!tempFormData) return;
     setIsLoading(true);
     setIsSuccess(false);
-    setErrorMessage(null);
 
     try {
-      // Resolve proper donor ID whether user is regular donor, admin, or organization
-      const donorId = (user as any)?.usuarioId || (user as any)?.id_usuario 
-        ? String((user as any)?.id_usuario || (user as any)?.usuarioId) 
-        : user?.id || 'anonimo';
-
+      const donorId = user ? user.id : 'anonimo';
       let resultDonation: DonacionCompleta;
 
       if (tempFormData.tipo === 'monetaria') {
@@ -196,9 +170,8 @@ export const Donations: React.FC = () => {
       // Refresh the local public donations list
       const updatedDons = await DonationService.getAll();
       setDonations(updatedDons);
-    } catch (err: any) {
-      console.error('Error al registrar donación:', err);
-      setErrorMessage(err.message || 'Error al procesar la donación. Por favor verifique los datos e intente de nuevo.');
+    } catch (err) {
+      console.error(err);
     } finally {
       setIsLoading(false);
       setIsConfirmOpen(false);
@@ -334,14 +307,6 @@ export const Donations: React.FC = () => {
             )}
 
             <form onSubmit={handleSubmit(handlePreSubmit)} className="space-y-5">
-              {errorMessage && (
-                <Alert
-                  type="error"
-                  message={errorMessage}
-                  className="mb-4"
-                />
-              )}
-
               <div className="space-y-4">
                 {/* Destino */}
                 <Select

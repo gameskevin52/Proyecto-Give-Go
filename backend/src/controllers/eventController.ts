@@ -32,11 +32,11 @@ const mapEventToFrontend = (evt: any) => {
     estado: estadoStr,
     organizacionId: `org_${evt.organizacion_id}`,
     organizacionNombre: evt.organizacion_nombre || evt.organizacionNombre || '',
-    barrio: evt.barrio || 'Kennedy Central',
-    localidad: 'Kennedy',
-    ciudad: 'Bogotá',
-    departamento: 'Bogotá D.C.',
-    pais: 'Colombia',
+    barrio: evt.barrio || '',
+    localidad: evt.localidad || '',
+    ciudad: evt.ciudad || 'Bogotá',
+    departamento: evt.departamento || 'Bogotá D.C.',
+    pais: evt.pais || 'Colombia',
     punto_referencia: evt.punto_referencia || '',
     nombre_lugar: evt.nombre_lugar || '',
     latitud: evt.latitud !== null && evt.latitud !== undefined ? parseFloat(evt.latitud) : null,
@@ -161,7 +161,11 @@ export const EventController = {
         ayuda_ofrecida: ayudaOfrecida || '',
         estado: estadoInt,
         organizacion_id: orgId,
-        barrio: barrio || 'Kennedy Central',
+        barrio: barrio || '',
+        localidad: localidad || 'Bogotá',
+        ciudad: ciudad || 'Bogotá',
+        departamento: departamento || 'Bogotá D.C.',
+        pais: pais || 'Colombia',
         punto_referencia: punto_referencia || '',
         nombre_lugar: nombre_lugar || '',
         latitud: latitud !== undefined && latitud !== null ? parseFloat(String(latitud)) : undefined,
@@ -209,6 +213,10 @@ export const EventController = {
       if (vacantesBeneficiarios !== undefined) updateData.vacantes_beneficiarios = parseInt(String(vacantesBeneficiarios), 10);
       if (ayudaOfrecida !== undefined) updateData.ayuda_ofrecida = ayudaOfrecida;
       if (barrio !== undefined) updateData.barrio = barrio;
+      if (localidad !== undefined) updateData.localidad = localidad;
+      if (ciudad !== undefined) updateData.ciudad = ciudad;
+      if (departamento !== undefined) updateData.departamento = departamento;
+      if (pais !== undefined) updateData.pais = pais;
       if (punto_referencia !== undefined) updateData.punto_referencia = punto_referencia;
       if (nombre_lugar !== undefined) updateData.nombre_lugar = nombre_lugar;
       if (latitud !== undefined) updateData.latitud = latitud !== null ? parseFloat(String(latitud)) : null;

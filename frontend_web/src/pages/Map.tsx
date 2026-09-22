@@ -3,9 +3,8 @@ import L from 'leaflet';
 import { OrganizationService, EventService, CategoryService } from '../services/db';
 import { Organizacion, Evento, Categoria } from '../types';
 import { Card, Badge, Button, formatDate, Select, SearchBar } from '../components/UI';
-import { MapPin, Building2, Phone, Mail, Navigation, Heart, Calendar, Eye, Layers, Filter, RotateCcw } from 'lucide-react';
+import { MapPin, Building2, Phone, Mail, Navigation, Heart, Calendar, Eye, Layers, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createAppTileLayer, createBaseTileLayers, createEventMarkerIcon, createOrgMarkerIcon, createUserLocationMarkerIcon } from '../utils/mapConfig';
 
 // Haversine formula to calculate distance between two coordinates in km
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -102,10 +101,10 @@ export const Map: React.FC = () => {
     const map = L.map(mapContainerRef.current).setView([centerLat, centerLng], 13);
     mapRef.current = map;
 
-    // Base Tile Layers (100% free, no API keys, powered by OpenStreetMap Humanitarian & Esri)
-    const { defaultLayer, baseMaps } = createBaseTileLayers();
-    defaultLayer.addTo(map);
-    L.control.layers(baseMaps, undefined, { position: 'topright' }).addTo(map);
+    // Tile Layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
 
     // Layer Group for dynamic marker updates
     const group = L.layerGroup().addTo(map);
@@ -141,81 +140,98 @@ export const Map: React.FC = () => {
       };
     };
 
-    const refLat = userLocation ? userLocation.lat : centerLat;
-    const refLng = userLocation ? userLocation.lng : centerLng;
-
-    // 0. Add GPS Device Current Location Marker (Verde)
+    // 0. Add User Current Location Marker
     if (userLocation) {
-      const userIcon = createUserLocationMarkerIcon();
-      const userMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon, zIndexOffset: 1000 });
+      const userIcon = L.divIcon({
+        className: 'custom-user-location-marker',
+        html: `<div class="relative flex items-center justify-center">
+                 <div class="absolute w-8 h-8 rounded-full bg-indigo-500 animate-ping opacity-35"></div>
+                 <div class="absolute w-5 h-5 rounded-full bg-indigo-600 border-2 border-white shadow-lg flex items-center justify-center text-white">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                 </div>
+               </div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+
+      const userMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon });
       userMarker.bindPopup(`
         <div class="text-neutral-900 font-sans p-1.5 text-center">
-          <span class="text-[9px] font-extrabold uppercase tracking-widest text-emerald-600">Dispositivo Actual</span>
-          <h4 class="font-bold text-xs leading-tight m-0 text-neutral-950">Tu Ubicación GPS</h4>
-          <p class="text-[9px] text-neutral-500 m-0">Lat: ${userLocation.lat.toFixed(4)}, Lng: ${userLocation.lng.toFixed(4)}</p>
+          <span class="text-[9px] font-extrabold uppercase tracking-widest text-indigo-600">Tu Ubicación</span>
+          <h4 class="font-bold text-xs leading-tight m-0 text-neutral-950">Estás aquí</h4>
+          <p class="text-[9px] text-neutral-500 m-0">Descubriendo causas cercanas</p>
         </div>
       `);
       userMarker.addTo(markersGroupRef.current);
       bounds.push([userLocation.lat, userLocation.lng]);
     }
 
-    // 1. Add Organizations (Azul) - Only if filterType is all or org
+    // 1. Add Organizations
     if (filterType === 'all' || filterType === 'org') {
-      // If user selected a specific event category and filter is 'all', hide orgs so only matching events show
-      const shouldSkipOrgsForCategory = filterType === 'all' && filterCat !== 'todos';
+      organizations.forEach((org, idx) => {
+        // Matches search term
+        if (searchTerm && !org.nombre.toLowerCase().includes(searchTerm.toLowerCase()) && !org.direccion.toLowerCase().includes(searchTerm.toLowerCase())) {
+          return;
+        }
 
-      if (!shouldSkipOrgsForCategory) {
-        organizations.forEach((org, idx) => {
-          // Matches search term
-          if (searchTerm && !org.nombre.toLowerCase().includes(searchTerm.toLowerCase()) && !org.direccion.toLowerCase().includes(searchTerm.toLowerCase())) {
-            return;
-          }
+        const orgLat = org.latitud ? Number(org.latitud) : getFallbackCoords(idx).lat;
+        const orgLng = org.longitud ? Number(org.longitud) : getFallbackCoords(idx).lng;
 
-          const orgLat = org.latitud ? Number(org.latitud) : getFallbackCoords(idx).lat;
-          const orgLng = org.longitud ? Number(org.longitud) : getFallbackCoords(idx).lng;
-
-          // Proximity Filtering
-          const distance = calculateDistance(refLat, refLng, orgLat, orgLng);
+        // Proximity Filtering
+        let distance: number | null = null;
+        if (userLocation) {
+          distance = calculateDistance(userLocation.lat, userLocation.lng, orgLat, orgLng);
           if (maxDistance > 0 && distance > maxDistance) {
             return;
           }
+        }
 
-          // Custom blue icon for Organizacion
-          const orgIcon = createOrgMarkerIcon();
-          const marker = L.marker([orgLat, orgLng], { icon: orgIcon });
-          
-          const distanceStr = `<p class="text-[9px] font-bold text-blue-600 m-0 bg-blue-50 px-1.5 py-0.5 rounded w-fit">A ${distance.toFixed(2)} km ${userLocation ? 'de ti' : 'del centro'}</p>`;
-
-          marker.bindPopup(`
-            <div class="text-neutral-900 font-sans p-1.5 space-y-1">
-              <span class="text-[9px] font-extrabold uppercase tracking-widest text-blue-600">Sede de Organización</span>
-              <h4 class="font-bold text-xs leading-tight m-0 text-neutral-950">${org.nombre}</h4>
-              <p class="text-[10px] text-neutral-500 m-0">${org.direccion || ''}</p>
-              ${distanceStr}
-              <div class="pt-1.5 flex gap-1">
-                <button id="btn-select-org-${org.id}" class="bg-blue-600 text-white text-[9px] font-bold px-2 py-1 rounded hover:bg-blue-700 transition-colors cursor-pointer border-none w-full">
-                  Ver Detalles
-                </button>
-              </div>
-            </div>
-          `);
-
-          marker.on('popupopen', () => {
-            const btn = document.getElementById(`btn-select-org-${org.id}`);
-            if (btn) {
-              btn.addEventListener('click', () => {
-                setSelectedItem({ type: 'organization', data: org });
-              });
-            }
-          });
-
-          marker.addTo(markersGroupRef.current!);
-          bounds.push([orgLat, orgLng]);
+        // Custom divIcon for Organizacion using blue theme
+        const orgIcon = L.divIcon({
+          className: 'custom-org-marker',
+          html: `<div class="w-9 h-9 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all cursor-pointer">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2" width="18" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="16"/><line x1="15" y1="22" x2="15" y2="16"/><line x1="9" y1="16" x2="15" y2="16"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M9 14h.01"/><path d="M15 14h.01"/><path d="M9 6h.01"/><path d="M15 6h.01"/></svg>
+                 </div>`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18],
         });
-      }
+
+        const marker = L.marker([orgLat, orgLng], { icon: orgIcon });
+        
+        // Popup with distance info
+        const distanceStr = distance !== null 
+          ? `<p class="text-[9px] font-bold text-indigo-600 m-0 bg-indigo-50 px-1.5 py-0.5 rounded w-fit">A ${distance.toFixed(2)} km de ti</p>`
+          : '';
+
+        marker.bindPopup(`
+          <div class="text-neutral-900 font-sans p-1.5 space-y-1">
+            <span class="text-[9px] font-extrabold uppercase tracking-widest text-blue-600">Sede de Organización</span>
+            <h4 class="font-bold text-xs leading-tight m-0 text-neutral-950">${org.nombre}</h4>
+            <p class="text-[10px] text-neutral-500 m-0">${org.direccion || ''}</p>
+            ${distanceStr}
+            <div class="pt-1.5 flex gap-1">
+              <button id="btn-select-org-${org.id}" class="bg-blue-600 text-white text-[9px] font-bold px-2 py-1 rounded hover:bg-blue-700 transition-colors cursor-pointer border-none w-full">
+                Ver Detalles
+              </button>
+            </div>
+          </div>
+        `);
+
+        marker.on('popupopen', () => {
+          const btn = document.getElementById(`btn-select-org-${org.id}`);
+          if (btn) {
+            btn.addEventListener('click', () => {
+              setSelectedItem({ type: 'organization', data: org });
+            });
+          }
+        });
+
+        marker.addTo(markersGroupRef.current!);
+        bounds.push([orgLat, orgLng]);
+      });
     }
 
-    // 2. Add Events (Rojo) - Only if filterType is all or event
+    // 2. Add Events
     if (filterType === 'all' || filterType === 'event') {
       events.forEach((evt, idx) => {
         // Matches search term
@@ -224,7 +240,7 @@ export const Map: React.FC = () => {
         }
 
         // Matches category
-        if (filterCat !== 'todos' && evt.categoria.toLowerCase() !== filterCat.toLowerCase()) {
+        if (filterCat !== 'todos' && evt.categoria !== filterCat) {
           return;
         }
 
@@ -232,26 +248,42 @@ export const Map: React.FC = () => {
         const evtLng = evt.longitud ? Number(evt.longitud) : getFallbackCoords(idx + 10).lng;
 
         // Proximity Filtering
-        const distance = calculateDistance(refLat, refLng, evtLat, evtLng);
-        if (maxDistance > 0 && distance > maxDistance) {
-          return;
+        let distance: number | null = null;
+        if (userLocation) {
+          distance = calculateDistance(userLocation.lat, userLocation.lng, evtLat, evtLng);
+          if (maxDistance > 0 && distance > maxDistance) {
+            return;
+          }
         }
 
-        // Custom red icon for Event
-        const evtIcon = createEventMarkerIcon();
+        // Custom divIcon for Event using brand/emerald theme based on category
+        const isReforestacion = evt.categoria.toLowerCase().includes('medio') || evt.categoria.toLowerCase().includes('reforest');
+        const colorClass = isReforestacion ? 'bg-emerald-600' : 'bg-brand';
+
+        const evtIcon = L.divIcon({
+          className: 'custom-evt-marker',
+          html: `<div class="w-9 h-9 rounded-full ${colorClass} border-2 border-white flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all cursor-pointer animate-pulse">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                 </div>`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18],
+        });
+
         const marker = L.marker([evtLat, evtLng], { icon: evtIcon });
 
-        const distanceStr = `<p class="text-[9px] font-bold text-red-600 m-0 bg-red-50 px-1.5 py-0.5 rounded w-fit">A ${distance.toFixed(2)} km ${userLocation ? 'de ti' : 'del centro'}</p>`;
+        // Popup with distance info
+        const distanceStr = distance !== null 
+          ? `<p class="text-[9px] font-bold text-indigo-600 m-0 bg-indigo-50 px-1.5 py-0.5 rounded w-fit">A ${distance.toFixed(2)} km de ti</p>`
+          : '';
 
         marker.bindPopup(`
           <div class="text-neutral-900 font-sans p-1.5 space-y-1">
-            <span class="text-[9px] font-extrabold uppercase tracking-widest text-red-600">Convocatoria Solidaria</span>
+            <span class="text-[9px] font-extrabold uppercase tracking-widest text-emerald-600">Convocatoria Solidaria</span>
             <h4 class="font-bold text-xs leading-tight m-0 text-neutral-950">${evt.nombre}</h4>
             <p class="text-[10px] text-neutral-500 m-0">${evt.direccion || ''}</p>
-            <p class="text-[9px] text-neutral-400 m-0">Categoría: <span class="font-semibold text-neutral-700">${evt.categoria}</span></p>
             ${distanceStr}
             <div class="pt-1.5 flex gap-1">
-              <button id="btn-select-evt-${evt.id}" class="bg-red-600 text-white text-[9px] font-bold px-2 py-1 rounded hover:bg-red-700 transition-colors cursor-pointer border-none w-full">
+              <button id="btn-select-evt-${evt.id}" class="bg-emerald-600 text-white text-[9px] font-bold px-2 py-1 rounded hover:bg-emerald-700 transition-colors cursor-pointer border-none w-full">
                 Ver Detalles
               </button>
             </div>
@@ -339,16 +371,16 @@ export const Map: React.FC = () => {
         <div className="md:col-span-3">
           <label className="block text-[10px] font-extrabold uppercase tracking-wider text-neutral-500 mb-1.5 flex items-center gap-1">
             <Navigation className="w-3.5 h-3.5" />
-            Rango de Cercanía {userLocation ? '(GPS Activo)' : '(Ref: Kennedy)'}
+            Rango de Cercanía
           </label>
           <select
             value={maxDistance}
             onChange={(e: any) => setMaxDistance(Number(e.target.value))}
-            className="w-full text-xs border border-neutral-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-1 focus:ring-neutral-900 bg-white font-medium"
+            disabled={!userLocation}
+            className="w-full text-xs border border-neutral-300 rounded-lg px-2 py-2 focus:outline-none focus:ring-1 focus:ring-neutral-900 bg-white font-medium disabled:opacity-50"
           >
-            <option value={0}>Todas las distancias (Mostrar todo)</option>
-            <option value={1}>Cercanos (A menos de 1 km)</option>
-            <option value={3}>Cercanos (A menos de 3 km)</option>
+            <option value={0}>{userLocation ? "Mostrar todo (Sin límite)" : "Activar GPS para filtrar"}</option>
+            <option value={2}>Cercanos (A menos de 2 km)</option>
             <option value={5}>Cercanos (A menos de 5 km)</option>
             <option value={10}>Cercanos (A menos de 10 km)</option>
             <option value={20}>Cercanos (A menos de 20 km)</option>
@@ -362,30 +394,13 @@ export const Map: React.FC = () => {
             disabled={isLocating}
             className="w-full bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-bold px-3 py-2 rounded-lg border border-neutral-300 transition-colors flex items-center justify-center gap-1.5 shrink-0 h-[38px] disabled:opacity-50 cursor-pointer"
           >
-            <Navigation className={`w-3.5 h-3.5 text-blue-600 ${isLocating ? 'animate-spin' : ''}`} />
-            <span>{isLocating ? 'Obteniendo GPS...' : userLocation ? 'GPS Calibrado' : 'Usar Mi Ubicación'}</span>
+            <Navigation className={`w-3.5 h-3.5 text-indigo-600 ${isLocating ? 'animate-spin' : ''}`} />
+            <span>{isLocating ? 'Obteniendo GPS...' : 'Mi Ubicación'}</span>
           </button>
         </div>
 
-        <div className="md:col-span-12 flex flex-col sm:flex-row gap-2 items-center">
-          <div className="flex-1 w-full">
-            <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Búsqueda rápida en el mapa por nombre o dirección..." />
-          </div>
-          {(filterType !== 'all' || filterCat !== 'todos' || maxDistance !== 0 || searchTerm !== '') && (
-            <button
-              type="button"
-              onClick={() => {
-                setFilterType('all');
-                setFilterCat('todos');
-                setMaxDistance(0);
-                setSearchTerm('');
-              }}
-              className="bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 shrink-0 h-[38px] cursor-pointer whitespace-nowrap"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Restablecer Filtros (Ver Todo)</span>
-            </button>
-          )}
+        <div className="md:col-span-12">
+          <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Búsqueda rápida en el mapa..." />
         </div>
       </div>
 
@@ -395,24 +410,24 @@ export const Map: React.FC = () => {
           {/* Quick Info header on map */}
           <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-xs px-3 py-1.5 rounded border border-neutral-200 text-xs font-semibold text-neutral-700 shadow-xs z-[1000] flex items-center gap-1.5">
             <Navigation className="w-4 h-4 text-blue-600 animate-pulse" />
-            <span>Zona de Cobertura Activa: Kennedy • Bogotá D.C.</span>
+            <span>Zona de Cobertura Activa: Bogotá D.C.</span>
           </div>
 
           <div ref={mapContainerRef} className="w-full h-[500px] z-0" />
 
-          {/* Map Legend - Organizations (blue), Events (red), and GPS (green) */}
+          {/* Map Legend */}
           <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-xs border border-neutral-200 p-3 rounded-lg text-xs text-neutral-600 font-bold flex gap-4 shadow-sm z-[1000] flex-wrap">
             <div className="flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 rounded-full bg-blue-600 inline-block border-2 border-white shadow-xs" />
-              <span>Sedes de Organizaciones (Azul)</span>
+              <span className="w-4 h-4 rounded-full bg-blue-600 inline-block border-2 border-white shadow-xs" />
+              <span>Sedes de Organizaciones (ONG)</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 rounded-full bg-red-600 inline-block border-2 border-white shadow-xs" />
-              <span>Eventos y Convocatorias (Rojo)</span>
+              <span className="w-4 h-4 rounded-full bg-red-500 inline-block border-2 border-white shadow-xs" />
+              <span>Campañas de Soporte Social</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-3.5 h-3.5 rounded-full bg-emerald-600 inline-block border-2 border-white shadow-xs" />
-              <span>Tu Ubicación GPS (Verde)</span>
+              <span className="w-4 h-4 rounded-full bg-emerald-600 inline-block border-2 border-white shadow-xs" />
+              <span>Campañas de Reforestación / Ambiental</span>
             </div>
           </div>
         </div>

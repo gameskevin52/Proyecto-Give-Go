@@ -8,7 +8,7 @@ export const validateMonetaryDonation = [
     .notEmpty().withMessage('La organización de destino es obligatoria.'),
   body('monetary.metodo')
     .notEmpty().withMessage('El método de pago es obligatorio.')
-    .isIn(['transferencia', 'tarjeta', 'paypal', 'nequi', 'daviplata', 'pse']).withMessage('Método de pago inválido.'),
+    .isIn(['transferencia', 'tarjeta', 'paypal']).withMessage('Método de pago inválido.'),
   body('monetary.valor')
     .notEmpty().withMessage('El valor es obligatorio.')
     .isFloat({ min: 1 }).withMessage('El valor debe ser mayor o igual a 1.'),

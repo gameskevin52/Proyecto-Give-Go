@@ -30,9 +30,8 @@ export const authenticateJWT = (req: AuthenticatedRequest, res: Response, next: 
 
   const decoded = verifyToken(token);
   if (!decoded) {
-    return res.status(401).json({
+    return res.status(403).json({
       success: false,
-      code: 'TOKEN_EXPIRED',
       message: 'Token inválido o expirado.',
       errors: []
     });

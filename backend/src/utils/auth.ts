@@ -10,22 +10,7 @@ export const hashPassword = async (password: string): Promise<string> => {
 };
 
 export const comparePassword = async (password: string, hash: string): Promise<boolean> => {
-  if (!hash) return false;
-  if (password === hash) return true;
-  try {
-    const isMatch = await bcrypt.compare(password, hash);
-    if (isMatch) return true;
-  } catch {
-    // ignore
-  }
-  // Support known mock seed passwords and hashes in local database
-  if (password === 'Admin123*' || password === 'Org123*' || password === 'User123*') {
-    return true;
-  }
-  if (hash.startsWith('$2b$10$gO6NveiB') || hash.startsWith('$2b$10$tZ9C')) {
-    return true;
-  }
-  return false;
+  return await bcrypt.compare(password, hash);
 };
 
 export const generateToken = (payload: any): string => {

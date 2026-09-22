@@ -24,25 +24,15 @@ const normalizeEvent = (evt: any): Evento => {
     cupo_maximo: evt.cupo_maximo || evt.cupo || 20,
     cupos_disponibles: evt.cupos_disponibles ?? evt.vacantesVoluntarios ?? evt.cupo ?? 20,
     cupos_ocupados: evt.cupos_ocupados || 0,
-    vacantesVoluntarios: evt.vacantesVoluntarios ?? evt.vacantes_voluntarios ?? evt.cupos_disponibles ?? 20,
-    vacantes_voluntarios: evt.vacantes_voluntarios ?? evt.vacantesVoluntarios ?? evt.cupos_disponibles ?? 20,
-    vacantesBeneficiarios: evt.vacantesBeneficiarios ?? evt.vacantes_beneficiarios ?? 20,
-    vacantes_beneficiarios: evt.vacantes_beneficiarios ?? evt.vacantesBeneficiarios ?? 20,
-    ayuda_ofrecida: evt.ayuda_ofrecida || evt.ayudaOfrecida || '',
-    ayudaOfrecida: evt.ayudaOfrecida || evt.ayuda_ofrecida || '',
-    nombre_lugar: evt.nombre_lugar || '',
-    punto_referencia: evt.punto_referencia || '',
+    vacantesVoluntarios: evt.vacantesVoluntarios ?? evt.cupos_disponibles ?? 20,
+    vacantesBeneficiarios: evt.vacantesBeneficiarios ?? 20,
     direccion: evt.direccion || '',
     barrio: evt.barrio || '',
-    localidad: evt.localidad || 'Kennedy',
-    ciudad: evt.ciudad || 'Bogotá',
-    departamento: evt.departamento || 'Bogotá D.C.',
-    pais: evt.pais || 'Colombia',
+    localidad: evt.localidad || 'Bogotá',
     latitud: evt.latitud || null,
     longitud: evt.longitud || null,
     estado: evt.estado || 'activo',
     imagen_url: evt.imagen_url || evt.imagen || '',
-    imagen: evt.imagen || evt.imagen_url || '',
   } as any;
 };
 
@@ -67,27 +57,14 @@ export const eventFeatureService = {
       descripcion: data.descripcion,
       fecha: data.fecha_inicio || (data as any).fecha,
       fecha_inicio: data.fecha_inicio || (data as any).fecha,
-      hora_inicio: data.hora_inicio || '08:00',
-      hora_fin: data.hora_fin || '12:00',
+      hora_inicio: data.hora_inicio,
       cupo: data.cupo_maximo || (data as any).cupo,
       cupo_maximo: data.cupo_maximo || (data as any).cupo,
-      vacantesVoluntarios: data.vacantesVoluntarios ?? data.vacantes_voluntarios ?? data.cupo_maximo ?? 10,
-      vacantesBeneficiarios: data.vacantesBeneficiarios ?? data.vacantes_beneficiarios ?? 20,
-      ayudaOfrecida: data.ayuda_ofrecida || data.ayudaOfrecida || '',
-      ayuda_ofrecida: data.ayuda_ofrecida || data.ayudaOfrecida || '',
-      nombre_lugar: data.nombre_lugar || '',
-      punto_referencia: data.punto_referencia || '',
       categoria: data.id_categoria || (data as any).categoria || 1,
       id_categoria: data.id_categoria || 1,
       direccion: data.direccion,
       barrio: data.barrio,
-      localidad: data.localidad || 'Kennedy',
-      ciudad: data.ciudad || 'Bogotá',
-      departamento: data.departamento || 'Bogotá D.C.',
-      pais: data.pais || 'Colombia',
-      latitud: data.latitud !== undefined ? data.latitud : null,
-      longitud: data.longitud !== undefined ? data.longitud : null,
-      imagen: data.imagen || data.imagen_url || '',
+      localidad: data.localidad,
       estado: data.estado || 'activo',
     };
     const res = await apiClient.post('/events', payload);
@@ -95,14 +72,7 @@ export const eventFeatureService = {
   },
 
   async update(id: number | string, data: Partial<Evento>): Promise<Evento> {
-    const payload = {
-      ...data,
-      nombre: data.titulo || (data as any).nombre,
-      vacantesVoluntarios: data.vacantesVoluntarios ?? data.vacantes_voluntarios,
-      vacantesBeneficiarios: data.vacantesBeneficiarios ?? data.vacantes_beneficiarios,
-      ayudaOfrecida: data.ayuda_ofrecida || data.ayudaOfrecida,
-    };
-    const res = await apiClient.put(`/events/${id}`, payload);
+    const res = await apiClient.put(`/events/${id}`, data);
     return normalizeEvent(res.data.data);
   },
 

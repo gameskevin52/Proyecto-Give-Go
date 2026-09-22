@@ -1,7 +1,6 @@
 export interface User {
   id_usuario: number;
-  id?: number | string;
-  rol: 'Admin' | 'Voluntario' | 'Beneficiario' | 'Organizacion' | 'admin' | 'voluntario' | 'beneficiario' | 'organizacion';
+  rol: 'Admin' | 'Voluntario' | 'Beneficiario' | 'Organizacion';
   nombre1: string;
   nombre2?: string;
   apellido1: string;
@@ -12,14 +11,9 @@ export interface User {
   barrio?: string;
   localidad?: string;
   ciudad?: string;
-  departamento?: string;
-  pais?: string;
   foto?: string;
   estado: number;
   verificada?: boolean;
-  organizacionId?: string | number;
-  id_organizacion?: number;
-  nit?: string;
 }
 
 export interface AuthContextType {
@@ -28,8 +22,6 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (correo: string, pass: string) => Promise<{ success: boolean; message?: string }>;
   register: (data: any, pass: string) => Promise<{ success: boolean; message?: string }>;
-  registerOrganization: (orgData: any) => Promise<{ success: boolean; message?: string }>;
   logout: () => Promise<void>;
   updateUser: (user: User) => void;
 }
-

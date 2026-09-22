@@ -1,33 +1,7 @@
 import { Request, Response } from 'express';
 import { DonacionModel } from '../models/donacionModel';
-import { OrganizacionModel } from '../models/organizacionModel';
-import { UsuarioModel } from '../models/usuarioModel';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 import { logAudit } from '../utils/auditLogger';
-
-const resolveDonorUserId = async (req: Request, rawUserId?: any): Promise<number> => {
-  const authUser = (req as AuthenticatedRequest).user;
-  if (authUser?.id) {
-    return authUser.id;
-  }
-  if (rawUserId) {
-    const str = String(rawUserId);
-    if (str.startsWith('org_')) {
-      const orgNumericId = parseInt(str.replace('org_', ''), 10);
-      const org = await OrganizacionModel.getById(orgNumericId);
-      if (org) {
-        const userFromOrg = await UsuarioModel.getByEmail(org.correo);
-        if (userFromOrg) return userFromOrg.id_usuario;
-      }
-    }
-    const cleanStr = str.replace('usr_', '').replace('org_', '');
-    const parsed = parseInt(cleanStr, 10);
-    if (!isNaN(parsed) && parsed > 0) {
-      return parsed;
-    }
-  }
-  return 1; // Fallback to safe default existing user
-};
 
 const mapDonationToFrontend = (d: any) => {
   const isMonetary = d.tipo.toLowerCase() === 'monetaria';
@@ -180,7 +154,12 @@ export const DonationController = {
       const body = req.body;
       const tipo = (body.tipo_donacion || body.tipo || (body.monetary ? 'monetaria' : 'objeto')).toLowerCase();
       
-      const uId = await resolveDonorUserId(req, body.donation?.usuarioId || body.usuarioId);
+      let uId = (req as AuthenticatedRequest).user?.id;
+      if (!uId && body.donation?.usuarioId) {
+        uId = parseInt(String(body.donation.usuarioId).replace('usr_', ''), 10);
+      }
+      if (!uId) uId = 1;
+
       const orgId = body.id_organizacion || (body.donation?.organizacionId ? parseInt(String(body.donation.organizacionId).replace('org_', ''), 10) : 1);
 
       if (tipo === 'monetaria') {
@@ -243,7 +222,10 @@ export const DonationController = {
     try {
       const { donation, monetary } = req.body;
       
-      const uId = await resolveDonorUserId(req, donation?.usuarioId);
+      let uId = parseInt(String(donation.usuarioId).replace('usr_', ''), 10);
+      if (isNaN(uId)) {
+        uId = 999; // Fallback to Anonymous User
+      }
       const orgId = parseInt(String(donation.organizacionId).replace('org_', ''), 10);
 
       const id_donacion = await DonacionModel.createMonetary({
@@ -282,7 +264,10 @@ export const DonationController = {
     try {
       const { donation, objectDetail } = req.body;
       
-      const uId = await resolveDonorUserId(req, donation?.usuarioId);
+      let uId = parseInt(String(donation.usuarioId).replace('usr_', ''), 10);
+      if (isNaN(uId)) {
+        uId = 999; // Fallback to Anonymous User
+      }
       const orgId = parseInt(String(donation.organizacionId).replace('org_', ''), 10);
 
       const id_donacion = await DonacionModel.createObject({

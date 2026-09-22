@@ -37,10 +37,6 @@ export const useLoginController = (navigation: any) => {
     navigation.navigate('RegisterBeneficiary');
   };
 
-  const navigateToRegisterOrganization = () => {
-    navigation.navigate('RegisterOrganization');
-  };
-
   const navigateToForgotPassword = () => {
     navigation.navigate('ForgotPassword');
   };
@@ -55,7 +51,6 @@ export const useLoginController = (navigation: any) => {
     handleLogin,
     navigateToRegisterVolunteer,
     navigateToRegisterBeneficiary,
-    navigateToRegisterOrganization,
     navigateToForgotPassword,
   };
 };

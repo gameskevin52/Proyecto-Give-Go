@@ -14,5 +14,3 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
-
-// inicio de la palicacion
