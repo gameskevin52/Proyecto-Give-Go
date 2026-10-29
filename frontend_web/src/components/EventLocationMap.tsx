@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
+import { createAppTileLayer, createEventMarkerIcon } from '../utils/mapConfig';
 
 interface EventLocationMapProps {
   lat: number;
@@ -24,15 +25,13 @@ export const EventLocationMap: React.FC<EventLocationMapProps> = ({ lat, lng, ti
 
     mapRef.current = map;
 
-    // Add Tile Layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(map);
+    // Add Reliable Tile Layer
+    createAppTileLayer().addTo(map);
 
-    // Add Custom/Default Marker
-    L.marker([lat, lng])
+    // Add Custom Marker
+    L.marker([lat, lng], { icon: createEventMarkerIcon() })
       .addTo(map)
-      .bindPopup(`<strong>${title}</strong><br/>Ubicación del evento solidario`)
+      .bindPopup(`<strong class="text-xs font-bold text-neutral-900">${title}</strong><br/><span class="text-[11px] text-neutral-500">Ubicación del evento solidario</span>`)
       .openPopup();
 
     // Invalidate size once to guarantee it renders correctly if container resized

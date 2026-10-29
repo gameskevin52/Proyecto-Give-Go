@@ -3,7 +3,8 @@ import { useForm } from 'react-hook-form';
 import { useAuth } from '../../contexts/AuthContext';
 import { EventService, DonationService, CategoryService, PostulacionService, DonacionCompleta, VerificationService } from '../../services/db';
 import { Evento, Usuario, Categoria, Postulacion, SolicitudVerificacion } from '../../types';
-import { Button, Input, Select, Card, Table, Badge, Modal, ConfirmDialog, Textarea, EmptyState, Alert, formatCOP, formatDate } from '../../components/UI';
+import { Button, Input, Select, Card, Table, Badge, Modal, ConfirmDialog, Textarea, EmptyState, Alert, SearchBar, Pagination, formatCOP, formatDate } from '../../components/UI';
+import { usePagination } from '../../hooks';
 import { UserLink } from '../../components/UserLink';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { Calendar, Heart, Users, Plus, Edit, Trash2, Mail, Phone, Box, CheckCircle, XCircle, HeartHandshake, Eye, Sparkles, Globe, Edit3, ExternalLink, BadgeCheck, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -32,8 +33,19 @@ export const OrgDashboard: React.FC = () => {
   const [receivedDonations, setReceivedDonations] = useState<DonacionCompleta[]>([]);
   const [volunteersCount, setVolunteersCount] = useState(0);
   const [beneficiariosCount, setBeneficiariosCount] = useState(0);
-  const [recentBeneficiarios, setRecentBeneficiarios] = useState<Postulacion[]>([]);
-  const [recentVolunteers, setRecentVolunteers] = useState<VolunteerAssoc[]>([]);
+  const [allBeneficiarios, setAllBeneficiarios] = useState<Postulacion[]>([]);
+  const [allVolunteers, setAllVolunteers] = useState<VolunteerAssoc[]>([]);
+
+  // Filtros y paginación para Beneficiarios
+  const [benSearch, setBenSearch] = useState('');
+  const [benStatus, setBenStatus] = useState('todos');
+
+  // Filtros y paginación para Voluntarios
+  const [volSearch, setVolSearch] = useState('');
+
+  // Filtros y paginación para Donaciones
+  const [donSearch, setDonSearch] = useState('');
+  const [donType, setDonType] = useState('todos');
 
   // Estado de Verificación
   const [verificationStatus, setVerificationStatus] = useState<'no_solicitado' | 'pendiente' | 'aprobada' | 'rechazada'>('no_solicitado');
@@ -105,15 +117,72 @@ export const OrgDashboard: React.FC = () => {
         });
       }
       setVolunteersCount(volList.length);
-      setRecentVolunteers(volList.slice(0, 4));
+      setAllVolunteers(volList);
 
       // Cargar beneficiarios postulados a mis eventos
       const benPost = await PostulacionService.getByOrganization(orgIdToUse, 'beneficiario');
       setBeneficiariosCount(benPost.length);
-      setRecentBeneficiarios(benPost.slice(0, 4));
+      setAllBeneficiarios(benPost);
     }
     loadStats();
   }, [user]);
+
+  // Filtrado de Beneficiarios
+  const filteredBeneficiarios = allBeneficiarios.filter(post => {
+    const matchesSearch = benSearch === '' ||
+      (post.usuarioNombre || '').toLowerCase().includes(benSearch.toLowerCase()) ||
+      (post.eventoNombre || '').toLowerCase().includes(benSearch.toLowerCase());
+    const matchesStatus = benStatus === 'todos' || post.estadoPostulacion === benStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const {
+    paginatedItems: paginatedBeneficiarios,
+    currentPage: benPage,
+    totalPages: benTotalPages,
+    pageSize: benPageSize,
+    totalItems: benTotalItems,
+    setPage: setBenPage,
+    setPageSize: setBenPageSize
+  } = usePagination(filteredBeneficiarios, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
+
+  // Filtrado de Voluntarios
+  const filteredVolunteers = allVolunteers.filter(vol => {
+    const matchesSearch = volSearch === '' ||
+      vol.nombre.toLowerCase().includes(volSearch.toLowerCase()) ||
+      vol.correo.toLowerCase().includes(volSearch.toLowerCase()) ||
+      vol.eventoNombre.toLowerCase().includes(volSearch.toLowerCase());
+    return matchesSearch;
+  });
+
+  const {
+    paginatedItems: paginatedVolunteers,
+    currentPage: volPage,
+    totalPages: volTotalPages,
+    pageSize: volPageSize,
+    totalItems: volTotalItems,
+    setPage: setVolPage,
+    setPageSize: setVolPageSize
+  } = usePagination(filteredVolunteers, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
+
+  // Filtrado de Donaciones
+  const filteredDonations = receivedDonations.filter(don => {
+    const matchesSearch = donSearch === '' ||
+      (don.usuarioNombre || '').toLowerCase().includes(donSearch.toLowerCase()) ||
+      (don.categoria || '').toLowerCase().includes(donSearch.toLowerCase());
+    const matchesType = donType === 'todos' || don.tipo === donType;
+    return matchesSearch && matchesType;
+  });
+
+  const {
+    paginatedItems: paginatedDonations,
+    currentPage: donPage,
+    totalPages: donTotalPages,
+    pageSize: donPageSize,
+    totalItems: donTotalItems,
+    setPage: setDonPage,
+    setPageSize: setDonPageSize
+  } = usePagination(filteredDonations, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
 
   const handleOpenVerificationModal = () => {
     setReqNit(user?.nit || '');
@@ -370,15 +439,34 @@ export const OrgDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Listado de Beneficiarios y Voluntarios Recientes */}
+      {/* Listado de Beneficiarios y Voluntarios */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Beneficiarios postulados recientemente */}
-        <Card title="Últimos Beneficiarios Postulados">
+        {/* Beneficiarios postulados */}
+        <Card title="Beneficiarios Postulados">
           <div className="space-y-3">
-            {recentBeneficiarios.length === 0 ? (
-              <p className="text-xs text-neutral-400 italic text-center py-6">No hay postulaciones de beneficiarios aún.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <SearchBar
+                value={benSearch}
+                onChange={setBenSearch}
+                placeholder="Buscar beneficiario o evento..."
+              />
+              <Select
+                value={benStatus}
+                onChange={(e) => setBenStatus(e.target.value)}
+                options={[
+                  { value: 'todos', label: 'Todos los estados' },
+                  { value: 'pendiente', label: 'Pendientes' },
+                  { value: 'aprobado', label: 'Aprobados' },
+                  { value: 'confirmado', label: 'Confirmados' },
+                  { value: 'rechazado', label: 'Rechazados' },
+                ]}
+              />
+            </div>
+
+            {paginatedBeneficiarios.length === 0 ? (
+              <p className="text-xs text-neutral-400 italic text-center py-6">No se encontraron postulaciones de beneficiarios.</p>
             ) : (
-              recentBeneficiarios.map((post, idx) => (
+              paginatedBeneficiarios.map((post, idx) => (
                 <div key={post.id ? `dash_ben_${post.id}` : `dash_ben_idx_${idx}`} className="flex justify-between items-center p-3 bg-emerald-50/60 rounded-xl border border-emerald-100 text-xs">
                   <div>
                     <p className="font-bold text-neutral-900">{post.usuarioNombre || `Beneficiario #${post.usuarioId}`}</p>
@@ -395,6 +483,18 @@ export const OrgDashboard: React.FC = () => {
                 </div>
               ))
             )}
+
+            <Pagination
+              currentPage={benPage}
+              totalPages={benTotalPages}
+              onPageChange={setBenPage}
+              pageSize={benPageSize}
+              onPageSizeChange={setBenPageSize}
+              totalItems={benTotalItems}
+              itemName="beneficiarios"
+              pageSizeOptions={[5, 10, 15]}
+            />
+
             <div className="pt-2 text-right">
               <Link to="/org/volunteers" className="text-xs font-extrabold text-emerald-800 hover:underline">
                 Gestionar todos los beneficiarios &rarr;
@@ -403,13 +503,19 @@ export const OrgDashboard: React.FC = () => {
           </div>
         </Card>
 
-        {/* Voluntarios inscritos recientemente */}
-        <Card title="Últimos Voluntarios Inscritos">
+        {/* Voluntarios inscritos */}
+        <Card title="Voluntarios Inscritos">
           <div className="space-y-3">
-            {recentVolunteers.length === 0 ? (
-              <p className="text-xs text-neutral-400 italic text-center py-6">No hay voluntarios inscritos en tus campañas aún.</p>
+            <SearchBar
+              value={volSearch}
+              onChange={setVolSearch}
+              placeholder="Buscar voluntario, correo o campaña..."
+            />
+
+            {paginatedVolunteers.length === 0 ? (
+              <p className="text-xs text-neutral-400 italic text-center py-6">No se encontraron voluntarios inscritos.</p>
             ) : (
-              recentVolunteers.map((vol, idx) => (
+              paginatedVolunteers.map((vol, idx) => (
                 <div key={`dash_vol_${idx}`} className="flex justify-between items-center p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-xs">
                   <div>
                     <p className="font-bold text-neutral-900">{vol.nombre}</p>
@@ -421,6 +527,18 @@ export const OrgDashboard: React.FC = () => {
                 </div>
               ))
             )}
+
+            <Pagination
+              currentPage={volPage}
+              totalPages={volTotalPages}
+              onPageChange={setVolPage}
+              pageSize={volPageSize}
+              onPageSizeChange={setVolPageSize}
+              totalItems={volTotalItems}
+              itemName="voluntarios"
+              pageSizeOptions={[5, 10, 15]}
+            />
+
             <div className="pt-2 text-right">
               <Link to="/org/volunteers" className="text-xs font-extrabold text-neutral-800 hover:underline">
                 Ver todos los voluntarios &rarr;
@@ -432,12 +550,29 @@ export const OrgDashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Donaciones Recientes Recibidas */}
-        <Card title="Últimos Fondos y Materiales Recibidos">
+        <Card title="Fondos y Materiales Recibidos">
           <div className="space-y-4">
-            {receivedDonations.length === 0 ? (
-              <p className="text-xs text-neutral-400 italic text-center py-6">Aún no has recibido donaciones mediante la plataforma.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <SearchBar
+                value={donSearch}
+                onChange={setDonSearch}
+                placeholder="Buscar por donante o causa..."
+              />
+              <Select
+                value={donType}
+                onChange={(e) => setDonType(e.target.value)}
+                options={[
+                  { value: 'todos', label: 'Todos los tipos' },
+                  { value: 'monetaria', label: 'Monetaria' },
+                  { value: 'objeto', label: 'Especie / Objeto' },
+                ]}
+              />
+            </div>
+
+            {paginatedDonations.length === 0 ? (
+              <p className="text-xs text-neutral-400 italic text-center py-6">No se encontraron donaciones con los filtros seleccionados.</p>
             ) : (
-              receivedDonations.slice(-3).reverse().map((don) => (
+              paginatedDonations.map((don) => (
                 <div key={don.id} className="flex justify-between items-center p-3 bg-neutral-50 rounded border border-neutral-150 text-xs">
                   <div>
                     <p className="font-bold text-neutral-900">{don.usuarioNombre}</p>
@@ -454,6 +589,17 @@ export const OrgDashboard: React.FC = () => {
                 </div>
               ))
             )}
+
+            <Pagination
+              currentPage={donPage}
+              totalPages={donTotalPages}
+              onPageChange={setDonPage}
+              pageSize={donPageSize}
+              onPageSizeChange={setDonPageSize}
+              totalItems={donTotalItems}
+              itemName="donaciones"
+              pageSizeOptions={[5, 10, 15]}
+            />
           </div>
         </Card>
 
@@ -541,6 +687,9 @@ export const OrgEvents: React.FC = () => {
   const { user } = useAuth();
   const [events, setEvents] = useState<Evento[]>([]);
   const [categories, setCategories] = useState<Categoria[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('todas');
+  const [statusFilter, setStatusFilter] = useState('todos');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Evento | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -579,6 +728,26 @@ export const OrgEvents: React.FC = () => {
     const cats = await CategoryService.getAll();
     setCategories(cats.filter(c => c.estado === 'activo'));
   }
+
+  const filteredEvents = events.filter(e => {
+    const matchesSearch = searchTerm === '' ||
+      e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      e.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (e.direccion || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === 'todas' || e.categoria === categoryFilter;
+    const matchesStatus = statusFilter === 'todos' || e.estado === statusFilter;
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  const {
+    paginatedItems: paginatedEvents,
+    currentPage,
+    totalPages,
+    pageSize,
+    totalItems,
+    setPage,
+    setPageSize
+  } = usePagination(filteredEvents, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
 
   const handleOpenCreate = () => {
     setEditingEvent(null);
@@ -718,9 +887,35 @@ export const OrgEvents: React.FC = () => {
         </Button>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <SearchBar
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Buscar campaña o dirección..."
+        />
+        <Select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          options={[
+            { value: 'todas', label: 'Todas las categorías' },
+            ...categories.map(c => ({ value: c.nombre, label: c.nombre }))
+          ]}
+        />
+        <Select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          options={[
+            { value: 'todos', label: 'Todos los estados' },
+            { value: 'activo', label: 'Activo' },
+            { value: 'inactivo', label: 'Inactivo' },
+            { value: 'finalizado', label: 'Finalizado' },
+          ]}
+        />
+      </div>
+
       <Table<Evento>
         headers={['Campaña', 'Categoría', 'Fecha Programada', 'Estado', 'Dirección', 'Acciones']}
-        data={events}
+        data={paginatedEvents}
         renderRow={(item) => (
           <tr key={item.id} className="hover:bg-neutral-50 text-xs">
             <td className="px-5 py-3">
@@ -747,10 +942,21 @@ export const OrgEvents: React.FC = () => {
         )}
       />
 
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
+        totalItems={totalItems}
+        itemName="eventos"
+        pageSizeOptions={[5, 10, 15]}
+      />
+
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingEvent ? '📝 Editar Evento / Campaña' : '✨ Crear Convocatoria / Campaña'}
+        title={editingEvent ? 'Editar Evento / Campaña' : 'Crear Convocatoria / Campaña'}
         size="lg"
         footer={
           <div className="flex justify-end gap-3 w-full">
@@ -778,14 +984,15 @@ export const OrgEvents: React.FC = () => {
         <form id="event-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-h-[60vh] overflow-y-auto px-1 pr-2">
           {formError && (
             <div className="p-3.5 bg-red-50 border border-red-200 text-xs text-red-700 rounded-xl font-bold flex items-center gap-2">
-              <span>⚠️</span> {formError}
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+              <span>{formError}</span>
             </div>
           )}
 
           {/* Sección 1: Información General */}
           <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-150 shadow-2xs">
             <h4 className="text-xs font-black uppercase tracking-wider text-neutral-800 flex items-center gap-1.5 border-b border-neutral-200/60 pb-2 mb-3">
-              <span>📋</span> Información General de la Campaña
+              Información General de la Campaña
             </h4>
             
             <Input
@@ -854,7 +1061,7 @@ export const OrgEvents: React.FC = () => {
           {/* Sección 2: Imagen del Evento */}
           <div className="bg-neutral-50/50 p-5 rounded-2xl border border-neutral-150 space-y-4 shadow-2xs">
             <h4 className="text-xs font-black uppercase tracking-wider text-neutral-800 flex items-center gap-1.5 border-b border-neutral-200/60 pb-2 mb-2">
-              <span>🖼️</span> Imagen Ilustrativa del Evento
+              Imagen Ilustrativa del Evento
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-4">
@@ -894,7 +1101,7 @@ export const OrgEvents: React.FC = () => {
                   </div>
                 ) : (
                   <div className="text-center text-neutral-400 p-2">
-                    <p className="text-2xl">📷</p>
+                    <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400 font-bold text-xs">IMG</div>
                     <span className="text-[10px] font-extrabold block mt-1 uppercase tracking-wider text-neutral-500">Sin imagen</span>
                     <span className="text-[9px] text-neutral-400 block mt-0.5">Se usará un banner automático por categoría</span>
                   </div>
@@ -906,7 +1113,7 @@ export const OrgEvents: React.FC = () => {
           {/* Sección 3: Ubicación */}
           <div className="space-y-5 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-150 shadow-2xs">
             <h4 className="text-xs font-black uppercase tracking-wider text-neutral-800 flex items-center gap-1.5 border-b border-neutral-200/60 pb-2 mb-2">
-              <span>📍</span> Ubicación y Geolocalización
+              Ubicación y Geolocalización
             </h4>
             
             {/* Embedded map location picker */}
@@ -919,59 +1126,37 @@ export const OrgEvents: React.FC = () => {
 
             {/* Address Form Fields */}
             <Input
-              label="Dirección Completa *"
+              label="Dirección Completa en Kennedy *"
               error={errors.direccion?.message}
               {...register('direccion', { required: 'La dirección completa es obligatoria' })}
-              placeholder="Ej. Calle 26 # 50-00"
+              placeholder="Ej. Calle 42 Sur # 78K - 10"
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Barrio *"
+                label="Barrio en Kennedy *"
                 error={errors.barrio?.message}
                 {...register('barrio', { required: 'El barrio es obligatorio' })}
-                placeholder="Ej. Ciudad Salitre"
+                placeholder="Ej. Kennedy Central, Castilla, Timiza, Patio Bonito"
               />
 
-              <Input
-                label="Localidad *"
-                error={errors.localidad?.message}
-                {...register('localidad', { required: 'La localidad es obligatoria' })}
-                placeholder="Ej. Fontibón"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input
-                label="Ciudad *"
-                error={errors.ciudad?.message}
-                {...register('ciudad', { required: 'La ciudad es obligatoria' })}
-              />
-
-              <Input
-                label="Departamento *"
-                error={errors.departamento?.message}
-                {...register('departamento', { required: 'El departamento es obligatorio' })}
-              />
-
-              <Input
-                label="País *"
-                error={errors.pais?.message}
-                {...register('pais', { required: 'El país es obligatorio' })}
-              />
+              <div className="flex flex-col justify-center px-4 py-2 bg-neutral-100 rounded-xl border border-neutral-200 text-xs">
+                <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400">Zona de Cobertura</span>
+                <span className="font-bold text-neutral-800">Localidad de Kennedy — Bogotá D.C.</span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Nombre del Lugar (Opcional)"
                 {...register('nombre_lugar')}
-                placeholder="Ej. Parque Simón Bolívar - Zona 3"
+                placeholder="Ej. Salón Comunal / Parque Timiza"
               />
 
               <Input
                 label="Punto de Referencia (Opcional)"
                 {...register('punto_referencia')}
-                placeholder="Ej. Al lado de la concha acústica"
+                placeholder="Ej. Frente a la estación o CAI"
               />
             </div>
 
@@ -1018,6 +1203,9 @@ export const OrgEvents: React.FC = () => {
 export const OrgCampaigns: React.FC = () => {
   const { user } = useAuth();
   const [donations, setDonations] = useState<DonacionCompleta[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState('todos');
+  const [categoryFilter, setCategoryFilter] = useState('todas');
   const [selectedDonation, setSelectedDonation] = useState<DonacionCompleta | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -1031,6 +1219,28 @@ export const OrgCampaigns: React.FC = () => {
     loadDonations();
   }, [user]);
 
+  const categories = Array.from(new Set(donations.map(d => d.categoria).filter(Boolean)));
+
+  const filteredDonations = donations.filter(don => {
+    const matchesSearch = searchTerm === '' ||
+      (don.usuarioNombre || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (don.categoria || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (don.objeto?.descripcion || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = typeFilter === 'todos' || don.tipo === typeFilter;
+    const matchesCategory = categoryFilter === 'todas' || don.categoria === categoryFilter;
+    return matchesSearch && matchesType && matchesCategory;
+  });
+
+  const {
+    paginatedItems: paginatedDonations,
+    currentPage,
+    totalPages,
+    pageSize,
+    totalItems,
+    setPage,
+    setPageSize
+  } = usePagination(filteredDonations, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
+
   const handleOpenDetails = (don: DonacionCompleta) => {
     setSelectedDonation(don);
     setIsModalOpen(true);
@@ -1038,9 +1248,42 @@ export const OrgCampaigns: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-neutral-900 uppercase tracking-wider">Donaciones Recibidas</h1>
-        <p className="text-xs text-neutral-500 mt-1">Consulta los registros de apoyo y los fondos que los voluntarios han destinado a tu sede.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-neutral-900 uppercase tracking-wider">Donaciones Recibidas</h1>
+          <p className="text-xs text-neutral-500 mt-1">Consulta los registros de apoyo y los fondos que los voluntarios han destinado a tu sede.</p>
+        </div>
+        <Link to="/donations">
+          <Button variant="primary" className="flex items-center gap-2 shadow-xs">
+            <Heart className="w-4 h-4 fill-white" />
+            <span>Hacer una Donación</span>
+          </Button>
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <SearchBar
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Buscar por donante o causa..."
+        />
+        <Select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          options={[
+            { value: 'todos', label: 'Todos los tipos' },
+            { value: 'monetaria', label: 'Monetaria' },
+            { value: 'objeto', label: 'Especie / Objeto' },
+          ]}
+        />
+        <Select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          options={[
+            { value: 'todas', label: 'Todas las categorías' },
+            ...categories.map(c => ({ value: c, label: c }))
+          ]}
+        />
       </div>
 
       {donations.length === 0 ? (
@@ -1048,16 +1291,34 @@ export const OrgCampaigns: React.FC = () => {
           title="No has recibido donaciones"
           description="Aún no se registran donaciones para tu organización mediante la plataforma."
         />
+      ) : paginatedDonations.length === 0 ? (
+        <EmptyState
+          title="No se encontraron donaciones"
+          description="Ninguna donación coincide con los criterios de búsqueda o filtros seleccionados."
+        />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {donations.map((don) => (
-            <DonationCard
-              key={don.id}
-              donation={don}
-              onViewDetails={handleOpenDetails}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {paginatedDonations.map((don) => (
+              <DonationCard
+                key={don.id}
+                donation={don}
+                onViewDetails={handleOpenDetails}
+              />
+            ))}
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            pageSize={pageSize}
+            onPageSizeChange={setPageSize}
+            totalItems={totalItems}
+            itemName="donaciones"
+            pageSizeOptions={[5, 10, 15]}
+          />
+        </>
       )}
 
       <DonationDetailsModal
@@ -1096,6 +1357,14 @@ export const OrgVolunteers: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'voluntarios' | 'beneficiarios'>('voluntarios');
   const [volunteers, setVolunteers] = useState<VolunteerAssoc[]>([]);
   const [beneficiarioPostulaciones, setBeneficiarioPostulaciones] = useState<Postulacion[]>([]);
+
+  // Filtros voluntarios
+  const [volSearchTerm, setVolSearchTerm] = useState('');
+  const [volEventFilter, setVolEventFilter] = useState('todas');
+
+  // Filtros beneficiarios
+  const [benSearchTerm, setBenSearchTerm] = useState('');
+  const [benStatusFilter, setBenStatusFilter] = useState('todos');
 
   // Modals state
   const [selectedVolunteerModal, setSelectedVolunteerModal] = useState<VolunteerAssoc | null>(null);
@@ -1161,6 +1430,51 @@ export const OrgVolunteers: React.FC = () => {
     const benPost = await PostulacionService.getByOrganization(orgIdToUse, 'beneficiario');
     setBeneficiarioPostulaciones(benPost);
   }
+
+  // Lista única de eventos para el selector
+  const volunteerEvents = Array.from(new Set(volunteers.map(v => v.eventoNombre).filter(Boolean)));
+
+  // Filtrado de voluntarios
+  const filteredVolunteers = volunteers.filter(v => {
+    const matchesSearch = volSearchTerm === '' ||
+      v.nombre.toLowerCase().includes(volSearchTerm.toLowerCase()) ||
+      v.correo.toLowerCase().includes(volSearchTerm.toLowerCase()) ||
+      v.telefono.toLowerCase().includes(volSearchTerm.toLowerCase()) ||
+      v.eventoNombre.toLowerCase().includes(volSearchTerm.toLowerCase());
+    const matchesEvent = volEventFilter === 'todas' || v.eventoNombre === volEventFilter;
+    return matchesSearch && matchesEvent;
+  });
+
+  const {
+    paginatedItems: paginatedVolunteers,
+    currentPage: volPage,
+    totalPages: volTotalPages,
+    pageSize: volPageSize,
+    totalItems: volTotalItems,
+    setPage: setVolPage,
+    setPageSize: setVolPageSize
+  } = usePagination(filteredVolunteers, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
+
+  // Filtrado de beneficiarios
+  const filteredBeneficiarios = beneficiarioPostulaciones.filter(b => {
+    const matchesSearch = benSearchTerm === '' ||
+      (b.usuarioNombre || '').toLowerCase().includes(benSearchTerm.toLowerCase()) ||
+      (b.eventoNombre || '').toLowerCase().includes(benSearchTerm.toLowerCase()) ||
+      (b.usuarioCorreo || '').toLowerCase().includes(benSearchTerm.toLowerCase()) ||
+      (b.usuarioTelefono || '').toLowerCase().includes(benSearchTerm.toLowerCase());
+    const matchesStatus = benStatusFilter === 'todos' || b.estadoPostulacion === benStatusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const {
+    paginatedItems: paginatedBeneficiarios,
+    currentPage: benPage,
+    totalPages: benTotalPages,
+    pageSize: benPageSize,
+    totalItems: benTotalItems,
+    setPage: setBenPage,
+    setPageSize: setBenPageSize
+  } = usePagination(filteredBeneficiarios, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
 
   const handleUpdateStatus = async (id: string, nuevoEstado: 'aprobado' | 'rechazado') => {
     try {
@@ -1234,145 +1548,206 @@ export const OrgVolunteers: React.FC = () => {
       </div>
 
       {activeTab === 'voluntarios' ? (
-        <Table<VolunteerAssoc>
-          headers={['Voluntario', 'Campaña en la que participa', 'Correo Electrónico', 'Número de Teléfono', 'Acciones']}
-          data={volunteers}
-          renderRow={(item) => (
-            <tr key={item.id} className="hover:bg-neutral-50 text-xs">
-              <td className="px-5 py-3 font-bold text-neutral-900">
-                <UserLink
-                  userId={item.usuarioId || item.id}
-                  name={item.nombre}
-                  role="voluntario"
-                  size="sm"
-                />
-              </td>
-              <td className="px-5 py-3 font-semibold text-red-600">{item.eventoNombre}</td>
-              <td className="px-5 py-3 font-medium text-neutral-600">
-                <div className="flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                  <span>{item.correo}</span>
-                </div>
-              </td>
-              <td className="px-5 py-3 font-medium text-neutral-600">
-                <div className="flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                  <span>{item.telefono}</span>
-                </div>
-              </td>
-              <td className="px-5 py-3">
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    variant="outline"
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SearchBar
+              value={volSearchTerm}
+              onChange={setVolSearchTerm}
+              placeholder="Buscar voluntario, correo o campaña..."
+            />
+            <Select
+              value={volEventFilter}
+              onChange={(e) => setVolEventFilter(e.target.value)}
+              options={[
+                { value: 'todas', label: 'Todas las campañas' },
+                ...volunteerEvents.map(evt => ({ value: evt, label: evt }))
+              ]}
+            />
+          </div>
+
+          <Table<VolunteerAssoc>
+            headers={['Voluntario', 'Campaña en la que participa', 'Correo Electrónico', 'Número de Teléfono', 'Acciones']}
+            data={paginatedVolunteers}
+            renderRow={(item) => (
+              <tr key={item.id} className="hover:bg-neutral-50 text-xs">
+                <td className="px-5 py-3 font-bold text-neutral-900">
+                  <UserLink
+                    userId={item.usuarioId || item.id}
+                    name={item.nombre}
+                    role="voluntario"
                     size="sm"
-                    className="text-neutral-700 hover:bg-neutral-100 text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 font-semibold"
-                    onClick={() => setSelectedVolunteerModal(item)}
-                  >
-                    <Eye className="w-3.5 h-3.5 text-neutral-500" />
-                    Ver
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 hover:bg-red-50 border-red-200 text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 font-semibold"
-                    onClick={() => setDeleteConfirmTarget({ type: 'voluntario', item })}
-                  >
-                    <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                    Eliminar
-                  </Button>
-                </div>
-              </td>
-            </tr>
-          )}
-        />
+                  />
+                </td>
+                <td className="px-5 py-3 font-semibold text-red-600">{item.eventoNombre}</td>
+                <td className="px-5 py-3 font-medium text-neutral-600">
+                  <div className="flex items-center gap-1">
+                    <Mail className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                    <span>{item.correo}</span>
+                  </div>
+                </td>
+                <td className="px-5 py-3 font-medium text-neutral-600">
+                  <div className="flex items-center gap-1">
+                    <Phone className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                    <span>{item.telefono}</span>
+                  </div>
+                </td>
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-neutral-700 hover:bg-neutral-100 text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 font-semibold"
+                      onClick={() => setSelectedVolunteerModal(item)}
+                    >
+                      <Eye className="w-3.5 h-3.5 text-neutral-500" />
+                      Ver
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:bg-red-50 border-red-200 text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 font-semibold"
+                      onClick={() => setDeleteConfirmTarget({ type: 'voluntario', item })}
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                      Eliminar
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            )}
+          />
+
+          <Pagination
+            currentPage={volPage}
+            totalPages={volTotalPages}
+            onPageChange={setVolPage}
+            pageSize={volPageSize}
+            onPageSizeChange={setVolPageSize}
+            totalItems={volTotalItems}
+            itemName="voluntarios"
+            pageSizeOptions={[5, 10, 15]}
+          />
+        </div>
       ) : (
         <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SearchBar
+              value={benSearchTerm}
+              onChange={setBenSearchTerm}
+              placeholder="Buscar beneficiario, correo o evento..."
+            />
+            <Select
+              value={benStatusFilter}
+              onChange={(e) => setBenStatusFilter(e.target.value)}
+              options={[
+                { value: 'todos', label: 'Todos los estados' },
+                { value: 'pendiente', label: 'Pendientes' },
+                { value: 'aprobado', label: 'Aprobados' },
+                { value: 'confirmado', label: 'Confirmados' },
+                { value: 'rechazado', label: 'Rechazados' },
+              ]}
+            />
+          </div>
+
           {beneficiarioPostulaciones.length === 0 ? (
             <EmptyState
               title="Sin Postulaciones de Beneficiarios"
               description="Aún no se han recibido solicitudes de beneficiarios para tus eventos activos."
             />
           ) : (
-            <Table<Postulacion>
-              headers={['Beneficiario', 'Evento / Jornada', 'Contacto', 'Fecha Postulación', 'Estado', 'Acciones']}
-              data={beneficiarioPostulaciones}
-              renderRow={(item) => (
-                <tr key={item.id} className="hover:bg-neutral-50 text-xs">
-                  <td className="px-5 py-3 font-bold text-neutral-900">
-                    <UserLink
-                      userId={item.usuarioId}
-                      name={item.usuarioNombre || `Usuario #${item.usuarioId}`}
-                      role="beneficiario"
-                      size="sm"
-                    />
-                  </td>
-                  <td className="px-5 py-3 font-bold text-emerald-800">
-                    {item.eventoNombre || `Evento #${item.eventoId}`}
-                  </td>
-                  <td className="px-5 py-3 text-neutral-600">
-                    <div>{item.usuarioCorreo}</div>
-                    <div className="text-[10px] text-neutral-400">{item.usuarioTelefono}</div>
-                  </td>
-                  <td className="px-5 py-3 text-neutral-500 font-medium">
-                    {formatDate(item.fechaPostulacion)}
-                  </td>
-                  <td className="px-5 py-3">
-                    <Badge variant={
-                      item.estadoPostulacion === 'aprobado' || item.estadoPostulacion === 'confirmado' ? 'success' :
-                      item.estadoPostulacion === 'rechazado' ? 'danger' : 'warning'
-                    }>
-                      {item.estadoPostulacion}
-                    </Badge>
-                  </td>
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <Button
-                        variant="outline"
+            <>
+              <Table<Postulacion>
+                headers={['Beneficiario', 'Evento / Jornada', 'Contacto', 'Fecha Postulación', 'Estado', 'Acciones']}
+                data={paginatedBeneficiarios}
+                renderRow={(item) => (
+                  <tr key={item.id} className="hover:bg-neutral-50 text-xs">
+                    <td className="px-5 py-3 font-bold text-neutral-900">
+                      <UserLink
+                        userId={item.usuarioId}
+                        name={item.usuarioNombre || `Usuario #${item.usuarioId}`}
+                        role="beneficiario"
                         size="sm"
-                        className="text-neutral-700 hover:bg-neutral-100 text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 font-semibold"
-                        onClick={() => setSelectedBeneficiarioModal(item)}
-                      >
-                        <Eye className="w-3.5 h-3.5 text-neutral-500" />
-                        Ver
-                      </Button>
+                      />
+                    </td>
+                    <td className="px-5 py-3 font-bold text-emerald-800">
+                      {item.eventoNombre || `Evento #${item.eventoId}`}
+                    </td>
+                    <td className="px-5 py-3 text-neutral-600">
+                      <div>{item.usuarioCorreo}</div>
+                      <div className="text-[10px] text-neutral-400">{item.usuarioTelefono}</div>
+                    </td>
+                    <td className="px-5 py-3 text-neutral-500 font-medium">
+                      {formatDate(item.fechaPostulacion)}
+                    </td>
+                    <td className="px-5 py-3">
+                      <Badge variant={
+                        item.estadoPostulacion === 'aprobado' || item.estadoPostulacion === 'confirmado' ? 'success' :
+                        item.estadoPostulacion === 'rechazado' ? 'danger' : 'warning'
+                      }>
+                        {item.estadoPostulacion}
+                      </Badge>
+                    </td>
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-neutral-700 hover:bg-neutral-100 text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 font-semibold"
+                          onClick={() => setSelectedBeneficiarioModal(item)}
+                        >
+                          <Eye className="w-3.5 h-3.5 text-neutral-500" />
+                          Ver
+                        </Button>
 
-                      {item.estadoPostulacion === 'pendiente' && (
-                        <>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            className="bg-emerald-700 hover:bg-emerald-800 text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 font-semibold"
-                            onClick={() => handleUpdateStatus(item.id, 'aprobado')}
-                          >
-                            <CheckCircle className="w-3.5 h-3.5" />
-                            Aprobar
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-amber-700 border-amber-300 hover:bg-amber-50 text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 font-semibold"
-                            onClick={() => handleUpdateStatus(item.id, 'rechazado')}
-                          >
-                            <XCircle className="w-3.5 h-3.5" />
-                            Rechazar
-                          </Button>
-                        </>
-                      )}
+                        {item.estadoPostulacion === 'pendiente' && (
+                          <>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              className="bg-emerald-700 hover:bg-emerald-800 text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 font-semibold"
+                              onClick={() => handleUpdateStatus(item.id, 'aprobado')}
+                            >
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              Aprobar
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-amber-700 border-amber-300 hover:bg-amber-50 text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 font-semibold"
+                              onClick={() => handleUpdateStatus(item.id, 'rechazado')}
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                              Rechazar
+                            </Button>
+                          </>
+                        )}
 
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:bg-red-50 border-red-200 text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 font-semibold"
-                        onClick={() => setDeleteConfirmTarget({ type: 'beneficiario', item })}
-                      >
-                        <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                        Eliminar
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:bg-red-50 border-red-200 text-[11px] py-1 px-2.5 rounded-lg flex items-center gap-1 font-semibold"
+                          onClick={() => setDeleteConfirmTarget({ type: 'beneficiario', item })}
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                          Eliminar
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              />
+
+              <Pagination
+                currentPage={benPage}
+                totalPages={benTotalPages}
+                onPageChange={setBenPage}
+                pageSize={benPageSize}
+                onPageSizeChange={setBenPageSize}
+                totalItems={benTotalItems}
+                itemName="beneficiarios"
+                pageSizeOptions={[5, 10, 15]}
+              />
+            </>
           )}
         </div>
       )}

@@ -136,5 +136,38 @@ export const SolicitudVerificacionModel = {
       db.saveFallbackData();
       return true;
     }
+  },
+
+  async update(id: number, data: Partial<SolicitudVerificacionDB>): Promise<boolean> {
+    if (db.isMySQLConnected()) {
+      const keys = Object.keys(data);
+      if (keys.length === 0) return true;
+      const setClause = keys.map(k => `${k} = ?`).join(', ');
+      const values = [...Object.values(data), id];
+      const [result] = await db.query(`UPDATE solicitudes_verificacion SET ${setClause} WHERE id_solicitud = ?`, values);
+      return (result as any).affectedRows > 0;
+    } else {
+      const fallback = db.getFallbackData();
+      const list = fallback.solicitudes_verificacion || [];
+      const index = list.findIndex((s: any) => s.id_solicitud === id);
+      if (index === -1) return false;
+      list[index] = { ...list[index], ...data };
+      db.saveFallbackData();
+      return true;
+    }
+  },
+
+  async delete(id: number): Promise<boolean> {
+    if (db.isMySQLConnected()) {
+      const [result] = await db.query('DELETE FROM solicitudes_verificacion WHERE id_solicitud = ?', [id]);
+      return (result as any).affectedRows > 0;
+    } else {
+      const fallback = db.getFallbackData();
+      const list = fallback.solicitudes_verificacion || [];
+      const prevLen = list.length;
+      fallback.solicitudes_verificacion = list.filter((s: any) => s.id_solicitud !== id);
+      db.saveFallbackData();
+      return fallback.solicitudes_verificacion.length < prevLen;
+    }
   }
 };

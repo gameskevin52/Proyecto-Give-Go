@@ -5,10 +5,22 @@ import { colors } from '../../../config/theme';
 
 interface AppInputProps extends TextInputProps {
   label?: string;
+  value?: string;
+  onChangeText?: (text: string) => void;
+  placeholder?: string;
   error?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   wrapperStyle?: StyleProp<ViewStyle>;
+  multiline?: boolean;
+  numberOfLines?: number;
+  secureTextEntry?: boolean;
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  keyboardType?: any;
+  maxLength?: number;
+  onFocus?: (e: any) => void;
+  onBlur?: (e: any) => void;
+  [key: string]: any;
 }
 
 export const AppInput: React.FC<AppInputProps> = ({

@@ -3,7 +3,8 @@ import { useForm } from 'react-hook-form';
 import { useAuth } from '../../contexts/AuthContext';
 import { EventService, DonationService, DonacionCompleta } from '../../services/db';
 import { Evento, Usuario } from '../../types';
-import { Button, Input, Card, Table, Badge, Alert, EmptyState, ConfirmDialog, formatCOP, formatDate } from '../../components/UI';
+import { Button, Input, Select, Card, Table, Badge, Alert, EmptyState, ConfirmDialog, SearchBar, Pagination, formatCOP, formatDate } from '../../components/UI';
+import { usePagination } from '../../hooks';
 import { Calendar, Heart, Award, ShieldCheck, User, Trash2, HelpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DonationCard } from '../../components/DonationCard';
@@ -19,6 +20,14 @@ export const VolunteerDashboard: React.FC = () => {
   const [myEvents, setMyEvents] = useState<Evento[]>([]);
   const [myDonations, setMyDonations] = useState<DonacionCompleta[]>([]);
 
+  // Filtros de eventos
+  const [eventSearch, setEventSearch] = useState('');
+  const [eventCategory, setEventCategory] = useState('todas');
+
+  // Filtros de donaciones
+  const [donSearch, setDonSearch] = useState('');
+  const [donType, setDonType] = useState('todos');
+
   useEffect(() => {
     if (!user) return;
     async function loadData() {
@@ -30,6 +39,44 @@ export const VolunteerDashboard: React.FC = () => {
     }
     loadData();
   }, [user]);
+
+  const eventCategories = Array.from(new Set(myEvents.map(e => e.categoria).filter(Boolean)));
+
+  const filteredEvents = myEvents.filter(evt => {
+    const matchesSearch = eventSearch === '' ||
+      evt.nombre.toLowerCase().includes(eventSearch.toLowerCase()) ||
+      evt.descripcion.toLowerCase().includes(eventSearch.toLowerCase());
+    const matchesCat = eventCategory === 'todas' || evt.categoria === eventCategory;
+    return matchesSearch && matchesCat;
+  });
+
+  const {
+    paginatedItems: paginatedEvents,
+    currentPage: evtPage,
+    totalPages: evtTotalPages,
+    pageSize: evtPageSize,
+    totalItems: evtTotalItems,
+    setPage: setEvtPage,
+    setPageSize: setEvtPageSize
+  } = usePagination(filteredEvents, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
+
+  const filteredDonations = myDonations.filter(don => {
+    const matchesSearch = donSearch === '' ||
+      (don.organizacionNombre || '').toLowerCase().includes(donSearch.toLowerCase()) ||
+      (don.categoria || '').toLowerCase().includes(donSearch.toLowerCase());
+    const matchesType = donType === 'todos' || don.tipo === donType;
+    return matchesSearch && matchesType;
+  });
+
+  const {
+    paginatedItems: paginatedDonations,
+    currentPage: donPage,
+    totalPages: donTotalPages,
+    pageSize: donPageSize,
+    totalItems: donTotalItems,
+    setPage: setDonPage,
+    setPageSize: setDonPageSize
+  } = usePagination(filteredDonations, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
 
   const totalEcon = myDonations
     .filter(d => d.tipo === 'monetaria' && d.monetaria)
@@ -146,6 +193,22 @@ export const VolunteerDashboard: React.FC = () => {
           }
         >
           <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <SearchBar
+                value={eventSearch}
+                onChange={setEventSearch}
+                placeholder="Buscar campaña..."
+              />
+              <Select
+                value={eventCategory}
+                onChange={(e) => setEventCategory(e.target.value)}
+                options={[
+                  { value: 'todas', label: 'Todas las categorías' },
+                  ...eventCategories.map(c => ({ value: c, label: c }))
+                ]}
+              />
+            </div>
+
             {myEvents.length === 0 ? (
               <EmptyState
                 title="Aún no te has inscrito en eventos"
@@ -153,8 +216,10 @@ export const VolunteerDashboard: React.FC = () => {
                 actionText="Buscar Eventos Disponibles"
                 onAction={() => window.location.href = '/events'}
               />
+            ) : paginatedEvents.length === 0 ? (
+              <p className="text-xs text-neutral-400 italic text-center py-6">No se encontraron campañas con los filtros aplicados.</p>
             ) : (
-              myEvents.map((evt) => (
+              paginatedEvents.map((evt) => (
                 <div key={evt.id} className="p-4 bg-neutral-50/80 hover:bg-neutral-100/80 border border-neutral-200/80 rounded-xl transition-colors flex justify-between items-center gap-3">
                   <div className="space-y-1">
                     <h4 className="font-extrabold text-neutral-900 text-sm leading-snug">{evt.nombre}</h4>
@@ -168,6 +233,17 @@ export const VolunteerDashboard: React.FC = () => {
                 </div>
               ))
             )}
+
+            <Pagination
+              currentPage={evtPage}
+              totalPages={evtTotalPages}
+              onPageChange={setEvtPage}
+              pageSize={evtPageSize}
+              onPageSizeChange={setEvtPageSize}
+              totalItems={evtTotalItems}
+              itemName="campañas"
+              pageSizeOptions={[5, 10, 15]}
+            />
           </div>
         </Card>
 
@@ -184,6 +260,23 @@ export const VolunteerDashboard: React.FC = () => {
           }
         >
           <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <SearchBar
+                value={donSearch}
+                onChange={setDonSearch}
+                placeholder="Buscar por organización..."
+              />
+              <Select
+                value={donType}
+                onChange={(e) => setDonType(e.target.value)}
+                options={[
+                  { value: 'todos', label: 'Todos los tipos' },
+                  { value: 'monetaria', label: 'Monetaria' },
+                  { value: 'objeto', label: 'Especie / Objeto' },
+                ]}
+              />
+            </div>
+
             {myDonations.length === 0 ? (
               <EmptyState
                 title="Sin donaciones registradas"
@@ -191,8 +284,10 @@ export const VolunteerDashboard: React.FC = () => {
                 actionText="Hacer una Donación"
                 onAction={() => window.location.href = '/donations'}
               />
+            ) : paginatedDonations.length === 0 ? (
+              <p className="text-xs text-neutral-400 italic text-center py-6">No se encontraron donaciones con los filtros aplicados.</p>
             ) : (
-              myDonations.slice(0, 4).map((don) => (
+              paginatedDonations.map((don) => (
                 <div key={don.id} className="p-4 bg-neutral-50/80 hover:bg-neutral-100/80 border border-neutral-200/80 rounded-xl transition-colors flex justify-between items-center gap-3">
                   <div className="space-y-1">
                     <p className="font-extrabold text-neutral-900 text-sm">
@@ -208,6 +303,17 @@ export const VolunteerDashboard: React.FC = () => {
                 </div>
               ))
             )}
+
+            <Pagination
+              currentPage={donPage}
+              totalPages={donTotalPages}
+              onPageChange={setDonPage}
+              pageSize={donPageSize}
+              onPageSizeChange={setDonPageSize}
+              totalItems={donTotalItems}
+              itemName="donaciones"
+              pageSizeOptions={[5, 10, 15]}
+            />
           </div>
         </Card>
       </div>
@@ -329,6 +435,8 @@ export const VolunteerProfile: React.FC = () => {
 export const VolunteerEvents: React.FC = () => {
   const { user } = useAuth();
   const [registeredEvents, setRegisteredEvents] = useState<Evento[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('todas');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
@@ -341,6 +449,26 @@ export const VolunteerEvents: React.FC = () => {
     const list = await EventService.getEventsByVolunteer(user.id);
     setRegisteredEvents(list);
   }
+
+  const categories = Array.from(new Set(registeredEvents.map(e => e.categoria).filter(Boolean)));
+
+  const filteredEvents = registeredEvents.filter(evt => {
+    const matchesSearch = searchTerm === '' ||
+      evt.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      evt.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCat = categoryFilter === 'todas' || evt.categoria === categoryFilter;
+    return matchesSearch && matchesCat;
+  });
+
+  const {
+    paginatedItems: paginatedEvents,
+    currentPage,
+    totalPages,
+    pageSize,
+    totalItems,
+    setPage,
+    setPageSize
+  } = usePagination(filteredEvents, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
 
   const handleOpenCancel = (evtId: string) => {
     setSelectedEventId(evtId);
@@ -368,9 +496,25 @@ export const VolunteerEvents: React.FC = () => {
         </Link>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SearchBar
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Buscar evento..."
+        />
+        <Select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          options={[
+            { value: 'todas', label: 'Todas las categorías' },
+            ...categories.map(c => ({ value: c, label: c }))
+          ]}
+        />
+      </div>
+
       <Table<Evento>
         headers={['Campaña', 'Categoría', 'Fecha', 'Estado', 'Acciones']}
-        data={registeredEvents}
+        data={paginatedEvents}
         renderRow={(item) => (
           <tr key={item.id} className="hover:bg-neutral-50">
             <td className="px-5 py-3">
@@ -395,6 +539,17 @@ export const VolunteerEvents: React.FC = () => {
         )}
       />
 
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
+        totalItems={totalItems}
+        itemName="eventos"
+        pageSizeOptions={[5, 10, 15]}
+      />
+
       <ConfirmDialog
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
@@ -414,6 +569,9 @@ export const VolunteerEvents: React.FC = () => {
 export const VolunteerDonations: React.FC = () => {
   const { user } = useAuth();
   const [donations, setDonations] = useState<DonacionCompleta[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState('todos');
+  const [categoryFilter, setCategoryFilter] = useState('todas');
   const [selectedDonation, setSelectedDonation] = useState<DonacionCompleta | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -425,6 +583,27 @@ export const VolunteerDonations: React.FC = () => {
     }
     loadDons();
   }, [user]);
+
+  const categories = Array.from(new Set(donations.map(d => d.categoria).filter(Boolean)));
+
+  const filteredDonations = donations.filter(don => {
+    const matchesSearch = searchTerm === '' ||
+      (don.organizacionNombre || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (don.categoria || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = typeFilter === 'todos' || don.tipo === typeFilter;
+    const matchesCat = categoryFilter === 'todas' || don.categoria === categoryFilter;
+    return matchesSearch && matchesType && matchesCat;
+  });
+
+  const {
+    paginatedItems: paginatedDonations,
+    currentPage,
+    totalPages,
+    pageSize,
+    totalItems,
+    setPage,
+    setPageSize
+  } = usePagination(filteredDonations, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
 
   const handleOpenDetails = (don: DonacionCompleta) => {
     setSelectedDonation(don);
@@ -445,6 +624,31 @@ export const VolunteerDonations: React.FC = () => {
         </Link>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <SearchBar
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Buscar donación..."
+        />
+        <Select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          options={[
+            { value: 'todos', label: 'Todos los tipos' },
+            { value: 'monetaria', label: 'Monetaria' },
+            { value: 'objeto', label: 'Especie / Objeto' },
+          ]}
+        />
+        <Select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          options={[
+            { value: 'todas', label: 'Todas las categorías' },
+            ...categories.map(c => ({ value: c, label: c }))
+          ]}
+        />
+      </div>
+
       {donations.length === 0 ? (
         <EmptyState
           title="No tienes donaciones registradas"
@@ -455,16 +659,34 @@ export const VolunteerDonations: React.FC = () => {
             </Link>
           }
         />
+      ) : paginatedDonations.length === 0 ? (
+        <EmptyState
+          title="No se encontraron donaciones"
+          description="No hay donaciones que coincidan con los filtros aplicados."
+        />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {donations.map((don) => (
-            <DonationCard
-              key={don.id}
-              donation={don}
-              onViewDetails={handleOpenDetails}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {paginatedDonations.map((don) => (
+              <DonationCard
+                key={don.id}
+                donation={don}
+                onViewDetails={handleOpenDetails}
+              />
+            ))}
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            pageSize={pageSize}
+            onPageSizeChange={setPageSize}
+            totalItems={totalItems}
+            itemName="donaciones"
+            pageSizeOptions={[5, 10, 15]}
+          />
+        </>
       )}
 
       <DonationDetailsModal

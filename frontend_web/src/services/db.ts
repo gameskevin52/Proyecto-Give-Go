@@ -120,10 +120,10 @@ export const UserService = {
     return true;
   },
 
-  async forgotPassword(correo: string, nuevaPassword?: string): Promise<{ correo: string; verified?: boolean }> {
-    return apiFetch<{ correo: string; verified?: boolean }>('/api/users/forgot-password', {
+  async forgotPassword(correo: string, nuevaPassword?: string, codigo?: string, token?: string): Promise<{ correo: string; verified?: boolean; message?: string }> {
+    return apiFetch<{ correo: string; verified?: boolean; message?: string }>('/api/users/forgot-password', {
       method: 'POST',
-      body: JSON.stringify({ correo, nuevaPassword })
+      body: JSON.stringify({ correo, nuevaPassword, codigo, token })
     });
   }
 };

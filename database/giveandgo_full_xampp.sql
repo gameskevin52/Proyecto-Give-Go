@@ -180,7 +180,8 @@ INSERT INTO `usuarios` (
 (5, 3, 'Beneficiario', 'María', NULL, 'Rodríguez', NULL, '1979-09-24', '+57 301 555 6666', 'maria@beneficiary.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 2, 'Calle 8A con Carrera 82', 'Castilla', NULL, 'Madre comunitaria en Castilla.', 1),
 (101, 4, 'Organizacion', 'Fundación Manos por Kennedy', NULL, 'Organización', NULL, NULL, '+57 300 000 0000', 'contacto@manosporkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 1, 'Calle 38 Sur # 78-45', 'Kennedy Central', NULL, 'Cuenta puente institucional.', 1),
 (102, 4, 'Organizacion', 'Fundación Bogotá Solidaria', NULL, 'Organización', NULL, NULL, '+57 300 000 0000', 'info@bogotasolidaria.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 2, 'Carrera 80 # 40B Sur-12', 'Castilla', NULL, 'Cuenta puente institucional.', 1),
-(103, 4, 'Organizacion', 'Asociación Social Ciudad Kennedy', NULL, 'Organización', NULL, NULL, '+57 300 000 0000', 'hola@ciudadkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 3, 'Avenida Ciudad de Cali # 13-08', 'Patio Bonito', NULL, 'Cuenta puente institucional.', 1)
+(103, 4, 'Organizacion', 'Asociación Social Ciudad Kennedy', NULL, 'Organización', NULL, NULL, '+57 300 000 0000', 'hola@ciudadkennedy.org', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 3, 'Avenida Ciudad de Cali # 13-08', 'Patio Bonito', NULL, 'Cuenta puente institucional.', 1),
+(500, 1, 'Admin', 'Soporte', 'Give&Go', 'Oficial', NULL, '1990-01-01', '+57 300 000 0000', 'soportegiveandgo@gmail.com', '$2b$10$tZ9C.mJjXNco/e.e2jV9SeAAL68L16S78A9oGv2o62H9R1pW61qE.', 1, 'Calle 38 Sur # 78-45', 'Kennedy Central', NULL, 'Cuenta oficial de soporte técnico Give&Go.', 1)
 ON DUPLICATE KEY UPDATE `correo`=VALUES(`correo`);
 
 -- Subtipos EER

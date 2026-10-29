@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiClient } from '../../config/api';
+import { apiClient, registerAuthErrorListener } from '../../config/api';
 import { ENV } from '../../config/env';
 import { User, AuthContextType } from './types';
 
@@ -13,6 +13,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     loadStoredSession();
+
+    const unsubscribe = registerAuthErrorListener(() => {
+      setToken(null);
+      setUser(null);
+    });
+
+    return unsubscribe;
   }, []);
 
   const loadStoredSession = async () => {
@@ -21,6 +28,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const storedUser = await AsyncStorage.getItem(ENV.STORAGE_KEYS.USER);
 
       if (storedToken && storedUser) {
+        // Verificar activamente con el backend si el token sigue siendo válido
+        try {
+          const res = await apiClient.get('/users/profile', {
+            headers: { Authorization: `Bearer ${storedToken}` },
+          });
+          if (res.data?.success && res.data?.data) {
+            setToken(storedToken);
+            setUser(res.data.data);
+            await AsyncStorage.setItem(ENV.STORAGE_KEYS.USER, JSON.stringify(res.data.data));
+            return;
+          }
+        } catch (verifErr: any) {
+          const status = verifErr?.response?.status;
+          const msg = (verifErr?.response?.data?.message || '').toLowerCase();
+          // Si el servidor rechaza el token por expiración o invalidez, limpiar sesión vieja
+          if (
+            status === 401 ||
+            status === 403 ||
+            msg.includes('expirado') ||
+            msg.includes('inválido') ||
+            msg.includes('token')
+          ) {
+            console.warn('⚠️ Sesión local expirada o token no reconocido por el servidor. Limpiando almacenamiento.');
+            await AsyncStorage.removeItem(ENV.STORAGE_KEYS.TOKEN);
+            await AsyncStorage.removeItem(ENV.STORAGE_KEYS.USER);
+            setToken(null);
+            setUser(null);
+            return;
+          }
+        }
+
+        // Si el backend no respondió por red o modo offline, mantener sesión local
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
       }
@@ -81,6 +120,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const registerOrganization = async (orgData: any) => {
+    try {
+      // 1. Create organization via POST /organizations
+      const res = await apiClient.post('/organizations', orgData);
+      if (!res.data.success) {
+        return { success: false, message: res.data.message || 'Error al registrar organización' };
+      }
+
+      // 2. Automatically log in with credentials
+      const loginRes = await login(orgData.correo, orgData.password);
+      return loginRes;
+    } catch (err: any) {
+      const msg = err.response?.data?.message || (err.response?.data?.errors && err.response.data.errors[0]?.mensaje) || err.message || 'Error al registrar organización';
+      return {
+        success: false,
+        message: msg,
+      };
+    }
+  };
+
   const logout = async () => {
     try {
       await AsyncStorage.removeItem(ENV.STORAGE_KEYS.TOKEN);
@@ -106,6 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         register,
+        registerOrganization,
         logout,
         updateUser,
       }}

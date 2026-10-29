@@ -21,6 +21,7 @@ async function startServer() {
     const frontendDir = path.resolve(process.cwd(), 'frontend_web');
     const vite = await createViteServer({
       root: frontendDir,
+      configFile: path.resolve(frontendDir, 'vite.config.ts'),
       server: { middlewareMode: true },
       appType: 'spa',
     });

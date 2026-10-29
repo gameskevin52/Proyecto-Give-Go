@@ -221,6 +221,13 @@ export interface DonacionObjeto {
   donacionId: string;
 }
 
+export interface DonacionCompleta extends Donacion {
+  organizacionNombre?: string;
+  usuarioNombre?: string;
+  monetaria?: DonacionMonetaria;
+  objeto?: DonacionObjeto;
+}
+
 export interface Categoria {
   id: string;
   nombre: string;

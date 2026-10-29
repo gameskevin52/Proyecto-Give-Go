@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { createEventStyles } from '../styles/createEvent.styles';
 import { AppInput } from '../../../shared/components/inputs/AppInput';
@@ -16,18 +16,37 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({ navigation }) 
     setTitulo,
     descripcion,
     setDescripcion,
+    idCategoria,
+    setIdCategoria,
+    categorias,
     fechaInicio,
     setFechaInicio,
     horaInicio,
     setHoraInicio,
+    horaFin,
+    setHoraFin,
     cupoMaximo,
     setCupoMaximo,
+    vacantesVoluntarios,
+    setVacantesVoluntarios,
+    vacantesBeneficiarios,
+    setVacantesBeneficiarios,
+    ayudaOfrecida,
+    setAyudaOfrecida,
+    nombreLugar,
+    setNombreLugar,
+    puntoReferencia,
+    setPuntoReferencia,
     direccion,
     setDireccion,
     barrio,
     setBarrio,
     localidad,
     setLocalidad,
+    ciudad,
+    setCiudad,
+    imagenUrl,
+    setImagenUrl,
     isLoading,
     errorMessage,
     handleCreate,
@@ -36,44 +55,74 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({ navigation }) 
 
   return (
     <SafeAreaView style={createEventStyles.container}>
-      <ScrollView contentContainerStyle={createEventStyles.scrollContent}>
+      <ScrollView contentContainerStyle={createEventStyles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={createEventStyles.card}>
-          <Text style={createEventStyles.title}>Crear Nueva Jornada</Text>
+          <Text style={createEventStyles.title}>Crear Convocatoria Social</Text>
           <Text style={createEventStyles.subtitle}>
-            Convoca voluntarios y personas beneficiarias para una causa social
+            Organiza jornadas comunitarias, entrega de ayudas y voluntariado en Kennedy y Bogotá
           </Text>
 
           {errorMessage ? (
-            <View style={{ backgroundColor: '#FEE2E2', padding: 10, borderRadius: 8, marginBottom: 12 }}>
-              <Text style={{ color: '#991B1B', fontWeight: '600', textAlign: 'center' }}>{errorMessage}</Text>
+            <View style={{ backgroundColor: '#FEE2E2', padding: 12, borderRadius: 8, marginBottom: 16 }}>
+              <Text style={{ color: '#991B1B', fontWeight: '700', textAlign: 'center' }}>{errorMessage}</Text>
             </View>
           ) : null}
 
+          {/* 1. Categoría */}
+          <Text style={createEventStyles.sectionTitle}>1. Categoría de la Causa</Text>
+          <View style={createEventStyles.chipContainer}>
+            {categorias.map((cat) => {
+              const isActive = idCategoria === cat.id;
+              return (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[createEventStyles.chip, isActive && createEventStyles.chipActive]}
+                  onPress={() => setIdCategoria(cat.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[createEventStyles.chipText, isActive && createEventStyles.chipTextActive]}>
+                    {cat.nombre}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* 2. Información Principal */}
+          <Text style={createEventStyles.sectionTitle}>2. Información General</Text>
           <AppInput
-            label="Título de la Convocatoria *"
-            placeholder="Ej: Jornada de Reforestación Humedal El Burro"
+            label="Título / Nombre del Evento *"
+            placeholder="Ej: Gran Jornada de Alimentos y Ropa"
             value={titulo}
             onChangeText={setTitulo}
           />
 
           <AppInput
-            label="Descripción *"
-            placeholder="Explica el objetivo, qué deben llevar los voluntarios..."
+            label="Descripción de la Causa *"
+            placeholder="Describe los objetivos, cronograma y qué deben saber los participantes..."
             value={descripcion}
             onChangeText={setDescripcion}
             multiline
             numberOfLines={4}
           />
 
+          <AppInput
+            label="Ayuda Ofrecida (para Beneficiarios)"
+            placeholder="Ej: Mercados básicos, kits escolares, atención médica..."
+            value={ayudaOfrecida}
+            onChangeText={setAyudaOfrecida}
+          />
+
+          {/* 3. Fechas y Horarios */}
+          <Text style={createEventStyles.sectionTitle}>3. Fecha y Horarios</Text>
+          <AppInput
+            label="Fecha del Evento (AAAA-MM-DD) *"
+            placeholder="2026-09-20"
+            value={fechaInicio}
+            onChangeText={setFechaInicio}
+          />
+
           <View style={createEventStyles.row}>
-            <View style={createEventStyles.halfInput}>
-              <AppInput
-                label="Fecha (YYYY-MM-DD) *"
-                placeholder="2026-09-15"
-                value={fechaInicio}
-                onChangeText={setFechaInicio}
-              />
-            </View>
             <View style={createEventStyles.halfInput}>
               <AppInput
                 label="Hora Inicio"
@@ -82,7 +131,69 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({ navigation }) 
                 onChangeText={setHoraInicio}
               />
             </View>
+            <View style={createEventStyles.halfInput}>
+              <AppInput
+                label="Hora Finalización"
+                placeholder="13:00"
+                value={horaFin}
+                onChangeText={setHoraFin}
+              />
+            </View>
           </View>
+
+          {/* 4. Cupos y Vacantes */}
+          <Text style={createEventStyles.sectionTitle}>4. Cupos y Vacantes</Text>
+          <View style={createEventStyles.row}>
+            <View style={createEventStyles.halfInput}>
+              <AppInput
+                label="Cupo Voluntarios"
+                placeholder="10"
+                value={vacantesVoluntarios}
+                onChangeText={setVacantesVoluntarios}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={createEventStyles.halfInput}>
+              <AppInput
+                label="Cupo Beneficiarios"
+                placeholder="20"
+                value={vacantesBeneficiarios}
+                onChangeText={setVacantesBeneficiarios}
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+
+          <AppInput
+            label="Cupo Total Máximo de Asistentes"
+            placeholder="30"
+            value={cupoMaximo}
+            onChangeText={setCupoMaximo}
+            keyboardType="numeric"
+          />
+
+          {/* 5. Ubicación y Puntos de Encuentro */}
+          <Text style={createEventStyles.sectionTitle}>5. Ubicación y Cobertura</Text>
+          <AppInput
+            label="Nombre del Lugar / Instalación"
+            placeholder="Ej: Salón Comunal Timiza / Parque Bellavista"
+            value={nombreLugar}
+            onChangeText={setNombreLugar}
+          />
+
+          <AppInput
+            label="Punto de Referencia"
+            placeholder="Ej: Diagonal a la estación TransMilenio Banderas"
+            value={puntoReferencia}
+            onChangeText={setPuntoReferencia}
+          />
+
+          <AppInput
+            label="Dirección Física *"
+            placeholder="Calle 40 Sur # 78 - 12"
+            value={direccion}
+            onChangeText={setDireccion}
+          />
 
           <View style={createEventStyles.row}>
             <View style={createEventStyles.halfInput}>
@@ -95,27 +206,26 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({ navigation }) 
             </View>
             <View style={createEventStyles.halfInput}>
               <AppInput
-                label="Cupo Máximo"
-                placeholder="25"
-                value={cupoMaximo}
-                onChangeText={setCupoMaximo}
-                keyboardType="numeric"
+                label="Barrio"
+                placeholder="Castilla / Timiza"
+                value={barrio}
+                onChangeText={setBarrio}
               />
             </View>
           </View>
 
           <AppInput
-            label="Dirección de Encuentro"
-            placeholder="Calle 42 Sur # 78K - 10"
-            value={direccion}
-            onChangeText={setDireccion}
+            label="Ciudad"
+            placeholder="Bogotá"
+            value={ciudad}
+            onChangeText={setCiudad}
           />
 
           <AppInput
-            label="Barrio"
-            placeholder="Castilla"
-            value={barrio}
-            onChangeText={setBarrio}
+            label="URL de Imagen o Banner (Opcional)"
+            placeholder="https://ejemplo.com/banner.jpg"
+            value={imagenUrl}
+            onChangeText={setImagenUrl}
           />
 
           <AppButton

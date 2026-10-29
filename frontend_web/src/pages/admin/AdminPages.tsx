@@ -18,6 +18,7 @@ import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { LocationPicker } from '../../components/LocationPicker';
 import { DonationCard } from '../../components/DonationCard';
 import { DonationDetailsModal } from '../../components/DonationDetailsModal';
+import { AdminTrendCharts } from '../../components/admin/AdminTrendCharts';
 import { 
   Button, 
   Input, 
@@ -35,6 +36,7 @@ import {
   formatCOP,
   formatDate
 } from '../../components/UI';
+import { usePagination } from '../../hooks';
 import { 
   Users, 
   Building2, 
@@ -51,8 +53,12 @@ import {
   BadgeCheck,
   XCircle,
   FileText,
-  Clock
+  Clock,
+  Download,
+  FileDown
 } from 'lucide-react';
+import { ExportReportsModal } from '../../components/admin/ExportReportsModal';
+import { exportEventsToPDF, exportDonationsToPDF } from '../../utils/pdfExport';
 
 /**
  * ==========================================
@@ -68,10 +74,25 @@ export const AdminDashboard: React.FC = () => {
     monetaryTotal: 0,
     requestsCount: 0,
   });
-  const [latestDonations, setLatestDonations] = useState<DonacionCompleta[]>([]);
-  const [latestEvents, setLatestEvents] = useState<Evento[]>([]);
+  const [allDonations, setAllDonations] = useState<DonacionCompleta[]>([]);
+  const [allEvents, setAllEvents] = useState<Evento[]>([]);
+  const [allUsers, setAllUsers] = useState<Usuario[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+
+  // Filtros Donaciones
+  const [donSearch, setDonSearch] = useState('');
+  const [donType, setDonType] = useState<'todos' | 'monetaria' | 'objeto'>('todos');
+
+  // Filtros Eventos
+  const [eventSearch, setEventSearch] = useState('');
+  const [eventStatus, setEventStatus] = useState<'todos' | 'activo' | 'inactivo'>('todos');
+
+  // Filtros Auditorías
   const [auditSearch, setAuditSearch] = useState('');
+  const [auditRole, setAuditRole] = useState<'todos' | 'admin' | 'organizacion' | 'voluntario' | 'beneficiario'>('todos');
+
+  // Modal de exportación a PDF
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadStats() {
@@ -95,148 +116,268 @@ export const AdminDashboard: React.FC = () => {
         requestsCount: requests.length,
       });
 
-      setLatestDonations(donations.slice(-4).reverse());
-      setLatestEvents(events.slice(-3).reverse());
+      setAllDonations(donations.slice().reverse());
+      setAllEvents(events.slice().reverse());
+      setAllUsers(users);
       setAuditLogs(audits);
     }
     loadStats();
   }, []);
 
+  // Filtrado y paginación Donaciones
+  const filteredDonations = allDonations.filter(don => {
+    const term = donSearch.toLowerCase();
+    const matchesSearch = 
+      (don.usuarioNombre || '').toLowerCase().includes(term) ||
+      (don.organizacionNombre || '').toLowerCase().includes(term) ||
+      (don.categoria || '').toLowerCase().includes(term);
+    const matchesType = donType === 'todos' || don.tipo === donType;
+    return matchesSearch && matchesType;
+  });
+
+  const {
+    paginatedData: paginatedDonations,
+    currentPage: donPage,
+    pageSize: donPageSize,
+    totalPages: donTotalPages,
+    totalItems: donTotalItems,
+    setPage: setDonPage,
+    setPageSize: setDonPageSize,
+  } = usePagination(filteredDonations, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
+
+  // Filtrado y paginación Eventos
+  const filteredEvents = allEvents.filter(evt => {
+    const term = eventSearch.toLowerCase();
+    const matchesSearch = 
+      evt.nombre.toLowerCase().includes(term) ||
+      (evt.descripcion || '').toLowerCase().includes(term) ||
+      (evt.categoria || '').toLowerCase().includes(term);
+    const matchesStatus = eventStatus === 'todos' || evt.estado === eventStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const {
+    paginatedData: paginatedEvents,
+    currentPage: eventPage,
+    pageSize: eventPageSize,
+    totalPages: eventTotalPages,
+    totalItems: eventTotalItems,
+    setPage: setEventPage,
+    setPageSize: setEventPageSize,
+  } = usePagination(filteredEvents, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
+
+  // Filtrado y paginación Auditorías
   const filteredAudits = auditLogs.filter(log => {
     const term = auditSearch.toLowerCase();
-    return (
+    const matchesSearch = 
       log.accion.toLowerCase().includes(term) ||
       log.nombre_usuario.toLowerCase().includes(term) ||
-      log.rol_usuario.toLowerCase().includes(term)
-    );
+      log.rol_usuario.toLowerCase().includes(term);
+    const matchesRole = auditRole === 'todos' || log.rol_usuario.toLowerCase() === auditRole.toLowerCase();
+    return matchesSearch && matchesRole;
   });
+
+  const {
+    paginatedData: paginatedAudits,
+    currentPage: auditPage,
+    pageSize: auditPageSize,
+    totalPages: auditTotalPages,
+    totalItems: auditTotalItems,
+    setPage: setAuditPage,
+    setPageSize: setAuditPageSize,
+  } = usePagination(filteredAudits, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
+
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-black text-neutral-900 uppercase tracking-wider">Dashboard de Administración</h1>
-        <p className="text-xs text-neutral-500 mt-1">Monitorea el estado de Give&Go y consulta métricas de participación.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-neutral-900 uppercase tracking-wider">Dashboard de Administración</h1>
+          <p className="text-xs text-neutral-500 mt-1">Monitorea el estado de Give&Go y consulta métricas de participación.</p>
+        </div>
+        <button
+          onClick={() => setIsExportModalOpen(true)}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-xs hover:shadow transition-all cursor-pointer select-none"
+          title="Descargar reportes ejecutivos, de eventos y donaciones en formato PDF"
+        >
+          <FileDown className="w-4 h-4" />
+          <span>Exportar Reportes PDF</span>
+        </button>
       </div>
 
-      {/* Grid de Métricas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 select-none">
-        <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-2xs hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold text-neutral-400 uppercase tracking-wider">Usuarios Registrados</span>
-            <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold">
-              <Users className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <p className="text-2xl font-black text-neutral-900">{stats.usersCount}</p>
-            <p className="text-[11px] font-medium text-neutral-500 mt-0.5">Voluntarios y Beneficiarios</p>
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-2xs hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold text-neutral-400 uppercase tracking-wider">Organizaciones</span>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-              <Building2 className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <p className="text-2xl font-black text-neutral-900">{stats.orgsCount}</p>
-            <p className="text-[11px] font-medium text-neutral-500 mt-0.5">Fundaciones e Instituciones</p>
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-2xs hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold text-neutral-400 uppercase tracking-wider">Eventos Comunitarios</span>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-              <Calendar className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <p className="text-2xl font-black text-neutral-900">{stats.eventsCount}</p>
-            <p className="text-[11px] font-medium text-neutral-500 mt-0.5">Causas sociales publicadas</p>
-          </div>
-        </div>
-
-        <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-2xs hover:shadow-md transition-all">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-extrabold text-neutral-400 uppercase tracking-wider">Fondos Recaudados</span>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <p className="text-2xl font-black text-emerald-700">{formatCOP(stats.monetaryTotal)}</p>
-            <p className="text-[11px] font-medium text-neutral-500 mt-0.5">Donaciones procesadas</p>
-          </div>
-        </div>
-      </div>
+      {/* Componente Recharts de Métricas y Gráficos de Tendencia */}
+      <AdminTrendCharts
+        events={allEvents}
+        users={allUsers}
+        donations={allDonations}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Donaciones recientes */}
-        <Card title="Últimas Donaciones Registradas">
+        {/* Donaciones recientes con filtros y paginación */}
+        <Card 
+          title="Donaciones Registradas"
+          headerAction={
+            <button
+              onClick={() => exportDonationsToPDF(filteredDonations, { 
+                title: 'Reporte de Donaciones - Give&Go',
+                filtersApplied: donType !== 'todos' || donSearch ? `Filtro tipo: ${donType}, Búsqueda: "${donSearch || 'ninguna'}"` : 'Todos los registros visibles'
+              })}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg border border-neutral-200 transition-colors cursor-pointer select-none"
+              title="Exportar listado actual de donaciones a PDF"
+            >
+              <Download className="w-3.5 h-3.5 text-neutral-600" />
+              <span>Exportar PDF</span>
+            </button>
+          }
+        >
           <div className="space-y-4">
-            {latestDonations.length === 0 ? (
-              <p className="text-xs text-neutral-400 italic">No hay donaciones registradas.</p>
-            ) : (
-              latestDonations.map((don) => (
-                <div key={don.id} className="flex justify-between items-center p-3 bg-neutral-50 rounded border border-neutral-150 text-xs">
-                  <div>
-                    <p className="font-semibold text-neutral-900">{don.usuarioNombre}</p>
-                    <p className="text-[10px] text-neutral-500">Causa: {don.categoria} | Hacia: {don.organizacionNombre}</p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex-1">
+                <SearchBar value={donSearch} onChange={setDonSearch} placeholder="Buscar por donante, ONG, causa..." />
+              </div>
+              <select
+                value={donType}
+                onChange={(e) => setDonType(e.target.value as any)}
+                className="text-xs bg-white border border-neutral-200 rounded-xl px-3 py-2 text-neutral-700 font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20"
+                aria-label="Filtrar por tipo de donación"
+              >
+                <option value="todos">Todos los tipos</option>
+                <option value="monetaria">Monetarias</option>
+                <option value="objeto">En especie</option>
+              </select>
+            </div>
+
+            <div className="space-y-3">
+              {paginatedDonations.length === 0 ? (
+                <p className="text-xs text-neutral-400 italic py-4 text-center">No hay donaciones que coincidan con los filtros.</p>
+              ) : (
+                paginatedDonations.map((don) => (
+                  <div key={don.id} className="flex justify-between items-center p-3 bg-neutral-50 rounded-xl border border-neutral-150 text-xs">
+                    <div>
+                      <p className="font-semibold text-neutral-900">{don.usuarioNombre}</p>
+                      <p className="text-[10px] text-neutral-500">Causa: {don.categoria} | Hacia: {don.organizacionNombre}</p>
+                    </div>
+                    <div className="text-right">
+                      {don.tipo === 'monetaria' ? (
+                        <span className="font-extrabold text-red-600 text-xs">+{formatCOP(don.monetaria?.valor || 0)}</span>
+                      ) : (
+                        <span className="font-semibold text-neutral-800">{don.objeto?.cantidad} x {don.objeto?.categoria}</span>
+                      )}
+                      <p className="text-[9px] text-neutral-400 mt-0.5">{formatDate(don.fecha)}</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    {don.tipo === 'monetaria' ? (
-                      <span className="font-extrabold text-red-600 text-xs">+{formatCOP(don.monetaria?.valor || 0)}</span>
-                    ) : (
-                      <span className="font-semibold text-neutral-800">{don.objeto?.cantidad} x {don.objeto?.categoria}</span>
-                    )}
-                    <p className="text-[9px] text-neutral-400 mt-0.5">{formatDate(don.fecha)}</p>
-                  </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
+
+            <Pagination
+              currentPage={donPage}
+              totalPages={donTotalPages}
+              onPageChange={setDonPage}
+              pageSize={donPageSize}
+              onPageSizeChange={setDonPageSize}
+              pageSizeOptions={[5, 10, 15]}
+              totalItems={donTotalItems}
+              itemName="donaciones"
+            />
           </div>
         </Card>
 
-        {/* Campañas recientes */}
-        <Card title="Campañas Benéficas del Mes">
+        {/* Campañas recientes con filtros y paginación */}
+        <Card 
+          title="Campañas y Convocatorias"
+          headerAction={
+            <button
+              onClick={() => exportEventsToPDF(filteredEvents, { 
+                title: 'Reporte de Campañas y Convocatorias - Give&Go',
+                filtersApplied: eventStatus !== 'todos' || eventSearch ? `Filtro estado: ${eventStatus}, Búsqueda: "${eventSearch || 'ninguna'}"` : 'Todos los registros visibles'
+              })}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg border border-neutral-200 transition-colors cursor-pointer select-none"
+              title="Exportar listado actual de eventos a PDF"
+            >
+              <Download className="w-3.5 h-3.5 text-neutral-600" />
+              <span>Exportar PDF</span>
+            </button>
+          }
+        >
           <div className="space-y-4">
-            {latestEvents.length === 0 ? (
-              <p className="text-xs text-neutral-400 italic">No hay eventos benéficos registrados.</p>
-            ) : (
-              latestEvents.map((evt) => (
-                <div key={evt.id} className="p-3 bg-neutral-50 rounded border border-neutral-150 text-xs space-y-1">
-                  <div className="flex justify-between items-start">
-                    <span className="font-bold text-neutral-800">{evt.nombre}</span>
-                    <Badge variant={evt.estado === 'activo' ? 'success' : 'neutral'}>
-                      {evt.estado}
-                    </Badge>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex-1">
+                <SearchBar value={eventSearch} onChange={setEventSearch} placeholder="Buscar evento, causa..." />
+              </div>
+              <select
+                value={eventStatus}
+                onChange={(e) => setEventStatus(e.target.value as any)}
+                className="text-xs bg-white border border-neutral-200 rounded-xl px-3 py-2 text-neutral-700 font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20"
+                aria-label="Filtrar por estado del evento"
+              >
+                <option value="todos">Todos los estados</option>
+                <option value="activo">Activos</option>
+                <option value="inactivo">Inactivos</option>
+              </select>
+            </div>
+
+            <div className="space-y-3">
+              {paginatedEvents.length === 0 ? (
+                <p className="text-xs text-neutral-400 italic py-4 text-center">No hay eventos que coincidan con los filtros.</p>
+              ) : (
+                paginatedEvents.map((evt) => (
+                  <div key={evt.id} className="p-3 bg-neutral-50 rounded-xl border border-neutral-150 text-xs space-y-1">
+                    <div className="flex justify-between items-start">
+                      <span className="font-bold text-neutral-800">{evt.nombre}</span>
+                      <Badge variant={evt.estado === 'activo' ? 'success' : 'neutral'}>
+                        {evt.estado}
+                      </Badge>
+                    </div>
+                    <p className="text-[10px] text-neutral-500 line-clamp-1">{evt.descripcion}</p>
+                    <div className="flex justify-between text-[9px] text-neutral-400 pt-1">
+                      <span>Categoría: {evt.categoria}</span>
+                      <span>Fecha: {formatDate(evt.fecha)}</span>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-neutral-500 line-clamp-1">{evt.descripcion}</p>
-                  <div className="flex justify-between text-[9px] text-neutral-400 pt-1">
-                    <span>Categoría: {evt.categoria}</span>
-                    <span>Fecha: {formatDate(evt.fecha)}</span>
-                  </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
+
+            <Pagination
+              currentPage={eventPage}
+              totalPages={eventTotalPages}
+              onPageChange={setEventPage}
+              pageSize={eventPageSize}
+              onPageSizeChange={setEventPageSize}
+              pageSizeOptions={[5, 10, 15]}
+              totalItems={eventTotalItems}
+              itemName="eventos"
+            />
           </div>
         </Card>
       </div>
 
-      {/* Registro de Auditoría */}
+      {/* Registro de Auditoría con filtros y paginación */}
       <Card title="Registro de Auditoría de Seguridad (System Logs)">
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <p className="text-xs text-neutral-500">Muestra el registro de acciones importantes (Inicios de sesión, actualizaciones de perfiles, eventos y donaciones).</p>
-            <div className="w-full sm:w-64">
-              <SearchBar value={auditSearch} onChange={setAuditSearch} placeholder="Buscar por acción, usuario..." />
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <div className="w-full sm:w-64">
+                <SearchBar value={auditSearch} onChange={setAuditSearch} placeholder="Buscar por acción, usuario..." />
+              </div>
+              <select
+                value={auditRole}
+                onChange={(e) => setAuditRole(e.target.value as any)}
+                className="text-xs bg-white border border-neutral-200 rounded-xl px-3 py-2 text-neutral-700 font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20"
+                aria-label="Filtrar por rol de usuario"
+              >
+                <option value="todos">Todos los roles</option>
+                <option value="admin">Admin</option>
+                <option value="organizacion">Organización</option>
+                <option value="voluntario">Voluntario</option>
+                <option value="beneficiario">Beneficiario</option>
+              </select>
             </div>
           </div>
 
-          <div className="overflow-x-auto border border-neutral-150 rounded">
+          <div className="overflow-x-auto border border-neutral-150 rounded-xl">
             <table className="min-w-full divide-y divide-neutral-200 text-left text-xs">
               <thead className="bg-neutral-100 text-neutral-600 font-bold uppercase tracking-wider text-[10px]">
                 <tr>
@@ -247,12 +388,12 @@ export const AdminDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-150 bg-white">
-                {filteredAudits.length === 0 ? (
+                {paginatedAudits.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-neutral-400 italic">No se encontraron registros de auditoría.</td>
                   </tr>
                 ) : (
-                  filteredAudits.slice(0, 15).map((log, idx) => (
+                  paginatedAudits.map((log, idx) => (
                     <tr key={log.id_audit || idx} className="hover:bg-neutral-50 font-mono text-[11px]">
                       <td className="px-4 py-2.5 text-neutral-500 text-[10px] whitespace-nowrap">
                         {formatDate(log.fecha)} {new Date(log.fecha).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
@@ -270,8 +411,32 @@ export const AdminDashboard: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          <Pagination
+            currentPage={auditPage}
+            totalPages={auditTotalPages}
+            onPageChange={setAuditPage}
+            pageSize={auditPageSize}
+            onPageSizeChange={setAuditPageSize}
+            pageSizeOptions={[5, 10, 15]}
+            totalItems={auditTotalItems}
+            itemName="registros"
+          />
         </div>
       </Card>
+
+      {/* Modal interactivo de exportación de reportes a PDF */}
+      <ExportReportsModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        allEvents={allEvents}
+        filteredEvents={filteredEvents}
+        allDonations={allDonations}
+        filteredDonations={filteredDonations}
+        usersCount={stats.usersCount}
+        orgsCount={stats.orgsCount}
+        monetaryTotal={stats.monetaryTotal}
+      />
     </div>
   );
 };
@@ -378,16 +543,32 @@ export const AdminUsers: React.FC = () => {
     }
   };
 
+  // Filtros adicionales de rol y estado
+  const [roleFilter, setRoleFilter] = useState<'todos' | 'admin' | 'voluntario' | 'beneficiario' | 'organizacion'>('todos');
+  const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
+
   // Filtrado
   const filteredUsers = users.filter(u => {
     const term = searchTerm.toLowerCase();
-    return (
+    const matchesSearch =
       u.nombre1.toLowerCase().includes(term) ||
-      u.apellido1.toLowerCase().includes(term) ||
-      u.correo.toLowerCase().includes(term) ||
-      u.rol.toLowerCase().includes(term)
-    );
+      (u.apellido1 || '').toLowerCase().includes(term) ||
+      (u.correo || '').toLowerCase().includes(term) ||
+      (u.rol || '').toLowerCase().includes(term);
+    const matchesRole = roleFilter === 'todos' || u.rol.toLowerCase() === roleFilter.toLowerCase();
+    const matchesStatus = statusFilter === 'todos' || u.estado === statusFilter;
+    return matchesSearch && matchesRole && matchesStatus;
   });
+
+  const {
+    paginatedData: paginatedUsers,
+    currentPage: userPage,
+    pageSize: userPageSize,
+    totalPages: userTotalPages,
+    totalItems: userTotalItems,
+    setPage: setUserPage,
+    setPageSize: setUserPageSize,
+  } = usePagination(filteredUsers, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
 
   return (
     <div className="space-y-6">
@@ -402,13 +583,41 @@ export const AdminUsers: React.FC = () => {
         </Button>
       </div>
 
-      <div className="bg-white border border-neutral-200 p-4 rounded shadow-xs flex items-center justify-between gap-4">
-        <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar por nombre, correo..." />
+      {/* Barra de Filtros */}
+      <div className="bg-white border border-neutral-200 p-4 rounded-xl shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div className="flex-1 max-w-md">
+          <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar por nombre, correo..." />
+        </div>
+        <div className="flex items-center flex-wrap gap-2">
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value as any)}
+            className="text-xs bg-white border border-neutral-200 rounded-xl px-3 py-2 text-neutral-700 font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20"
+            aria-label="Filtrar por rol de usuario"
+          >
+            <option value="todos">Todos los roles</option>
+            <option value="voluntario">Voluntarios</option>
+            <option value="beneficiario">Beneficiarios</option>
+            <option value="organizacion">Organizaciones</option>
+            <option value="admin">Administradores</option>
+          </select>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            className="text-xs bg-white border border-neutral-200 rounded-xl px-3 py-2 text-neutral-700 font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20"
+            aria-label="Filtrar por estado de usuario"
+          >
+            <option value="todos">Todos los estados</option>
+            <option value="activo">Activos</option>
+            <option value="inactivo">Inactivos</option>
+          </select>
+        </div>
       </div>
 
       <Table<Usuario>
         headers={['Nombre Completo', 'Correo Electrónico', 'Teléfono', 'Rol', 'Estado', 'Acciones']}
-        data={filteredUsers}
+        data={paginatedUsers}
         renderRow={(item) => (
           <tr key={item.id} className="hover:bg-neutral-50">
             <td className="px-5 py-3 font-semibold text-neutral-950">
@@ -447,6 +656,17 @@ export const AdminUsers: React.FC = () => {
             </td>
           </tr>
         )}
+      />
+
+      <Pagination
+        currentPage={userPage}
+        totalPages={userTotalPages}
+        onPageChange={setUserPage}
+        pageSize={userPageSize}
+        onPageSizeChange={setUserPageSize}
+        pageSizeOptions={[5, 10, 15]}
+        totalItems={userTotalItems}
+        itemName="usuarios"
       />
 
       {/* Modal Formulario */}
@@ -691,11 +911,34 @@ export const AdminOrganizations: React.FC = () => {
     }
   };
 
-  const filteredOrgs = organizations.filter(o => 
-    o.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    o.direccion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    o.correo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [verifFilter, setVerifFilter] = useState<'todas' | 'verificada' | 'pendiente' | 'rechazada' | 'no_verificada'>('todas');
+
+  const filteredOrgs = organizations.filter(o => {
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = 
+      o.nombre.toLowerCase().includes(term) ||
+      o.direccion.toLowerCase().includes(term) ||
+      o.correo.toLowerCase().includes(term);
+
+    const matchesVerif = 
+      verifFilter === 'todas' ||
+      (verifFilter === 'verificada' && Boolean(o.verificada)) ||
+      (verifFilter === 'pendiente' && !o.verificada && o.estadoVerificacion === 'pendiente') ||
+      (verifFilter === 'rechazada' && !o.verificada && o.estadoVerificacion === 'rechazada') ||
+      (verifFilter === 'no_verificada' && !o.verificada && (!o.estadoVerificacion || o.estadoVerificacion === 'no_solicitado'));
+
+    return matchesSearch && matchesVerif;
+  });
+
+  const {
+    paginatedData: paginatedOrgs,
+    currentPage: orgPage,
+    pageSize: orgPageSize,
+    totalPages: orgTotalPages,
+    totalItems: orgTotalItems,
+    setPage: setOrgPage,
+    setPageSize: setOrgPageSize,
+  } = usePagination(filteredOrgs, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
 
   return (
     <div className="space-y-6">
@@ -710,13 +953,29 @@ export const AdminOrganizations: React.FC = () => {
         </Button>
       </div>
 
-      <div className="bg-white border border-neutral-200 p-4 rounded shadow-xs">
-        <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar por organización, sede, email..." />
+      <div className="bg-white border border-neutral-200 p-4 rounded-xl shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex-1 max-w-md">
+          <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar por organización, sede, email..." />
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={verifFilter}
+            onChange={(e) => setVerifFilter(e.target.value as any)}
+            className="text-xs bg-white border border-neutral-200 rounded-xl px-3 py-2 text-neutral-700 font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20"
+            aria-label="Filtrar por estado de verificación"
+          >
+            <option value="todas">Todas las organizaciones</option>
+            <option value="verificada">Verificadas</option>
+            <option value="pendiente">Pendientes de revisión</option>
+            <option value="rechazada">Rechazadas</option>
+            <option value="no_verificada">No verificadas</option>
+          </select>
+        </div>
       </div>
 
       <Table<Organizacion>
         headers={['Id', 'Nombre de la ONG', 'Estado Verificación', 'Dirección Sede', 'Correo de Contacto', 'Acciones']}
-        data={filteredOrgs}
+        data={paginatedOrgs}
         renderRow={(item) => (
           <tr key={item.id} className="hover:bg-neutral-50">
             <td className="px-5 py-3 text-xs font-semibold text-neutral-500">{item.id}</td>
@@ -753,6 +1012,17 @@ export const AdminOrganizations: React.FC = () => {
             </td>
           </tr>
         )}
+      />
+
+      <Pagination
+        currentPage={orgPage}
+        totalPages={orgTotalPages}
+        onPageChange={setOrgPage}
+        pageSize={orgPageSize}
+        onPageSizeChange={setOrgPageSize}
+        pageSizeOptions={[5, 10, 15]}
+        totalItems={orgTotalItems}
+        itemName="organizaciones"
       />
 
       <Modal
@@ -876,6 +1146,17 @@ export const AdminVerifications: React.FC = () => {
     return matchesFilter && matchesSearch;
   });
 
+  const {
+    paginatedData: paginatedRequests,
+    currentPage: reqPage,
+    pageSize: reqPageSize,
+    totalPages: reqTotalPages,
+    totalItems: reqTotalItems,
+    setPage: setReqPage,
+    setPageSize: setReqPageSize,
+  } = usePagination(filteredRequests, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
+
+
   return (
     <div className="space-y-6">
       <div>
@@ -980,76 +1261,89 @@ export const AdminVerifications: React.FC = () => {
           description="Actualmente no existen solicitudes de verificación que coincidan con los filtros seleccionados."
         />
       ) : (
-        <Table<SolicitudVerificacion>
-          headers={['Organización', 'NIT', 'Fecha Solicitud', 'Mensaje / Justificación', 'Estado', 'Acciones']}
-          data={filteredRequests}
-          renderRow={(item) => (
-            <tr key={item.id} className="hover:bg-neutral-50/80 transition-colors">
-              <td className="px-5 py-3 font-semibold text-neutral-900">
-                <UserLink
-                  userId={item.organizacionId}
-                  name={item.nombreOrganizacion}
-                  role="organizacion"
-                  verificada={item.estado === 'aprobada'}
-                  size="sm"
-                />
-                <p className="text-[10px] text-neutral-500 font-normal">{item.correoOrganizacion}</p>
-              </td>
-              <td className="px-5 py-3 text-xs font-mono font-medium text-neutral-700">{item.nit || 'Sin NIT'}</td>
-              <td className="px-5 py-3 text-xs text-neutral-600 whitespace-nowrap">{formatDate(item.fechaSolicitud)}</td>
-              <td className="px-5 py-3 text-xs text-neutral-600 max-w-xs">
-                <p className="line-clamp-2 italic">{item.mensaje || 'Sin mensaje adicional.'}</p>
-                {item.documentos && (
-                  <p className="text-[10px] text-blue-600 font-medium mt-0.5 truncate">
-                    Doc: {item.documentos}
-                  </p>
-                )}
-                {item.respuestaAdmin && (
-                  <p className="text-[10px] text-neutral-500 font-bold mt-1 bg-neutral-100 p-1 rounded">
-                    Respuesta: {item.respuestaAdmin}
-                  </p>
-                )}
-              </td>
-              <td className="px-5 py-3 text-xs whitespace-nowrap">
-                {item.estado === 'aprobada' ? (
-                  <Badge variant="success">Aprobada</Badge>
-                ) : item.estado === 'pendiente' ? (
-                  <Badge variant="warning">Pendiente</Badge>
-                ) : (
-                  <Badge variant="danger">Rechazada</Badge>
-                )}
-              </td>
-              <td className="px-5 py-3 text-xs whitespace-nowrap">
-                {item.estado === 'pendiente' ? (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-2.5 py-1"
-                      onClick={() => handleOpenAction(item, 'aprobada')}
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                      Aprobar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-red-300 text-red-600 hover:bg-red-50 font-bold text-xs px-2.5 py-1"
-                      onClick={() => handleOpenAction(item, 'rechazada')}
-                    >
-                      <XCircle className="w-3.5 h-3.5 mr-1" />
-                      Rechazar
-                    </Button>
-                  </div>
-                ) : (
-                  <span className="text-[11px] text-neutral-400 italic">
-                    Procesada ({item.fechaRespuesta ? formatDate(item.fechaRespuesta) : ''})
-                  </span>
-                )}
-              </td>
-            </tr>
-          )}
-        />
+        <>
+          <Table<SolicitudVerificacion>
+            headers={['Organización', 'NIT', 'Fecha Solicitud', 'Mensaje / Justificación', 'Estado', 'Acciones']}
+            data={paginatedRequests}
+            renderRow={(item) => (
+              <tr key={item.id} className="hover:bg-neutral-50/80 transition-colors">
+                <td className="px-5 py-3 font-semibold text-neutral-900">
+                  <UserLink
+                    userId={item.organizacionId}
+                    name={item.nombreOrganizacion}
+                    role="organizacion"
+                    verificada={item.estado === 'aprobada'}
+                    size="sm"
+                  />
+                  <p className="text-[10px] text-neutral-500 font-normal">{item.correoOrganizacion}</p>
+                </td>
+                <td className="px-5 py-3 text-xs font-mono font-medium text-neutral-700">{item.nit || 'Sin NIT'}</td>
+                <td className="px-5 py-3 text-xs text-neutral-600 whitespace-nowrap">{formatDate(item.fechaSolicitud)}</td>
+                <td className="px-5 py-3 text-xs text-neutral-600 max-w-xs">
+                  <p className="line-clamp-2 italic">{item.mensaje || 'Sin mensaje adicional.'}</p>
+                  {item.documentos && (
+                    <p className="text-[10px] text-blue-600 font-medium mt-0.5 truncate">
+                      Doc: {item.documentos}
+                    </p>
+                  )}
+                  {item.respuestaAdmin && (
+                    <p className="text-[10px] text-neutral-500 font-bold mt-1 bg-neutral-100 p-1 rounded">
+                      Respuesta: {item.respuestaAdmin}
+                    </p>
+                  )}
+                </td>
+                <td className="px-5 py-3 text-xs whitespace-nowrap">
+                  {item.estado === 'aprobada' ? (
+                    <Badge variant="success">Aprobada</Badge>
+                  ) : item.estado === 'pendiente' ? (
+                    <Badge variant="warning">Pendiente</Badge>
+                  ) : (
+                    <Badge variant="danger">Rechazada</Badge>
+                  )}
+                </td>
+                <td className="px-5 py-3 text-xs whitespace-nowrap">
+                  {item.estado === 'pendiente' ? (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-2.5 py-1"
+                        onClick={() => handleOpenAction(item, 'aprobada')}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                        Aprobar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-red-300 text-red-600 hover:bg-red-50 font-bold text-xs px-2.5 py-1"
+                        onClick={() => handleOpenAction(item, 'rechazada')}
+                      >
+                        <XCircle className="w-3.5 h-3.5 mr-1" />
+                        Rechazar
+                      </Button>
+                    </div>
+                  ) : (
+                    <span className="text-[11px] text-neutral-400 italic">
+                      Procesada ({item.fechaRespuesta ? formatDate(item.fechaRespuesta) : ''})
+                    </span>
+                  )}
+                </td>
+              </tr>
+            )}
+          />
+
+          <Pagination
+            currentPage={reqPage}
+            totalPages={reqTotalPages}
+            onPageChange={setReqPage}
+            pageSize={reqPageSize}
+            onPageSizeChange={setReqPageSize}
+            pageSizeOptions={[5, 10, 15]}
+            totalItems={reqTotalItems}
+            itemName="solicitudes"
+          />
+        </>
       )}
 
       {/* Modal para Responder Solicitud */}
@@ -1276,11 +1570,29 @@ export const AdminEvents: React.FC = () => {
     return organizations.find(o => o.id === orgId)?.nombre || 'Organización';
   };
 
-  const filteredEvents = events.filter(e => 
-    e.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    e.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    e.categoria.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [categoryFilter, setCategoryFilter] = useState('todas');
+  const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
+
+  const filteredEvents = events.filter(e => {
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = 
+      e.nombre.toLowerCase().includes(term) ||
+      (e.descripcion || '').toLowerCase().includes(term) ||
+      (e.categoria || '').toLowerCase().includes(term);
+    const matchesCategory = categoryFilter === 'todas' || e.categoria.toLowerCase() === categoryFilter.toLowerCase();
+    const matchesStatus = statusFilter === 'todos' || e.estado === statusFilter;
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  const {
+    paginatedData: paginatedEvents,
+    currentPage: eventPage,
+    pageSize: eventPageSize,
+    totalPages: eventTotalPages,
+    totalItems: eventTotalItems,
+    setPage: setEventPage,
+    setPageSize: setEventPageSize,
+  } = usePagination(filteredEvents, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
 
   return (
     <div className="space-y-6">
@@ -1295,13 +1607,41 @@ export const AdminEvents: React.FC = () => {
         </Button>
       </div>
 
-      <div className="bg-white border border-neutral-200 p-4 rounded shadow-xs">
-        <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar por evento, categoría..." />
+      <div className="bg-white border border-neutral-200 p-4 rounded-xl shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex-1 max-w-md">
+          <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar por evento, causa..." />
+        </div>
+        <div className="flex items-center flex-wrap gap-2">
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="text-xs bg-white border border-neutral-200 rounded-xl px-3 py-2 text-neutral-700 font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20"
+            aria-label="Filtrar por categoría de evento"
+          >
+            <option value="todas">Todas las categorías</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.nombre}>
+                {c.nombre}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            className="text-xs bg-white border border-neutral-200 rounded-xl px-3 py-2 text-neutral-700 font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20"
+            aria-label="Filtrar por estado del evento"
+          >
+            <option value="todos">Todos los estados</option>
+            <option value="activo">Activos</option>
+            <option value="inactivo">Inactivos</option>
+          </select>
+        </div>
       </div>
 
       <Table<Evento>
         headers={['Campaña', 'Categoría', 'ONG Responsable', 'Fecha', 'Estado', 'Acciones']}
-        data={filteredEvents}
+        data={paginatedEvents}
         renderRow={(item) => (
           <tr key={item.id} className="hover:bg-neutral-50">
             <td className="px-5 py-3">
@@ -1328,10 +1668,21 @@ export const AdminEvents: React.FC = () => {
         )}
       />
 
+      <Pagination
+        currentPage={eventPage}
+        totalPages={eventTotalPages}
+        onPageChange={setEventPage}
+        pageSize={eventPageSize}
+        onPageSizeChange={setEventPageSize}
+        pageSizeOptions={[5, 10, 15]}
+        totalItems={eventTotalItems}
+        itemName="eventos"
+      />
+
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingEvent ? '📝 Editar Evento de Voluntariado' : '✨ Crear Convocatoria / Campaña'}
+        title={editingEvent ? 'Editar Evento de Voluntariado' : 'Crear Convocatoria / Campaña'}
         size="lg"
         footer={
           <div className="flex justify-end gap-3 w-full">
@@ -1359,14 +1710,15 @@ export const AdminEvents: React.FC = () => {
         <form id="event-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-h-[60vh] overflow-y-auto px-1 pr-2">
           {formError && (
             <div className="p-3.5 bg-red-50 border border-red-200 text-xs text-red-700 rounded-xl font-bold flex items-center gap-2">
-              <span>⚠️</span> {formError}
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+              <span>{formError}</span>
             </div>
           )}
 
           {/* Sección 1: Información General */}
           <div className="space-y-4 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-150 shadow-2xs">
             <h4 className="text-xs font-black uppercase tracking-wider text-neutral-800 flex items-center gap-1.5 border-b border-neutral-200/60 pb-2 mb-3">
-              <span>📋</span> Información General de la Campaña
+              Información General de la Campaña
             </h4>
             
             <Input
@@ -1429,7 +1781,7 @@ export const AdminEvents: React.FC = () => {
           {/* Sección 2: Imagen del Evento */}
           <div className="bg-neutral-50/50 p-5 rounded-2xl border border-neutral-150 space-y-4 shadow-2xs">
             <h4 className="text-xs font-black uppercase tracking-wider text-neutral-800 flex items-center gap-1.5 border-b border-neutral-200/60 pb-2 mb-2">
-              <span>🖼️</span> Imagen Ilustrativa del Evento
+              Imagen Ilustrativa del Evento
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-4">
@@ -1469,7 +1821,7 @@ export const AdminEvents: React.FC = () => {
                   </div>
                 ) : (
                   <div className="text-center text-neutral-400 p-2">
-                    <p className="text-2xl">📷</p>
+                    <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400 font-bold text-xs">IMG</div>
                     <span className="text-[10px] font-extrabold block mt-1 uppercase tracking-wider text-neutral-500">Sin imagen</span>
                     <span className="text-[9px] text-neutral-400 block mt-0.5">Se usará un banner automático por categoría</span>
                   </div>
@@ -1481,7 +1833,7 @@ export const AdminEvents: React.FC = () => {
           {/* Sección 3: Ubicación */}
           <div className="space-y-5 bg-neutral-50/50 p-5 rounded-2xl border border-neutral-150 shadow-2xs">
             <h4 className="text-xs font-black uppercase tracking-wider text-neutral-800 flex items-center gap-1.5 border-b border-neutral-200/60 pb-2 mb-2">
-              <span>📍</span> Ubicación y Geolocalización
+              Ubicación y Geolocalización
             </h4>
             
             {/* Embedded map location picker */}
@@ -1494,46 +1846,24 @@ export const AdminEvents: React.FC = () => {
 
             {/* Address Form Fields */}
             <Input
-              label="Dirección Completa *"
+              label="Dirección Completa en Kennedy *"
               error={errors.direccion?.message}
               {...register('direccion', { required: 'La dirección completa es obligatoria' })}
-              placeholder="Ej. Calle 26 # 50-00"
+              placeholder="Ej. Calle 42 Sur # 78K - 10"
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Barrio *"
+                label="Barrio en Kennedy *"
                 error={errors.barrio?.message}
                 {...register('barrio', { required: 'El barrio es obligatorio' })}
-                placeholder="Ej. Ciudad Salitre"
+                placeholder="Ej. Kennedy Central, Castilla, Timiza, Patio Bonito"
               />
 
-              <Input
-                label="Localidad *"
-                error={errors.localidad?.message}
-                {...register('localidad', { required: 'La localidad es obligatoria' })}
-                placeholder="Ej. Fontibón"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input
-                label="Ciudad *"
-                error={errors.ciudad?.message}
-                {...register('ciudad', { required: 'La ciudad es obligatoria' })}
-              />
-
-              <Input
-                label="Departamento *"
-                error={errors.departamento?.message}
-                {...register('departamento', { required: 'El departamento es obligatorio' })}
-              />
-
-              <Input
-                label="País *"
-                error={errors.pais?.message}
-                {...register('pais', { required: 'El país es obligatorio' })}
-              />
+              <div className="flex flex-col justify-center px-4 py-2 bg-neutral-100 rounded-xl border border-neutral-200 text-xs">
+                <span className="text-[10px] font-black uppercase tracking-wider text-neutral-400">Zona de Cobertura</span>
+                <span className="font-bold text-neutral-800">Localidad de Kennedy — Bogotá D.C.</span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1592,17 +1922,24 @@ export const AdminEvents: React.FC = () => {
  */
 export const AdminDonations: React.FC = () => {
   const [donations, setDonations] = useState<DonacionCompleta[]>([]);
+  const [categories, setCategories] = useState<Categoria[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'todos' | 'monetaria' | 'objeto'>('todos');
+  const [categoryFilter, setCategoryFilter] = useState('todas');
   const [selectedDonation, setSelectedDonation] = useState<DonacionCompleta | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    loadDonations();
+    loadData();
   }, []);
 
-  async function loadDonations() {
-    const list = await DonationService.getAll();
+  async function loadData() {
+    const [list, cats] = await Promise.all([
+      DonationService.getAll(),
+      CategoryService.getAll()
+    ]);
     setDonations(list);
+    setCategories(cats);
   }
 
   const handleOpenDetails = (don: DonacionCompleta) => {
@@ -1610,11 +1947,26 @@ export const AdminDonations: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const filteredDonations = donations.filter(d => 
-    d.usuarioNombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.organizacionNombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.categoria.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredDonations = donations.filter(d => {
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = 
+      (d.usuarioNombre || '').toLowerCase().includes(term) ||
+      (d.organizacionNombre || '').toLowerCase().includes(term) ||
+      (d.categoria || '').toLowerCase().includes(term);
+    const matchesType = typeFilter === 'todos' || d.tipo === typeFilter;
+    const matchesCategory = categoryFilter === 'todas' || d.categoria.toLowerCase() === categoryFilter.toLowerCase();
+    return matchesSearch && matchesType && matchesCategory;
+  });
+
+  const {
+    paginatedData: paginatedDonations,
+    currentPage: donPage,
+    pageSize: donPageSize,
+    totalPages: donTotalPages,
+    totalItems: donTotalItems,
+    setPage: setDonPage,
+    setPageSize: setDonPageSize,
+  } = usePagination(filteredDonations, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
 
   return (
     <div className="space-y-6">
@@ -1623,18 +1975,46 @@ export const AdminDonations: React.FC = () => {
         <p className="text-xs text-neutral-500 mt-1">Supervisa y verifica todas las aportaciones económicas y de insumos.</p>
       </div>
 
-      <div className="bg-white border border-neutral-200 p-4 rounded shadow-xs">
-        <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar por donante, ONG, categoría..." />
+      <div className="bg-white border border-neutral-200 p-4 rounded-xl shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex-1 max-w-md">
+          <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar por donante, ONG, categoría..." />
+        </div>
+        <div className="flex items-center flex-wrap gap-2">
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value as any)}
+            className="text-xs bg-white border border-neutral-200 rounded-xl px-3 py-2 text-neutral-700 font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20"
+            aria-label="Filtrar por tipo de donación"
+          >
+            <option value="todos">Todos los tipos</option>
+            <option value="monetaria">Monetarias</option>
+            <option value="objeto">En especie</option>
+          </select>
+
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="text-xs bg-white border border-neutral-200 rounded-xl px-3 py-2 text-neutral-700 font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20"
+            aria-label="Filtrar por categoría de donación"
+          >
+            <option value="todas">Todas las categorías</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.nombre}>
+                {c.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {filteredDonations.length === 0 ? (
+      {paginatedDonations.length === 0 ? (
         <EmptyState
           title="No se encontraron donaciones"
-          description="Intente ajustar el criterio de búsqueda o registre una nueva donación pública."
+          description="Intente ajustar el criterio de búsqueda o filtre por otra categoría o tipo."
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDonations.map((don) => (
+          {paginatedDonations.map((don) => (
             <DonationCard
               key={don.id}
               donation={don}
@@ -1643,6 +2023,17 @@ export const AdminDonations: React.FC = () => {
           ))}
         </div>
       )}
+
+      <Pagination
+        currentPage={donPage}
+        totalPages={donTotalPages}
+        onPageChange={setDonPage}
+        pageSize={donPageSize}
+        onPageSizeChange={setDonPageSize}
+        pageSizeOptions={[5, 10, 15]}
+        totalItems={donTotalItems}
+        itemName="donaciones"
+      />
 
       <DonationDetailsModal
         isOpen={isModalOpen}
@@ -1663,6 +2054,8 @@ export const AdminDonations: React.FC = () => {
  */
 export const AdminCategories: React.FC = () => {
   const [categories, setCategories] = useState<Categoria[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCat, setEditingCat] = useState<Categoria | null>(null);
 
@@ -1717,6 +2110,25 @@ export const AdminCategories: React.FC = () => {
     }
   };
 
+  const filteredCategories = categories.filter(c => {
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = 
+      c.nombre.toLowerCase().includes(term) ||
+      (c.descripcion || '').toLowerCase().includes(term);
+    const matchesStatus = statusFilter === 'todos' || c.estado === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const {
+    paginatedData: paginatedCategories,
+    currentPage: catPage,
+    pageSize: catPageSize,
+    totalPages: catTotalPages,
+    totalItems: catTotalItems,
+    setPage: setCatPage,
+    setPageSize: setCatPageSize,
+  } = usePagination(filteredCategories, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center flex-wrap gap-4">
@@ -1730,9 +2142,27 @@ export const AdminCategories: React.FC = () => {
         </Button>
       </div>
 
+      <div className="bg-white border border-neutral-200 p-4 rounded-xl shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex-1 max-w-md">
+          <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar por nombre o descripción..." />
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            className="text-xs bg-white border border-neutral-200 rounded-xl px-3 py-2 text-neutral-700 font-semibold focus:outline-none focus:ring-2 focus:ring-brand/20"
+            aria-label="Filtrar por estado de categoría"
+          >
+            <option value="todos">Todos los estados</option>
+            <option value="activo">Activos</option>
+            <option value="inactivo">Inactivos</option>
+          </select>
+        </div>
+      </div>
+
       <Table<Categoria>
         headers={['ID', 'Categoría', 'Descripción', 'Estado', 'Acciones']}
-        data={categories}
+        data={paginatedCategories}
         renderRow={(item) => (
           <tr key={item.id} className="hover:bg-neutral-50">
             <td className="px-5 py-3 text-xs font-mono text-neutral-400">{item.id}</td>
@@ -1753,6 +2183,17 @@ export const AdminCategories: React.FC = () => {
             </td>
           </tr>
         )}
+      />
+
+      <Pagination
+        currentPage={catPage}
+        totalPages={catTotalPages}
+        onPageChange={setCatPage}
+        pageSize={catPageSize}
+        onPageSizeChange={setCatPageSize}
+        pageSizeOptions={[5, 10, 15]}
+        totalItems={catTotalItems}
+        itemName="categorías"
       />
 
       <Modal

@@ -203,5 +203,105 @@ export const VerificationController = {
         errors: []
       });
     }
+  },
+
+  async getById(req: Request, res: Response) {
+    try {
+      const rawId = req.params.id;
+      const requestId = parseInt(rawId.replace('ver_', ''), 10);
+      const item = await SolicitudVerificacionModel.getById(requestId);
+      if (!item) {
+        return res.status(404).json({
+          success: false,
+          message: 'Solicitud no encontrada.',
+          errors: []
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Solicitud obtenida con éxito.',
+        data: mapRequestToFrontend(item)
+      });
+    } catch (err: any) {
+      return res.status(500).json({
+        success: false,
+        message: err.message,
+        errors: []
+      });
+    }
+  },
+
+  async update(req: Request, res: Response) {
+    try {
+      const rawId = req.params.id;
+      const requestId = parseInt(rawId.replace('ver_', ''), 10);
+      const { nit, mensaje, documentos, estado, respuestaAdmin } = req.body;
+
+      const item = await SolicitudVerificacionModel.getById(requestId);
+      if (!item) {
+        return res.status(404).json({
+          success: false,
+          message: 'Solicitud de verificación no encontrada.',
+          errors: []
+        });
+      }
+
+      const updateData: any = {};
+      if (nit !== undefined) updateData.nit = nit;
+      if (mensaje !== undefined) updateData.mensaje = mensaje;
+      if (documentos !== undefined) updateData.documentos = documentos;
+      if (estado !== undefined) updateData.estado = estado;
+      if (respuestaAdmin !== undefined) updateData.respuesta_admin = respuestaAdmin;
+
+      await SolicitudVerificacionModel.update(requestId, updateData);
+
+      if (estado === 'aprobada' || estado === 'rechazada') {
+        await OrganizacionModel.update(item.organizacion_id, {
+          verificada: estado === 'aprobada' ? 1 : 0,
+          estado_verificacion: estado
+        });
+      }
+
+      const updated = await SolicitudVerificacionModel.getById(requestId);
+      return res.status(200).json({
+        success: true,
+        message: 'Solicitud de verificación actualizada exitosamente.',
+        data: updated ? mapRequestToFrontend(updated) : null
+      });
+    } catch (err: any) {
+      return res.status(500).json({
+        success: false,
+        message: err.message || 'Error al actualizar solicitud.',
+        errors: []
+      });
+    }
+  },
+
+  async delete(req: Request, res: Response) {
+    try {
+      const rawId = req.params.id;
+      const requestId = parseInt(rawId.replace('ver_', ''), 10);
+      const item = await SolicitudVerificacionModel.getById(requestId);
+      if (!item) {
+        return res.status(404).json({
+          success: false,
+          message: 'Solicitud no encontrada.',
+          errors: []
+        });
+      }
+
+      await SolicitudVerificacionModel.delete(requestId);
+      return res.status(200).json({
+        success: true,
+        message: 'Solicitud de verificación eliminada correctamente.',
+        data: { id: rawId }
+      });
+    } catch (err: any) {
+      return res.status(500).json({
+        success: false,
+        message: err.message || 'Error al eliminar solicitud.',
+        errors: []
+      });
+    }
   }
 };

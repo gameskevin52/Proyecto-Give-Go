@@ -20,16 +20,26 @@ export const RegisterBeneficiaryView: React.FC<RegisterBeneficiaryViewProps> = (
     setApellido1,
     apellido2,
     setApellido2,
+    tipoDocumento,
+    setTipoDocumento,
+    numDocumento,
+    setNumDocumento,
     correo,
     setCorreo,
     password,
     setPassword,
+    confirmPassword,
+    setConfirmPassword,
     telefono,
     setTelefono,
+    direccion,
+    setDireccion,
     barrio,
     setBarrio,
     localidad,
     setLocalidad,
+    ciudad,
+    setCiudad,
     isLoading,
     errorMessage,
     handleRegister,
@@ -41,13 +51,36 @@ export const RegisterBeneficiaryView: React.FC<RegisterBeneficiaryViewProps> = (
       <ScrollView contentContainerStyle={registerStyles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={registerStyles.card}>
           <Text style={registerStyles.title}>Registro de Beneficiario</Text>
-          <Text style={registerStyles.subtitle}>Accede a donaciones de alimentos, útiles y apoyo social</Text>
+          <Text style={registerStyles.subtitle}>Accede a jornadas de apoyo social, donaciones de alimentos y vestuario</Text>
+
+          {/* Role Switcher Tabs */}
+          <View style={registerStyles.roleSelector}>
+            <TouchableOpacity
+              style={registerStyles.roleTab}
+              onPress={() => navigation.navigate('RegisterVolunteer')}
+            >
+              <Text style={registerStyles.roleTabText}>Voluntario</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[registerStyles.roleTab, registerStyles.roleTabActive]}
+            >
+              <Text style={registerStyles.roleTabTextActive}>Beneficiario</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={registerStyles.roleTab}
+              onPress={() => navigation.navigate('RegisterOrganization')}
+            >
+              <Text style={registerStyles.roleTabText}>Organización</Text>
+            </TouchableOpacity>
+          </View>
 
           {errorMessage ? (
             <View style={registerStyles.errorBanner}>
               <Text style={registerStyles.errorText}>{errorMessage}</Text>
             </View>
           ) : null}
+
+          <Text style={registerStyles.sectionTitle}>1. Identificación Personal</Text>
 
           <View style={registerStyles.row}>
             <View style={registerStyles.halfInput}>
@@ -87,6 +120,24 @@ export const RegisterBeneficiaryView: React.FC<RegisterBeneficiaryViewProps> = (
             </View>
           </View>
 
+          <Text style={registerStyles.sectionTitle}>2. Residencia en Kennedy</Text>
+
+          <AppInput
+            label="Barrio en Kennedy *"
+            placeholder="Ej: Patio Bonito, Tintal, Kennedy Central, Castilla"
+            value={barrio}
+            onChangeText={setBarrio}
+          />
+
+          <AppInput
+            label="Dirección de Residencia"
+            placeholder="Carrera 80 # 43 - 20 Sur"
+            value={direccion}
+            onChangeText={setDireccion}
+          />
+
+          <Text style={registerStyles.sectionTitle}>3. Contacto y Contraseña</Text>
+
           <AppInput
             label="Correo Electrónico *"
             placeholder="maria.rodriguez@correo.com"
@@ -94,6 +145,14 @@ export const RegisterBeneficiaryView: React.FC<RegisterBeneficiaryViewProps> = (
             onChangeText={setCorreo}
             keyboardType="email-address"
             autoCapitalize="none"
+          />
+
+          <AppInput
+            label="Teléfono Celular *"
+            placeholder="320 987 6543"
+            value={telefono}
+            onChangeText={setTelefono}
+            keyboardType="phone-pad"
           />
 
           <AppInput
@@ -105,31 +164,12 @@ export const RegisterBeneficiaryView: React.FC<RegisterBeneficiaryViewProps> = (
           />
 
           <AppInput
-            label="Teléfono Celular"
-            placeholder="320 987 6543"
-            value={telefono}
-            onChangeText={setTelefono}
-            keyboardType="phone-pad"
+            label="Confirmar Contraseña *"
+            placeholder="Repite tu contraseña"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
           />
-
-          <View style={registerStyles.row}>
-            <View style={registerStyles.halfInput}>
-              <AppInput
-                label="Localidad"
-                placeholder="Bosa"
-                value={localidad}
-                onChangeText={setLocalidad}
-              />
-            </View>
-            <View style={registerStyles.halfInput}>
-              <AppInput
-                label="Barrio"
-                placeholder="El Porvenir"
-                value={barrio}
-                onChangeText={setBarrio}
-              />
-            </View>
-          </View>
 
           <AppButton
             title="Crear Cuenta de Beneficiario"

@@ -7,6 +7,11 @@ import { DonacionModel } from '../models/donacionModel';
 import { generateToken, hashPassword, comparePassword } from '../utils/auth';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 import { logAudit } from '../utils/auditLogger';
+import {
+  createAndSendPasswordReset,
+  verifyResetCode,
+  consumeResetCode,
+} from '../services/emailService';
 
 // Mapeadores auxiliares para asegurar compatibilidad perfecta con el Frontend
 const mapRoleToFrontend = (role: string): string => {
@@ -68,24 +73,24 @@ const mapUserToFrontend = (user: UsuarioDB) => {
     correo: user.correo,
     password: '', // No devolvemos hashes ni contraseñas desencriptadas al cliente por seguridad
     estado: user.estado === 1 ? 'activo' : 'inactivo',
-    tipo_documento: user.tipo_documento || '',
-    num_documento: user.num_documento || '',
+    tipo_documento: '',
+    num_documento: '',
     fecha_nacimiento: user.fecha_nacimiento || '',
     direccion: user.direccion || '',
-    barrio: user.barrio || '',
-    localidad: user.localidad || '',
-    ciudad: user.ciudad || 'Bogotá',
-    departamento: user.departamento || 'Cundinamarca',
-    pais: user.pais || 'Colombia',
-    codigo_postal: user.codigo_postal || '',
+    barrio: user.barrio || 'Kennedy Central',
+    localidad: 'Kennedy',
+    ciudad: 'Bogotá',
+    departamento: 'Bogotá D.C.',
+    pais: 'Colombia',
+    codigo_postal: '',
     foto: user.foto || '',
     biografia: user.biografia || '',
-    fotoPortada: user.foto_portada || '',
-    sitioWeb: user.sitio_web || '',
-    redesSociales: parseSafeJSON(user.redes_sociales, {}),
-    privacidad: parseSafeJSON(user.privacidad, defaultPrivacidad),
-    mision: user.mision || '',
-    vision: user.vision || '',
+    fotoPortada: '',
+    sitioWeb: '',
+    redesSociales: {},
+    privacidad: defaultPrivacidad,
+    mision: '',
+    vision: '',
     fechaRegistro: user.fecha_registro || new Date().toISOString()
   };
 };
@@ -95,21 +100,29 @@ const enrichUserIfOrganization = async (frontendUser: any) => {
     const org = await OrganizacionModel.getByEmail(frontendUser.correo);
     if (org) {
       const orgFormattedId = `org_${org.id_organizacion}`;
+      const originalUserId = frontendUser.id;
       return {
         ...frontendUser,
         id: orgFormattedId,
         organizacionId: orgFormattedId,
         id_organizacion: org.id_organizacion,
+        id_usuario: parseInt(String(originalUserId).replace('usr_', ''), 10) || undefined,
+        usuarioId: String(originalUserId).startsWith('usr_') ? originalUserId : `usr_${originalUserId}`,
         nombre1: org.nombre || frontendUser.nombre1,
         nit: org.nit || '',
         representante_legal: org.representante_legal || '',
-        barrio: org.barrio || '',
-        localidad: org.localidad || '',
-        ciudad: org.ciudad || '',
-        departamento: org.departamento || '',
-        pais: org.pais || '',
+        barrio: org.barrio || 'Kennedy Central',
+        localidad: 'Kennedy',
+        ciudad: 'Bogotá',
+        departamento: 'Bogotá D.C.',
+        pais: 'Colombia',
         categoria: org.categoria || '',
         logo: org.logo || '',
+        fotoPortada: org.foto_portada || '',
+        sitioWeb: org.sitio_web || '',
+        redesSociales: org.redes_sociales ? parseSafeJSON(org.redes_sociales, {}) : {},
+        mision: org.mision || '',
+        vision: org.vision || '',
         descripcion: org.descripcion || '',
         direccion: org.direccion || frontendUser.direccion || '',
         telefono: org.telefono || frontendUser.telefono || '',
@@ -194,7 +207,7 @@ export const UserController = {
     try {
       const { 
         rol, nombre1, nombre2, apellido1, apellido2, telefono, correo, password,
-        barrio, localidad, direccion, ciudad, departamento, pais, tipo_documento, num_documento
+        barrio, direccion, fecha_nacimiento
       } = req.body;
       
       const existing = await UsuarioModel.getByEmail(correo);
@@ -217,14 +230,9 @@ export const UserController = {
         telefono: telefono || '',
         correo,
         password: hashedPassword,
-        barrio: barrio || '',
-        localidad: localidad || '',
+        barrio: barrio || 'Kennedy Central',
         direccion: direccion || '',
-        ciudad: ciudad || 'Bogotá',
-        departamento: departamento || 'Cundinamarca',
-        pais: pais || 'Colombia',
-        tipo_documento: tipo_documento || '',
-        num_documento: num_documento || '',
+        fecha_nacimiento: fecha_nacimiento || undefined,
         estado: 1 // activo por defecto
       });
 
@@ -292,8 +300,10 @@ export const UserController = {
       const id = req.user.id;
       const {
         nombre1, nombre2, apellido1, apellido2, telefono, correo, password,
-        tipo_documento, num_documento, fecha_nacimiento, direccion, barrio, localidad, ciudad, departamento, pais, codigo_postal, foto,
-        biografia, fotoPortada, foto_portada, sitioWeb, sitio_web, redesSociales, redes_sociales, privacidad, mision, vision
+        fecha_nacimiento, direccion, barrio, foto, biografia,
+        // Campos específicos de organizaciones
+        nit, representante_legal, descripcion, categoria, logo, fotoPortada, foto_portada,
+        sitioWeb, sitio_web, redesSociales, redes_sociales, mision, vision
       } = req.body;
 
       const updateData: Partial<UsuarioDB> = {};
@@ -303,29 +313,11 @@ export const UserController = {
       if (apellido2 !== undefined) updateData.apellido2 = apellido2;
       if (telefono !== undefined) updateData.telefono = telefono;
       if (correo !== undefined) updateData.correo = correo;
-      if (tipo_documento !== undefined) updateData.tipo_documento = tipo_documento;
-      if (num_documento !== undefined) updateData.num_documento = num_documento;
       if (fecha_nacimiento !== undefined) updateData.fecha_nacimiento = fecha_nacimiento;
       if (direccion !== undefined) updateData.direccion = direccion;
       if (barrio !== undefined) updateData.barrio = barrio;
-      if (localidad !== undefined) updateData.localidad = localidad;
-      if (ciudad !== undefined) updateData.ciudad = ciudad;
-      if (departamento !== undefined) updateData.departamento = departamento;
-      if (pais !== undefined) updateData.pais = pais;
-      if (codigo_postal !== undefined) updateData.codigo_postal = codigo_postal;
       if (foto !== undefined) updateData.foto = foto;
-      
       if (biografia !== undefined) updateData.biografia = biografia;
-      if (fotoPortada !== undefined || foto_portada !== undefined) updateData.foto_portada = fotoPortada || foto_portada;
-      if (sitioWeb !== undefined || sitio_web !== undefined) updateData.sitio_web = sitioWeb || sitio_web;
-      if (redesSociales !== undefined || redes_sociales !== undefined) {
-        updateData.redes_sociales = typeof (redesSociales || redes_sociales) === 'object' ? JSON.stringify(redesSociales || redes_sociales) : (redesSociales || redes_sociales);
-      }
-      if (privacidad !== undefined) {
-        updateData.privacidad = typeof privacidad === 'object' ? JSON.stringify(privacidad) : privacidad;
-      }
-      if (mision !== undefined) updateData.mision = mision;
-      if (vision !== undefined) updateData.vision = vision;
       
       if (password && password.trim() !== '') {
         updateData.password = await hashPassword(password);
@@ -345,19 +337,21 @@ export const UserController = {
           if (telefono !== undefined) orgUpdate.telefono = telefono;
           if (direccion !== undefined) orgUpdate.direccion = direccion;
           if (barrio !== undefined) orgUpdate.barrio = barrio;
-          if (localidad !== undefined) orgUpdate.localidad = localidad;
-          if (ciudad !== undefined) orgUpdate.ciudad = ciudad;
-          if (departamento !== undefined) orgUpdate.departamento = departamento;
-          if (pais !== undefined) orgUpdate.pais = pais;
           if (password && password.trim() !== '') orgUpdate.password = updateData.password;
           
-          // Campos específicos de organizaciones
-          const { nit, representante_legal, descripcion, categoria, logo } = req.body;
           if (nit !== undefined) orgUpdate.nit = nit;
           if (representante_legal !== undefined) orgUpdate.representante_legal = representante_legal;
-          if (descripcion !== undefined) orgUpdate.descripcion = descripcion;
+          if (descripcion !== undefined || biografia !== undefined) orgUpdate.descripcion = descripcion || biografia;
           if (categoria !== undefined) orgUpdate.categoria = categoria;
-          if (logo !== undefined) orgUpdate.logo = logo;
+          if (logo !== undefined || foto !== undefined) orgUpdate.logo = logo || foto;
+          if (fotoPortada !== undefined || foto_portada !== undefined) orgUpdate.foto_portada = fotoPortada || foto_portada;
+          if (mision !== undefined) orgUpdate.mision = mision;
+          if (vision !== undefined) orgUpdate.vision = vision;
+          if (sitioWeb !== undefined || sitio_web !== undefined) orgUpdate.sitio_web = sitioWeb || sitio_web;
+          if (redesSociales !== undefined || redes_sociales !== undefined) {
+            const rawRedes = redesSociales || redes_sociales;
+            orgUpdate.redes_sociales = typeof rawRedes === 'object' ? JSON.stringify(rawRedes) : rawRedes;
+          }
 
           await OrganizacionModel.update(org.id_organizacion, orgUpdate);
         }
@@ -499,9 +493,10 @@ export const UserController = {
       const id = parseInt(req.params.id, 10);
       const {
         rol, nombre1, nombre2, apellido1, apellido2, telefono, correo, password, estado,
-        tipo_documento, num_documento, fecha_nacimiento, direccion, barrio, localidad, ciudad, departamento, pais, codigo_postal, foto,
-        biografia, fotoPortada, foto_portada, sitioWeb, sitio_web, redesSociales, redes_sociales, privacidad, mision, vision,
-        nit, representante_legal, descripcion, categoria, logo
+        fecha_nacimiento, direccion, barrio, foto, biografia,
+        // Organizacion campos
+        nit, representante_legal, descripcion, categoria, logo, fotoPortada, foto_portada,
+        sitioWeb, sitio_web, redesSociales, redes_sociales, mision, vision
       } = req.body;
 
       const updateData: Partial<UsuarioDB> = {};
@@ -513,30 +508,11 @@ export const UserController = {
       if (telefono !== undefined) updateData.telefono = telefono;
       if (correo !== undefined) updateData.correo = correo;
       if (estado !== undefined) updateData.estado = estado === 'activo' || estado === 1 ? 1 : 0;
-      if (tipo_documento !== undefined) updateData.tipo_documento = tipo_documento;
-      if (num_documento !== undefined) updateData.num_documento = num_documento;
       if (fecha_nacimiento !== undefined) updateData.fecha_nacimiento = fecha_nacimiento;
       if (direccion !== undefined) updateData.direccion = direccion;
       if (barrio !== undefined) updateData.barrio = barrio;
-      if (localidad !== undefined) updateData.localidad = localidad;
-      if (ciudad !== undefined) updateData.ciudad = ciudad;
-      if (departamento !== undefined) updateData.departamento = departamento;
-      if (pais !== undefined) updateData.pais = pais;
-      if (codigo_postal !== undefined) updateData.codigo_postal = codigo_postal;
       if (foto !== undefined) updateData.foto = foto;
-
       if (biografia !== undefined) updateData.biografia = biografia;
-      if (fotoPortada !== undefined || foto_portada !== undefined) updateData.foto_portada = fotoPortada || foto_portada;
-      if (sitioWeb !== undefined || sitio_web !== undefined) updateData.sitio_web = sitioWeb || sitio_web;
-      if (redesSociales !== undefined || redes_sociales !== undefined) {
-        const resVal = redesSociales || redes_sociales;
-        updateData.redes_sociales = typeof resVal === 'object' ? JSON.stringify(resVal) : resVal;
-      }
-      if (privacidad !== undefined) {
-        updateData.privacidad = typeof privacidad === 'object' ? JSON.stringify(privacidad) : privacidad;
-      }
-      if (mision !== undefined) updateData.mision = mision;
-      if (vision !== undefined) updateData.vision = vision;
 
       if (password && password.trim() !== '') {
         updateData.password = await hashPassword(password);
@@ -565,14 +541,18 @@ export const UserController = {
           if (descripcion !== undefined || biografia !== undefined) orgDataToUpdate.descripcion = descripcion || biografia;
           if (categoria !== undefined) orgDataToUpdate.categoria = categoria;
           if (logo !== undefined || foto !== undefined) orgDataToUpdate.logo = logo || foto;
+          if (fotoPortada !== undefined || foto_portada !== undefined) orgDataToUpdate.foto_portada = fotoPortada || foto_portada;
+          if (mision !== undefined) orgDataToUpdate.mision = mision;
+          if (vision !== undefined) orgDataToUpdate.vision = vision;
+          if (sitioWeb !== undefined || sitio_web !== undefined) orgDataToUpdate.sitio_web = sitioWeb || sitio_web;
+          if (redesSociales !== undefined || redes_sociales !== undefined) {
+            const rawRedes = redesSociales || redes_sociales;
+            orgDataToUpdate.redes_sociales = typeof rawRedes === 'object' ? JSON.stringify(rawRedes) : rawRedes;
+          }
           if (direccion !== undefined) orgDataToUpdate.direccion = direccion;
           if (telefono !== undefined) orgDataToUpdate.telefono = telefono;
           if (correo !== undefined) orgDataToUpdate.correo = correo;
           if (barrio !== undefined) orgDataToUpdate.barrio = barrio;
-          if (localidad !== undefined) orgDataToUpdate.localidad = localidad;
-          if (ciudad !== undefined) orgDataToUpdate.ciudad = ciudad;
-          if (departamento !== undefined) orgDataToUpdate.departamento = departamento;
-          if (pais !== undefined) orgDataToUpdate.pais = pais;
 
           if (Object.keys(orgDataToUpdate).length > 0) {
             await OrganizacionModel.update(org.id_organizacion, orgDataToUpdate);
@@ -632,7 +612,7 @@ export const UserController = {
       }
 
       // Permitir si es Admin O si el usuario se está eliminando a sí mismo
-      if (authUser.rol !== 'Admin' && authUser.id !== id) {
+      if (authUser.rol?.toLowerCase() !== 'admin' && authUser.id !== id) {
         return res.status(403).json({
           success: false,
           message: 'No tiene permisos para eliminar esta cuenta.',
@@ -685,43 +665,112 @@ export const UserController = {
 
   async forgotPassword(req: Request, res: Response) {
     try {
-      const { correo, nuevaPassword } = req.body;
-      const user = await UsuarioModel.getByEmail(correo);
-      if (!user) {
-        return res.status(404).json({
+      const { correo, codigo, token, nuevaPassword } = req.body;
+      if (!correo || typeof correo !== 'string') {
+        return res.status(400).json({
           success: false,
-          message: 'El correo electrónico no está registrado.',
+          message: 'El correo electrónico es requerido.',
           errors: []
         });
       }
 
+      const normalizedEmail = correo.trim().toLowerCase();
+      let user = await UsuarioModel.getByEmail(normalizedEmail);
+      let org = await OrganizacionModel.getByEmail(normalizedEmail);
+
+      if (!user && !org) {
+        return res.status(404).json({
+          success: false,
+          message: 'El correo electrónico no está registrado en Give&Go.',
+          errors: []
+        });
+      }
+
+      const userName = user 
+        ? `${user.nombre1} ${user.apellido1 || ''}`.trim() 
+        : (org?.nombre_organizacion || 'Usuario');
+
+      // CASO 1: Solicitud de cambio con nueva contraseña
       if (nuevaPassword) {
-        const hashedPassword = await hashPassword(nuevaPassword);
-        const ok = await UsuarioModel.update(user.id_usuario, { password: hashedPassword });
-        if (!ok) {
-          return res.status(500).json({
+        const codeToVerify = (codigo || token || '').toString().trim();
+        if (!codeToVerify) {
+          return res.status(400).json({
             success: false,
-            message: 'No se pudo actualizar la contraseña. Intente nuevamente.',
+            message: 'El código de verificación es obligatorio para cambiar la contraseña.',
             errors: []
           });
         }
-        await logAudit(user.id_usuario, 'Restablecimiento de contraseña de usuario exitoso.');
+
+        const isValid = verifyResetCode(normalizedEmail, codeToVerify);
+        if (!isValid) {
+          return res.status(400).json({
+            success: false,
+            message: 'El código de verificación es inválido o ha expirado. Solicita uno nuevo.',
+            errors: []
+          });
+        }
+
+        const hashedPassword = await hashPassword(nuevaPassword);
+        if (user) {
+          await UsuarioModel.update(user.id_usuario, { password: hashedPassword });
+          await logAudit(user.id_usuario, 'Restablecimiento de contraseña de usuario exitoso.');
+        }
+        if (org) {
+          await OrganizacionModel.update(org.id_organizacion, { password: hashedPassword });
+        }
+
+        // Consumir el código para que no se use de nuevo
+        consumeResetCode(normalizedEmail, codeToVerify);
+
         return res.status(200).json({
           success: true,
           message: 'Contraseña restablecida correctamente. Ya puedes iniciar sesión con tu nueva contraseña.',
-          data: { correo }
-        });
-      } else {
-        return res.status(200).json({
-          success: true,
-          message: 'Correo electrónico verificado con éxito.',
-          data: { correo, verified: true }
+          data: { correo: normalizedEmail }
         });
       }
+
+      // CASO 2: Solo verificación previa de código
+      if (codigo || token) {
+        const codeToVerify = (codigo || token || '').toString().trim();
+        const isValid = verifyResetCode(normalizedEmail, codeToVerify);
+        if (!isValid) {
+          return res.status(400).json({
+            success: false,
+            message: 'El código de verificación es incorrecto o ha expirado.',
+            errors: []
+          });
+        }
+        return res.status(200).json({
+          success: true,
+          message: 'Código de verificación válido.',
+          data: { correo: normalizedEmail, codeValid: true }
+        });
+      }
+
+      // CASO 3: Solicitar código -> Enviar correo electrónico real
+      const origin = req.get('origin') || req.get('referer');
+      let frontendBaseUrl = process.env.FRONTEND_URL;
+      if (origin) {
+        try {
+          const parsed = new URL(origin);
+          frontendBaseUrl = `${parsed.protocol}//${parsed.host}`;
+        } catch {
+          // ignore
+        }
+      }
+
+      await createAndSendPasswordReset(normalizedEmail, userName, frontendBaseUrl);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Código de verificación enviado exitosamente a tu correo electrónico.',
+        data: { correo: normalizedEmail, emailSent: true }
+      });
     } catch (err: any) {
+      console.error('Error en forgotPassword:', err);
       return res.status(500).json({
         success: false,
-        message: err.message || 'Error al procesar la solicitud.',
+        message: err.message || 'Error al procesar la solicitud de recuperación.',
         errors: []
       });
     }

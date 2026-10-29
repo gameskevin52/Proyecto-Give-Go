@@ -14,6 +14,7 @@ INSERT INTO `usuarios` (
   `id_barrio`, `direccion`, `barrio`, `foto`, `biografia`, `estado`
 ) VALUES
 (1, 1, 'Admin', 'Administrador', 'General', 'General', NULL, '1985-05-12', '+57 300 123 4567', 'admin@giveandgo.com', '$2b$10$tZ9C.mJjXNco/e.e2jV9SeAAL68L16S78A9oGv2o62H9R1pW61qE.', 1, 'Calle 38 Sur # 78-45', 'Kennedy Central', NULL, 'Administrador general de la plataforma comunitaria.', 1),
+(500, 1, 'Admin', 'Soporte', 'Give&Go', 'Oficial', NULL, '1990-01-01', '+57 300 000 0000', 'soportegiveandgo@gmail.com', '$2b$10$tZ9C.mJjXNco/e.e2jV9SeAAL68L16S78A9oGv2o62H9R1pW61qE.', 1, 'Calle 38 Sur # 78-45', 'Kennedy Central', NULL, 'Cuenta oficial de soporte técnico Give&Go.', 1),
 (999, 2, 'Voluntario', 'Donante', NULL, 'Anónimo', NULL, '1990-01-01', NULL, 'anonimo@giveandgo.com', 'none', 1, 'Calle 38 Sur # 78-45', 'Kennedy Central', NULL, 'Perfil genérico para donaciones anónimas.', 1),
 (2, 2, 'Voluntario', 'Carlos', 'Andrés', 'Mendoza', 'Castro', '1995-08-20', '+57 310 987 6543', 'carlos@volunteer.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 2, 'Carrera 80 # 40B Sur-12', 'Castilla', NULL, 'Voluntario apasionado por el trabajo social y pedagógico.', 1),
 (3, 2, 'Voluntario', 'Sofía', NULL, 'Pérez', NULL, '1998-11-15', '+57 315 222 3333', 'sofia@volunteer.com', '$2b$10$gO6NveiB/s/T.O3m/v9L1e7pAAsH1.S2Zp1A/9oK32V9R1pW52aD.', 4, 'Avenida Las Américas # 86-20', 'El Tintal', NULL, 'Estudiante de trabajo social comprometida con Kennedy.', 1),

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { EventService, PostulacionService } from '../../services/db';
 import { Evento, Postulacion } from '../../types';
-import { Button, Card, Badge, Modal, ConfirmDialog, Textarea, Alert, EmptyState, formatDate } from '../../components/UI';
+import { Button, Input, Select, Card, Badge, Modal, ConfirmDialog, Textarea, Alert, EmptyState, SearchBar, Pagination, formatDate } from '../../components/UI';
+import { usePagination } from '../../hooks';
 import { HeartHandshake, Calendar, MapPin, Building, CheckCircle, Clock, XCircle, AlertCircle, Info, ChevronRight } from 'lucide-react';
 
 export const BeneficiaryDashboard: React.FC = () => {
@@ -11,6 +12,14 @@ export const BeneficiaryDashboard: React.FC = () => {
   const [events, setEvents] = useState<Evento[]>([]);
   const [postulaciones, setPostulaciones] = useState<Postulacion[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Filtros de eventos
+  const [eventSearch, setEventSearch] = useState('');
+  const [eventCategory, setEventCategory] = useState('todas');
+
+  // Filtros de postulaciones
+  const [postSearch, setPostSearch] = useState('');
+  const [postStatus, setPostStatus] = useState('todos');
 
   // Modal para postularse a un evento
   const [selectedEvent, setSelectedEvent] = useState<Evento | null>(null);
@@ -44,6 +53,48 @@ export const BeneficiaryDashboard: React.FC = () => {
       setLoading(false);
     }
   }
+
+  const eventCategories = Array.from(new Set(events.map(e => e.categoria).filter(Boolean)));
+
+  const filteredEvents = events.filter(evt => {
+    const matchesSearch = eventSearch === '' ||
+      evt.nombre.toLowerCase().includes(eventSearch.toLowerCase()) ||
+      evt.descripcion.toLowerCase().includes(eventSearch.toLowerCase()) ||
+      (evt.ayudaOfrecida || '').toLowerCase().includes(eventSearch.toLowerCase()) ||
+      (evt.direccion || '').toLowerCase().includes(eventSearch.toLowerCase());
+    const matchesCat = eventCategory === 'todas' || evt.categoria === eventCategory;
+    return matchesSearch && matchesCat;
+  });
+
+  const {
+    paginatedItems: paginatedEvents,
+    currentPage: evtPage,
+    totalPages: evtTotalPages,
+    pageSize: evtPageSize,
+    totalItems: evtTotalItems,
+    setPage: setEvtPage,
+    setPageSize: setEvtPageSize
+  } = usePagination(filteredEvents, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
+
+  const filteredPostulaciones = postulaciones.filter(post => {
+    const matchesSearch = postSearch === '' ||
+      (post.eventoNombre || '').toLowerCase().includes(postSearch.toLowerCase()) ||
+      (post.organizacionNombre || '').toLowerCase().includes(postSearch.toLowerCase()) ||
+      (post.ayudaOfrecida || '').toLowerCase().includes(postSearch.toLowerCase()) ||
+      (post.eventoDireccion || '').toLowerCase().includes(postSearch.toLowerCase());
+    const matchesStatus = postStatus === 'todos' || post.estadoPostulacion === postStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const {
+    paginatedItems: paginatedPostulaciones,
+    currentPage: postPage,
+    totalPages: postTotalPages,
+    pageSize: postPageSize,
+    totalItems: postTotalItems,
+    setPage: setPostPage,
+    setPageSize: setPostPageSize
+  } = usePagination(filteredPostulaciones, { initialPageSize: 15, pageSizeOptions: [5, 10, 15] });
 
   const handleOpenApplyModal = (evento: Evento) => {
     setSelectedEvent(evento);
@@ -248,105 +299,138 @@ export const BeneficiaryDashboard: React.FC = () => {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SearchBar
+              value={eventSearch}
+              onChange={setEventSearch}
+              placeholder="Buscar jornada o beneficio ofrecido..."
+            />
+            <Select
+              value={eventCategory}
+              onChange={(e) => setEventCategory(e.target.value)}
+              options={[
+                { value: 'todas', label: 'Todas las categorías' },
+                ...eventCategories.map(c => ({ value: c, label: c }))
+              ]}
+            />
+          </div>
+
           {events.length === 0 ? (
             <EmptyState
               title="Sin Jornadas Activas"
               description="Actualmente no hay jornadas o programas activos programados por las organizaciones comunitarias en la zona. Revisa nuevamente pronto."
             />
+          ) : paginatedEvents.length === 0 ? (
+            <EmptyState
+              title="No se encontraron jornadas"
+              description="No hay eventos que coincidan con los criterios de búsqueda o categoría seleccionada."
+            />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
-              {events.map((evt, idx) => {
-                const applied = isAppliedToEvent(evt.id);
-                const userPostulacion = postulaciones.find(p => String(p.eventoId) === String(evt.id));
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
+                {paginatedEvents.map((evt, idx) => {
+                  const applied = isAppliedToEvent(evt.id);
 
-                return (
-                  <Card key={evt.id ? `evt_${evt.id}_${idx}` : `evt_idx_${idx}`} className="flex flex-col justify-between overflow-hidden border border-neutral-200 hover:border-emerald-300 transition-all shadow-sm hover:shadow-md">
-                    <div>
-                      {/* Imagen o encabezado del evento */}
-                      {evt.imagen ? (
-                        <div className="h-40 w-full overflow-hidden relative">
-                          <img src={evt.imagen} alt={evt.nombre} className="w-full h-full object-cover" />
-                          <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-bold text-neutral-800 shadow">
-                            {evt.categoria || 'Comunitario'}
+                  return (
+                    <Card key={evt.id ? `evt_${evt.id}_${idx}` : `evt_idx_${idx}`} className="flex flex-col justify-between overflow-hidden border border-neutral-200 hover:border-emerald-300 transition-all shadow-sm hover:shadow-md">
+                      <div>
+                        {/* Imagen o encabezado del evento */}
+                        {evt.imagen ? (
+                          <div className="h-40 w-full overflow-hidden relative">
+                            <img src={evt.imagen} alt={evt.nombre} className="w-full h-full object-cover" />
+                            <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-bold text-neutral-800 shadow">
+                              {evt.categoria || 'Comunitario'}
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="h-28 bg-emerald-900/10 p-4 flex items-end justify-between border-b border-neutral-100">
-                          <span className="bg-white px-2.5 py-1 rounded-full text-[11px] font-bold text-emerald-900 shadow-sm">
-                            {evt.categoria || 'Comunitario'}
-                          </span>
-                        </div>
-                      )}
-
-                      <div className="p-5 space-y-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-extrabold text-neutral-900 text-base leading-snug">
-                            {evt.nombre}
-                          </h3>
-                        </div>
-
-                        {/* Organización organizadora */}
-                        <div className="flex items-center gap-2 text-xs font-semibold text-neutral-700">
-                          <Building className="w-4 h-4 text-emerald-700 shrink-0" />
-                          <span>Organización: {evt.organizacionId ? `Organización #${evt.organizacionId}` : 'Aliado Give&Go'}</span>
-                        </div>
-
-                        {/* Ayuda ofrecida */}
-                        {evt.ayudaOfrecida && (
-                          <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200/80 text-xs text-neutral-800">
-                            <span className="font-bold text-emerald-900 block mb-0.5">
-                              🎁 Ayuda / Beneficio Ofrecido:
+                        ) : (
+                          <div className="h-28 bg-emerald-900/10 p-4 flex items-end justify-between border-b border-neutral-100">
+                            <span className="bg-white px-2.5 py-1 rounded-full text-[11px] font-bold text-emerald-900 shadow-sm">
+                              {evt.categoria || 'Comunitario'}
                             </span>
-                            <p className="text-neutral-700 leading-normal">{evt.ayudaOfrecida}</p>
                           </div>
                         )}
 
-                        <p className="text-xs text-neutral-600 line-clamp-2 leading-relaxed">
-                          {evt.descripcion}
-                        </p>
-
-                        <div className="pt-2 border-t border-neutral-100 space-y-1.5 text-xs text-neutral-600">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                            <span>{formatDate(evt.fecha)}</span>
+                        <div className="p-5 space-y-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="font-extrabold text-neutral-900 text-base leading-snug">
+                              {evt.nombre}
+                            </h3>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-                            <span className="truncate">{evt.direccion || evt.barrio || 'Kennedy, Bogotá D.C.'}</span>
+
+                          {/* Organización organizadora */}
+                          <div className="flex items-center gap-2 text-xs font-semibold text-neutral-700">
+                            <Building className="w-4 h-4 text-emerald-700 shrink-0" />
+                            <span>Organización: {evt.organizacionId ? `Organización #${evt.organizacionId}` : 'Aliado Give&Go'}</span>
+                          </div>
+
+                          {/* Ayuda ofrecida */}
+                          {evt.ayudaOfrecida && (
+                            <div className="bg-neutral-50 rounded-lg p-3 border border-neutral-200/80 text-xs text-neutral-800">
+                              <span className="font-bold text-emerald-900 block mb-0.5">
+                                Ayuda / Beneficio Ofrecido:
+                              </span>
+                              <p className="text-neutral-700 leading-normal">{evt.ayudaOfrecida}</p>
+                            </div>
+                          )}
+
+                          <p className="text-xs text-neutral-600 line-clamp-2 leading-relaxed">
+                            {evt.descripcion}
+                          </p>
+
+                          <div className="pt-2 border-t border-neutral-100 space-y-1.5 text-xs text-neutral-600">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                              <span>{formatDate(evt.fecha)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                              <span className="truncate">{evt.direccion || evt.barrio || 'Kennedy, Bogotá D.C.'}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="p-5 pt-0">
-                      {applied ? (
-                        <div className="bg-neutral-100 p-3 rounded-lg border border-neutral-200 flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-xs font-bold text-neutral-800">
-                            <CheckCircle className="w-4 h-4 text-emerald-600" />
-                            <span>Ya estás postulado a este evento</span>
+                      <div className="p-5 pt-0">
+                        {applied ? (
+                          <div className="bg-neutral-100 p-3 rounded-lg border border-neutral-200 flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-xs font-bold text-neutral-800">
+                              <CheckCircle className="w-4 h-4 text-emerald-600" />
+                              <span>Ya estás postulado a este evento</span>
+                            </div>
+                            <button
+                              onClick={() => setActiveTab('mis_postulaciones')}
+                              className="text-emerald-700 hover:text-emerald-900 text-xs font-bold flex items-center"
+                            >
+                              Ver Estado <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+                            </button>
                           </div>
-                          <button
-                            onClick={() => setActiveTab('mis_postulaciones')}
-                            className="text-emerald-700 hover:text-emerald-900 text-xs font-bold flex items-center"
+                        ) : (
+                          <Button
+                            variant="primary"
+                            className="w-full justify-center bg-emerald-700 hover:bg-emerald-800 text-white font-bold"
+                            onClick={() => handleOpenApplyModal(evt)}
                           >
-                            Ver Estado <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <Button
-                          variant="primary"
-                          className="w-full justify-center bg-emerald-700 hover:bg-emerald-800 text-white font-bold"
-                          onClick={() => handleOpenApplyModal(evt)}
-                        >
-                          <HeartHandshake className="w-4 h-4 mr-2" />
-                          Postularme para Recibir Ayuda
-                        </Button>
-                      )}
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
+                            <HeartHandshake className="w-4 h-4 mr-2" />
+                            Postularme para Recibir Ayuda
+                          </Button>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              <Pagination
+                currentPage={evtPage}
+                totalPages={evtTotalPages}
+                onPageChange={setEvtPage}
+                pageSize={evtPageSize}
+                onPageSizeChange={setEvtPageSize}
+                totalItems={evtTotalItems}
+                itemName="jornadas"
+                pageSizeOptions={[5, 10, 15]}
+              />
+            </>
           )}
         </div>
       )}
@@ -354,12 +438,36 @@ export const BeneficiaryDashboard: React.FC = () => {
       {/* VISTA 2: MIS POSTULACIONES A EVENTOS */}
       {activeTab === 'mis_postulaciones' && (
         <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SearchBar
+              value={postSearch}
+              onChange={setPostSearch}
+              placeholder="Buscar por jornada u organización..."
+            />
+            <Select
+              value={postStatus}
+              onChange={(e) => setPostStatus(e.target.value)}
+              options={[
+                { value: 'todos', label: 'Todos los estados' },
+                { value: 'pendiente', label: 'En Revisión (Pendiente)' },
+                { value: 'aprobado', label: 'Aprobados' },
+                { value: 'confirmado', label: 'Confirmados' },
+                { value: 'rechazado', label: 'No Aprobados' },
+              ]}
+            />
+          </div>
+
           {postulaciones.length === 0 ? (
             <EmptyState
               title="Aún no tienes postulaciones"
               description="No te has postulado a ninguna jornada comunitaria. Revisa las jornadas disponibles en Kennedy y envía tu primera postulación."
               actionText="Ver Jornadas Disponibles"
               onAction={() => setActiveTab('explorar')}
+            />
+          ) : paginatedPostulaciones.length === 0 ? (
+            <EmptyState
+              title="No se encontraron postulaciones"
+              description="No hay postulaciones que coincidan con los filtros aplicados."
             />
           ) : (
             <div className="space-y-4">
@@ -368,7 +476,7 @@ export const BeneficiaryDashboard: React.FC = () => {
               </h2>
 
               <div className="grid grid-cols-1 gap-4">
-                {postulaciones.map((post, idx) => (
+                {paginatedPostulaciones.map((post, idx) => (
                   <Card key={post.id ? `post_${post.id}_${idx}` : `post_idx_${idx}`} className="p-5 border border-neutral-200 space-y-4">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 border-b border-neutral-100 pb-3">
                       <div>
@@ -390,17 +498,17 @@ export const BeneficiaryDashboard: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                       <div className="space-y-1">
-                        <span className="font-bold text-neutral-700 block">📅 Fecha del Evento:</span>
+                        <span className="font-bold text-neutral-700 block">Fecha del Evento:</span>
                         <p className="text-neutral-600">{formatDate(post.eventoFecha || post.fechaPostulacion)}</p>
                       </div>
 
                       <div className="space-y-1">
-                        <span className="font-bold text-neutral-700 block">📍 Dirección / Sede:</span>
+                        <span className="font-bold text-neutral-700 block">Dirección / Sede:</span>
                         <p className="text-neutral-600">{post.eventoDireccion || 'Kennedy Central, Bogotá'}</p>
                       </div>
 
                       <div className="space-y-1">
-                        <span className="font-bold text-neutral-700 block">🎁 Beneficio Ofrecido:</span>
+                        <span className="font-bold text-neutral-700 block">Beneficio Ofrecido:</span>
                         <p className="text-neutral-600">{post.ayudaOfrecida || 'Entrega de apoyo comunitario'}</p>
                       </div>
                     </div>
@@ -446,6 +554,17 @@ export const BeneficiaryDashboard: React.FC = () => {
                   </Card>
                 ))}
               </div>
+
+              <Pagination
+                currentPage={postPage}
+                totalPages={postTotalPages}
+                onPageChange={setPostPage}
+                pageSize={postPageSize}
+                onPageSizeChange={setPostPageSize}
+                totalItems={postTotalItems}
+                itemName="postulaciones"
+                pageSizeOptions={[5, 10, 15]}
+              />
             </div>
           )}
         </div>
@@ -468,7 +587,7 @@ export const BeneficiaryDashboard: React.FC = () => {
               
               {selectedEvent.ayudaOfrecida && (
                 <div className="pt-2 border-t border-emerald-200/80 font-bold text-emerald-900">
-                  🎁 Ayuda a recibir: {selectedEvent.ayudaOfrecida}
+                  Ayuda a recibir: {selectedEvent.ayudaOfrecida}
                 </div>
               )}
             </div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { MapPin, Search, Navigation, Check, AlertTriangle } from 'lucide-react';
+import { createAppTileLayer, createLocationPickerIcon } from '../utils/mapConfig';
 
 // Fix for default Leaflet marker icon in Vite
 // @ts-ignore
@@ -65,14 +66,13 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     const map = L.map(mapContainerRef.current).setView([currentLat, currentLng], 14);
     mapRef.current = map;
 
-    // Add OpenStreetMap layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(map);
+    // Add reliable map layer (powered by OSM data, no 403 blocks)
+    createAppTileLayer().addTo(map);
 
-    // Create marker
+    // Create marker with custom high-contrast pin icon
     const marker = L.marker([currentLat, currentLng], {
       draggable: true,
+      icon: createLocationPickerIcon(),
     }).addTo(map);
     markerRef.current = marker;
 

@@ -325,7 +325,7 @@ export const PublicProfile: React.FC = () => {
               ) : (
                 <>
                   {role === 'organizacion' && (
-                    <Link to="/donations">
+                    <Link to={`/donations?orgId=${profileData.organization?.id || profileData.user.id || id}`}>
                       <Button variant="primary" className="flex items-center gap-2 shadow-xs">
                         <Heart className="w-4 h-4 fill-white" />
                         <span>Donar a esta Organización</span>

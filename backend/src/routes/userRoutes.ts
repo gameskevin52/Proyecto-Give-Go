@@ -9,6 +9,8 @@ const router = Router();
 router.post('/login', validateLogin, UserController.login);
 router.post('/register', validateRegister, UserController.register);
 router.post('/forgot-password', UserController.forgotPassword);
+router.post('/reset-password', UserController.forgotPassword);
+router.post('/verify-reset-code', UserController.forgotPassword);
 
 // Rutas de perfil autenticado
 router.get('/profile', authenticateJWT, UserController.getProfile);

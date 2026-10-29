@@ -56,9 +56,20 @@ DB_NAME=giveandgo_v2
 
 # URL de la API para el frontend
 VITE_API_URL=http://localhost:3000/api
+
+# Configuración de Correo Electrónico (Gmail SMTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=soportegiveandgo@gmail.com
+SMTP_PASS=yjwzcrjudqogsemx
+EMAIL_FROM="Give&Go Soporte <soportegiveandgo@gmail.com>"
+FRONTEND_URL=http://localhost:3000
 ```
 
 > 💡 **Nota sobre la contraseña de MySQL en XAMPP**: Por defecto, el usuario `root` de XAMPP **no tiene contraseña** (se deja vacío `DB_PASSWORD=`). Si le asignaste una contraseña personalizada en phpMyAdmin, colócala en `DB_PASSWORD`.
+>
+> 💡 **Nota sobre el envío de correos en localhost**: El sistema de recuperación de contraseña conecta con los servidores seguros de Google Gmail vía SMTP (puerto 465 SSL). Por lo tanto, **funcionará al 100% en localhost** sin necesidad de configurar Mercury Mail ni Sendmail en XAMPP; solo requiere conexión a internet en tu equipo.
 
 ---
 
@@ -89,6 +100,7 @@ La base de datos incluye cuentas ya creadas para cada rol con el fin de que pued
 | Rol | Correo Electrónico | Contraseña | Descripción / Acceso |
 | :--- | :--- | :--- | :--- |
 | **Administrador** | `admin@giveandgo.com` | `Admin123*` | Panel administrativo, auditorías, gestión de usuarios y postulaciones |
+| **Soporte Oficial** | `soportegiveandgo@gmail.com` | `Admin123*` | Cuenta oficial de soporte y pruebas de restablecimiento de contraseña |
 | **Organización** | `contacto@manosporkennedy.org` | `User123*` | Gestión de eventos, donaciones recibidas y postulaciones |
 | **Voluntario** | `carlos@volunteer.com` | `User123*` | Inscripción en eventos, donaciones monetarias y de objetos |
 | **Beneficiario** | `juan@beneficiary.com` | `User123*` | Solicitudes de apoyo social, postulaciones de asistencia |

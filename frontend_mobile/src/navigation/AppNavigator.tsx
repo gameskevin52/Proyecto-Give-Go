@@ -15,6 +15,14 @@ import { EditEventView } from '../features/events/views/EditEventView';
 import { CreateDonationView } from '../features/donations/views/CreateDonationView';
 import { CreateRequestView } from '../features/beneficiary/views/CreateRequestView';
 import { EditProfileView } from '../features/profile/views/EditProfileView';
+import { MapaSocialView } from '../features/map/views/MapaSocialView';
+import { DashboardView } from '../features/dashboard/views/DashboardView';
+import { AdminUsersView } from '../features/admin/views/AdminUsersView';
+import { AdminOrganizationsView } from '../features/admin/views/AdminOrganizationsView';
+import { AdminVerificationsView } from '../features/admin/views/AdminVerificationsView';
+import { AdminEventsView } from '../features/admin/views/AdminEventsView';
+import { AdminDonationsView } from '../features/admin/views/AdminDonationsView';
+import { AdminCategoriesView } from '../features/admin/views/AdminCategoriesView';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -44,6 +52,14 @@ export const AppNavigator = () => {
             <Stack.Screen name="CreateDonation" component={CreateDonationView} />
             <Stack.Screen name="CreateRequest" component={CreateRequestView} />
             <Stack.Screen name="EditProfile" component={EditProfileView} />
+            <Stack.Screen name="MapaSocial" component={MapaSocialView} />
+            <Stack.Screen name="Dashboard" component={DashboardView} />
+            <Stack.Screen name="AdminUsers" component={AdminUsersView} />
+            <Stack.Screen name="AdminOrganizations" component={AdminOrganizationsView} />
+            <Stack.Screen name="AdminVerifications" component={AdminVerificationsView} />
+            <Stack.Screen name="AdminEvents" component={AdminEventsView} />
+            <Stack.Screen name="AdminDonations" component={AdminDonationsView} />
+            <Stack.Screen name="AdminCategories" component={AdminCategoriesView} />
           </Stack.Group>
         )}
       </Stack.Navigator>

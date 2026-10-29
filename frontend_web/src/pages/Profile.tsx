@@ -690,29 +690,19 @@ export const Profile: React.FC = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <Select
-                    label="Tipo de Documento"
-                    options={[
-                      { value: '', label: 'Seleccionar...' },
-                      { value: 'CC', label: 'Cédula de Ciudadanía' },
-                      { value: 'CE', label: 'Cédula de Extranjería' },
-                      { value: 'TI', label: 'Tarjeta de Identidad' },
-                      { value: 'PAS', label: 'Pasaporte' },
-                    ]}
-                    error={errors.tipo_documento?.message}
-                    {...register('tipo_documento', { required: 'El tipo de documento es obligatorio' })}
-                  />
-                  <Input
-                    label="Número de Documento"
-                    error={errors.num_documento?.message}
-                    {...register('num_documento', { required: 'El número de documento es obligatorio' })}
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
                     label="Fecha de Nacimiento"
                     type="date"
                     error={errors.fecha_nacimiento?.message}
-                    {...register('fecha_nacimiento', { required: 'La fecha de nacimiento es obligatoria' })}
+                    {...register('fecha_nacimiento')}
+                  />
+                  <Input
+                    label="Número de Teléfono Móvil"
+                    placeholder="Ej. +57 310 123 4567"
+                    icon={<Phone className="w-4 h-4 text-neutral-400" />}
+                    error={errors.telefono?.message}
+                    {...register('telefono')}
                   />
                 </div>
               </div>
@@ -722,58 +712,56 @@ export const Profile: React.FC = () => {
 
         {/* TAB 2: Ubicación y Contacto */}
         {activeTab === 'ubicacion' && (
-          <Card title="Datos de Contacto y Ubicación Física">
+          <Card title="Datos de Ubicación en la Localidad de Kennedy">
             <div className="space-y-4">
+              <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-900 flex items-center justify-between">
+                <div>
+                  <p className="font-bold">Territorio de Cobertura Oficial</p>
+                  <p className="text-[11px] text-red-700">Localidad de Kennedy • Bogotá D.C., Colombia</p>
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-wider bg-red-600 text-white px-2.5 py-1 rounded-full">
+                  Kennedy
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Dirección Física"
+                  placeholder="Ej. Calle 38 Sur # 78-45"
+                  icon={<MapPin className="w-4 h-4 text-neutral-400" />}
+                  error={errors.direccion?.message}
+                  {...register('direccion', { required: 'La dirección es obligatoria' })}
+                />
+                <Select
+                  label="Barrio / Sector de Kennedy"
+                  options={[
+                    { value: '', label: 'Seleccionar barrio...' },
+                    { value: 'Kennedy Central', label: 'Kennedy Central' },
+                    { value: 'Castilla', label: 'Castilla' },
+                    { value: 'Patio Bonito', label: 'Patio Bonito' },
+                    { value: 'El Tintal', label: 'El Tintal' },
+                    { value: 'Timiza', label: 'Timiza' },
+                    { value: 'Mandalay', label: 'Mandalay' },
+                    { value: 'Carvajal', label: 'Carvajal' },
+                    { value: 'Pastrana', label: 'Pastrana' },
+                    { value: 'Otro sector de Kennedy', label: 'Otro sector de Kennedy' },
+                  ]}
+                  error={errors.barrio?.message}
+                  {...register('barrio', { required: 'El barrio en Kennedy es obligatorio' })}
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Número de Teléfono"
                   icon={<Phone className="w-4 h-4 text-neutral-400" />}
                   error={errors.telefono?.message}
-                  {...register('telefono', { required: 'El teléfono de contacto es obligatorio' })}
+                  {...register('telefono')}
                 />
                 <Input
-                  label="Dirección Física"
-                  icon={<MapPin className="w-4 h-4 text-neutral-400" />}
-                  error={errors.direccion?.message}
-                  {...register('direccion', { required: 'La dirección es obligatoria' })}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="Barrio"
-                  error={errors.barrio?.message}
-                  {...register('barrio', { required: 'El barrio es obligatorio' })}
-                />
-                <Input
-                  label="Localidad / Zona"
-                  error={errors.localidad?.message}
-                  {...register('localidad', { required: 'La localidad es obligatoria' })}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="Ciudad"
-                  error={errors.ciudad?.message}
-                  {...register('ciudad', { required: 'La ciudad es obligatoria' })}
-                />
-                <Input
-                  label="Departamento"
-                  error={errors.departamento?.message}
-                  {...register('departamento', { required: 'El departamento es obligatorio' })}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="País"
-                  error={errors.pais?.message}
-                  {...register('pais', { required: 'El país es obligatorio' })}
-                />
-                <Input
-                  label="Código Postal (Opcional)"
-                  {...register('codigo_postal')}
+                  label="Punto de Referencia (Opcional)"
+                  placeholder="Ej. Cerca a la Plaza Central, CAI o Parque"
+                  {...register('punto_referencia')}
                 />
               </div>
             </div>

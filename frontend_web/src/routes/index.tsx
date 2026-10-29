@@ -141,6 +141,21 @@ export const AppRoutes: React.FC = () => {
           )
         } 
       />
+      <Route 
+        path="/reset-password" 
+        element={
+          user ? (
+            <Navigate to={
+              user.rol === 'admin' ? '/admin/dashboard' :
+              user.rol === 'voluntario' ? '/volunteer/dashboard' :
+              user.rol === 'beneficiario' ? '/beneficiary/dashboard' :
+              '/org/dashboard'
+            } replace />
+          ) : (
+            <PublicLayout><ForgotPassword /></PublicLayout>
+          )
+        } 
+      />
 
       {/* PANEL ADMINISTRADOR */}
       <Route 
