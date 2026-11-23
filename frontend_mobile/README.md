@@ -62,7 +62,7 @@ frontend_mobile/
 └── README.md
 ```
 
-## 🚀 Cómo Ejecutar en Expo Go y Conectar con XAMPP
+## Como Ejecutar en Expo Go y Conectar con XAMPP
 
 ### 1. Iniciar el Backend con MySQL / XAMPP
 Asegúrate de que Apache y MySQL estén iniciados en el panel de control de **XAMPP**, y luego inicia el backend del proyecto:
@@ -73,16 +73,16 @@ npm run dev
 ### 2. Iniciar Expo para la Aplicación Móvil
 Abre una terminal en la carpeta `frontend_mobile` (o desde la raíz con `cd frontend_mobile`) y ejecuta:
 ```bash
-npx expo start
+npm run start
 ```
-*(O ejecuta `npm run start` dentro de `frontend_mobile`)*.
+*(O ejecuta `npx expo start` dentro de `frontend_mobile`)*.
 
 ### 3. Abrir en tu Teléfono con Expo Go
 1. Descarga la aplicación **Expo Go** desde Google Play Store (Android) o App Store (iOS).
 2. Conecta tu teléfono móvil a la **misma red Wi-Fi** que tu computador.
 3. Abre la app **Expo Go** y escanea el código QR que aparece en tu terminal.
 
-### 🌐 Detección Inteligente de Conexión (XAMPP / Backend)
+### Deteccion Inteligente de Conexion (XAMPP / Backend)
 El cliente HTTP (`src/config/api.ts`) detecta automáticamente el entorno de ejecución:
 - **Dispositivo Físico con Expo Go (Wi-Fi)**: Extrae automáticamente la dirección IP local de tu computador desde `Constants.expoConfig.hostUri` (ej: `http://192.168.1.X:3000/api`), conectándose directamente a tu servidor local y base de datos XAMPP sin necesidad de configuración manual.
 - **Emulador Android Studio**: Se conecta automáticamente a `http://10.0.2.2:3000/api`.

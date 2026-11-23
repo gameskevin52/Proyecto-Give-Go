@@ -3,12 +3,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, StyleSheet } from 'react-native';
 import {
   Home,
+  MapPin,
   Calendar,
   HeartHandshake,
   ClipboardList,
-  Bell,
   User,
-  MapPin,
   LayoutDashboard,
 } from 'lucide-react-native';
 import { BottomTabParamList } from './types';
@@ -22,7 +21,6 @@ import { EventsListView } from '../features/events/views/EventsListView';
 import { DonationsListView } from '../features/donations/views/DonationsListView';
 import { DashboardView } from '../features/dashboard/views/DashboardView';
 import { BeneficiaryRequestsView } from '../features/beneficiary/views/BeneficiaryRequestsView';
-import { NotificationsView } from '../features/notifications/views/NotificationsView';
 import { ProfileView } from '../features/profile/views/ProfileView';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -37,7 +35,6 @@ const TabIcon = ({ name, focused, color }: { name: string; focused: boolean; col
   if (name === 'Donaciones') IconComponent = HeartHandshake;
   if (name === 'Dashboard') IconComponent = LayoutDashboard;
   if (name === 'Solicitudes') IconComponent = ClipboardList;
-  if (name === 'Notificaciones') IconComponent = Bell;
   if (name === 'Perfil') IconComponent = User;
 
   return (
@@ -49,7 +46,11 @@ const TabIcon = ({ name, focused, color }: { name: string; focused: boolean; col
 
 export const BottomTabNavigator = () => {
   const { user } = useAuth();
-  const isBeneficiary = user?.rol === 'Beneficiario' || (user?.rol as string) === 'beneficiario';
+  const role = (user?.rol || 'voluntario').toLowerCase();
+
+  const isBeneficiary = role === 'beneficiario';
+  const isAdmin = role === 'admin';
+  const isOrg = role === 'organizacion';
 
   return (
     <Tab.Navigator
@@ -61,25 +62,94 @@ export const BottomTabNavigator = () => {
           backgroundColor: colors.surface,
           borderTopWidth: 1,
           borderTopColor: colors.borderLight,
-          height: 62,
+          height: 64,
           paddingBottom: 8,
           paddingTop: 6,
         },
         tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '600',
+          fontSize: 9.5,
+          fontWeight: '700',
         },
         tabBarIcon: ({ focused, color }) => (
           <TabIcon name={route.name} focused={focused} color={color} />
         ),
       })}
     >
-      <Tab.Screen name="Inicio" component={HomeScreen} />
-      <Tab.Screen name="Mapa" component={MapaSocialView} />
-      <Tab.Screen name="Eventos" component={EventsListView} />
-      <Tab.Screen name="Donaciones" component={DonationsListView} />
-      <Tab.Screen name="Dashboard" component={DashboardView} />
-      <Tab.Screen name="Perfil" component={ProfileView} />
+      {/* 1. Inicio (para todos los roles) */}
+      <Tab.Screen
+        name="Inicio"
+        component={HomeScreen}
+        options={{ tabBarLabel: 'Inicio' }}
+      />
+
+      {/* 2. Mapa Interactivo (disponible para todos los roles) */}
+      <Tab.Screen
+        name="Mapa"
+        component={MapaSocialView}
+        options={{ tabBarLabel: 'Mapa' }}
+      />
+
+      {/* 3. Panel de Administración (solo visible para admin como panel principal) */}
+      {isAdmin && (
+        <Tab.Screen
+          name="Dashboard"
+          component={DashboardView}
+          options={{ tabBarLabel: 'Admin Hub' }}
+        />
+      )}
+
+      {/* 3. Panel de Organización (solo visible para organización como panel principal) */}
+      {isOrg && (
+        <Tab.Screen
+          name="Dashboard"
+          component={DashboardView}
+          options={{ tabBarLabel: 'Panel Org' }}
+        />
+      )}
+
+      {/* 4. Eventos / Jornadas (para todos) */}
+      <Tab.Screen
+        name="Eventos"
+        component={EventsListView}
+        options={{
+          tabBarLabel: isBeneficiary ? 'Jornadas' : isOrg ? 'Mis Eventos' : 'Convocatorias',
+        }}
+      />
+
+      {/* 5. Donaciones (para voluntarios, org y admin) o Solicitudes (para beneficiario) */}
+      {isBeneficiary ? (
+        <Tab.Screen
+          name="Solicitudes"
+          component={BeneficiaryRequestsView}
+          options={{ tabBarLabel: 'Solicitudes' }}
+        />
+      ) : (
+        <Tab.Screen
+          name="Donaciones"
+          component={DonationsListView}
+          options={{
+            tabBarLabel: isOrg ? 'Fondos' : isAdmin ? 'Donaciones' : 'Aportar',
+          }}
+        />
+      )}
+
+      {/* 6. Dashboard de impacto / red de apoyo (para voluntarios y beneficiarios) */}
+      {!isAdmin && !isOrg && (
+        <Tab.Screen
+          name="Dashboard"
+          component={DashboardView}
+          options={{
+            tabBarLabel: isBeneficiary ? 'Red Apoyo' : 'Mi Impacto',
+          }}
+        />
+      )}
+
+      {/* 7. Perfil (para todos los roles) */}
+      <Tab.Screen
+        name="Perfil"
+        component={ProfileView}
+        options={{ tabBarLabel: 'Mi Perfil' }}
+      />
     </Tab.Navigator>
   );
 };

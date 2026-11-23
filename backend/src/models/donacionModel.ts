@@ -47,7 +47,7 @@ export const DonacionModel = {
       return rows as any[];
     } else {
       const fallback = db.getFallbackData();
-      return fallback.donaciones.map((d: any) => {
+      const mapped = fallback.donaciones.map((d: any) => {
         const u = fallback.usuarios.find((usr: any) => usr.id_usuario === d.usuario_id);
         const o = fallback.organizaciones.find((org: any) => org.id_organizacion === d.organizacion_id);
         const dm = fallback.donaciones_monetarias.find((mon: any) => mon.donacion_id === d.id_donacion);
@@ -65,6 +65,13 @@ export const DonacionModel = {
           objeto_descripcion: dob ? dob.descripcion : null,
           cantidad: dob ? dob.cantidad : null
         };
+      });
+      // Asegurar que las donaciones más recientes aparezcan de primero
+      return mapped.sort((a: any, b: any) => {
+        const timeA = new Date(a.fecha).getTime() || 0;
+        const timeB = new Date(b.fecha).getTime() || 0;
+        if (timeB !== timeA) return timeB - timeA;
+        return (b.id_donacion || 0) - (a.id_donacion || 0);
       });
     }
   },

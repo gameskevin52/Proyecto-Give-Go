@@ -6,9 +6,10 @@ interface EventLocationMapProps {
   lat: number;
   lng: number;
   title: string;
+  audience?: 'voluntarios' | 'beneficiarios' | 'ambos';
 }
 
-export const EventLocationMap: React.FC<EventLocationMapProps> = ({ lat, lng, title }) => {
+export const EventLocationMap: React.FC<EventLocationMapProps> = ({ lat, lng, title, audience = 'voluntarios' }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
 
@@ -29,7 +30,7 @@ export const EventLocationMap: React.FC<EventLocationMapProps> = ({ lat, lng, ti
     createAppTileLayer().addTo(map);
 
     // Add Custom Marker
-    L.marker([lat, lng], { icon: createEventMarkerIcon() })
+    L.marker([lat, lng], { icon: createEventMarkerIcon(audience) })
       .addTo(map)
       .bindPopup(`<strong class="text-xs font-bold text-neutral-900">${title}</strong><br/><span class="text-[11px] text-neutral-500">Ubicación del evento solidario</span>`)
       .openPopup();
@@ -45,7 +46,7 @@ export const EventLocationMap: React.FC<EventLocationMapProps> = ({ lat, lng, ti
         mapRef.current = null;
       }
     };
-  }, [lat, lng, title]);
+  }, [lat, lng, title, audience]);
 
   return (
     <div className="relative border border-neutral-200 rounded-lg overflow-hidden shadow-xs">

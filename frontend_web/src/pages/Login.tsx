@@ -12,9 +12,6 @@ import {
   Heart, 
   Users, 
   Building2, 
-  ShieldCheck, 
-  Wrench,
-  Sparkles,
   ArrowRight
 } from 'lucide-react';
 
@@ -30,7 +27,7 @@ export const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<LoginFormData>({});
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({});
 
   const handleLoginSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
@@ -44,11 +41,6 @@ export const Login: React.FC = () => {
       setErrorMsg(result.error || 'Correo o contraseña incorrectos.');
       setIsLoading(false);
     }
-  };
-
-  const fillAdminCredentials = () => {
-    setValue('correo', 'admin@giveandgo.com');
-    setValue('password', 'Admin123*');
   };
 
   return (
@@ -238,29 +230,6 @@ export const Login: React.FC = () => {
                 <LogIn className="w-4 h-4" />
                 <span>Iniciar sesión</span>
               </Button>
-
-              {/* Tarjeta Secundaria: Acceso Rápido para Desarrollo */}
-              <div className="mt-6 pt-5 border-t border-neutral-150">
-                <div className="bg-neutral-50 rounded-2xl p-4 border border-neutral-200/80 space-y-3">
-                  <div className="flex items-center gap-2 text-neutral-700">
-                    <Wrench className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span className="text-xs font-bold text-neutral-800">Acceso rápido para desarrollo</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={fillAdminCredentials}
-                    className="w-full py-2.5 px-4 bg-white hover:bg-neutral-100 border border-neutral-200/90 rounded-xl text-xs font-bold text-neutral-700 flex items-center justify-center gap-2 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
-                  >
-                    <ShieldCheck className="w-4 h-4 text-brand" />
-                    <span>Cargar cuenta Administrador</span>
-                  </button>
-
-                  <p className="text-[11px] text-neutral-400 text-center font-normal">
-                    Disponible únicamente durante el desarrollo.
-                  </p>
-                </div>
-              </div>
 
               {/* Redirección a Registro */}
               <div className="text-center text-xs text-neutral-500 pt-3">

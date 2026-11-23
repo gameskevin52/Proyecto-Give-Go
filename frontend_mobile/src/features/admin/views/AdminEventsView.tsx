@@ -105,10 +105,10 @@ export const AdminEventsView: React.FC<AdminEventsViewProps> = ({ navigation }) 
   };
 
   const handleUpdateEvent = async (id: string | number, payload: Partial<AdminEventItem>) => {
-    const res = await AdminService.updateEvent(id, payload);
+    const res = await AdminService.updateEvent(String(id), payload);
     if (res.success) {
       setEvents((prev) =>
-        prev.map((e) => (e.id === id ? { ...e, ...payload } : e))
+        prev.map((e) => (String(e.id) === String(id) ? { ...e, ...payload } : e))
       );
     }
     return res;
@@ -124,9 +124,9 @@ export const AdminEventsView: React.FC<AdminEventsViewProps> = ({ navigation }) 
           text: 'Eliminar',
           style: 'destructive',
           onPress: async () => {
-            const res = await AdminService.deleteEvent(eventId);
+            const res = await AdminService.deleteEvent(String(eventId));
             if (res.success) {
-              setEvents((prev) => prev.filter((e) => e.id !== eventId));
+              setEvents((prev) => prev.filter((e) => String(e.id) !== String(eventId)));
               Alert.alert('Éxito', 'Evento eliminado correctamente.');
             } else {
               Alert.alert('Error', res.message || 'No se pudo eliminar el evento.');
@@ -194,7 +194,7 @@ export const AdminEventsView: React.FC<AdminEventsViewProps> = ({ navigation }) 
           />
           {searchTerm.length > 0 && (
             <TouchableOpacity onPress={() => setSearchTerm('')}>
-              <Text style={{ fontSize: 13, color: '#94A3B8', fontWeight: '700' }}>✕</Text>
+              <Text style={{ fontSize: 13, color: '#94A3B8', fontWeight: '700' }}>X</Text>
             </TouchableOpacity>
           )}
         </View>

@@ -25,7 +25,8 @@ export const EventsListView: React.FC<EventsListViewProps> = ({ navigation }) =>
     navigateToCreateEvent,
   } = useEventsController(navigation);
 
-  const isOrg = user?.rol === 'Organizacion' || (user?.rol as string) === 'organizacion';
+  const role = (user?.rol || '').toLowerCase();
+  const canCreateEvent = role === 'organizacion' || role === 'admin';
 
   return (
     <SafeAreaView style={eventsListStyles.container}>
@@ -113,7 +114,7 @@ export const EventsListView: React.FC<EventsListViewProps> = ({ navigation }) =>
         />
       )}
 
-      {isOrg && (
+      {canCreateEvent && (
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={navigateToCreateEvent}

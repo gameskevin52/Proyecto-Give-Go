@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             msg.includes('inválido') ||
             msg.includes('token')
           ) {
-            console.warn('⚠️ Sesión local expirada o token no reconocido por el servidor. Limpiando almacenamiento.');
+            console.warn('Sesión local expirada o token no reconocido por el servidor. Limpiando almacenamiento.');
             await AsyncStorage.removeItem(ENV.STORAGE_KEYS.TOKEN);
             await AsyncStorage.removeItem(ENV.STORAGE_KEYS.USER);
             setToken(null);
@@ -72,16 +72,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (correo: string, password: string) => {
     try {
-      const res = await apiClient.post('/users/login', { correo, password });
+      const cleanEmail = (correo || '').trim();
+      const res = await apiClient.post('/users/login', { correo: cleanEmail, password });
       if (res.data.success && res.data.data?.token) {
         const authToken = res.data.data.token;
         const authUser = res.data.data.usuario || res.data.data.user;
 
-        setToken(authToken);
-        setUser(authUser);
-
         await AsyncStorage.setItem(ENV.STORAGE_KEYS.TOKEN, authToken);
         await AsyncStorage.setItem(ENV.STORAGE_KEYS.USER, JSON.stringify(authUser));
+
+        setToken(authToken);
+        setUser(authUser);
 
         return { success: true };
       }
@@ -102,11 +103,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const authToken = res.data.data.token;
         const authUser = res.data.data.user || res.data.data.usuario;
 
-        setToken(authToken);
-        setUser(authUser);
-
         await AsyncStorage.setItem(ENV.STORAGE_KEYS.TOKEN, authToken);
         await AsyncStorage.setItem(ENV.STORAGE_KEYS.USER, JSON.stringify(authUser));
+
+        setToken(authToken);
+        setUser(authUser);
 
         return { success: true };
       }

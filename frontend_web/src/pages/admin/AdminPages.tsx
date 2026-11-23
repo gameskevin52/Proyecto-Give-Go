@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { 
   UserService, 
@@ -116,8 +117,27 @@ export const AdminDashboard: React.FC = () => {
         requestsCount: requests.length,
       });
 
-      setAllDonations(donations.slice().reverse());
-      setAllEvents(events.slice().reverse());
+      // Ordenar siempre de más reciente a más antiguo
+      const sortedDonations = [...donations].sort((a, b) => {
+        const timeA = new Date(a.fecha).getTime() || 0;
+        const timeB = new Date(b.fecha).getTime() || 0;
+        if (timeB !== timeA) return timeB - timeA;
+        const idA = parseInt(String(a.id).replace('don_', ''), 10) || 0;
+        const idB = parseInt(String(b.id).replace('don_', ''), 10) || 0;
+        return idB - idA;
+      });
+
+      const sortedEvents = [...events].sort((a, b) => {
+        const timeA = new Date(a.fecha).getTime() || 0;
+        const timeB = new Date(b.fecha).getTime() || 0;
+        if (timeB !== timeA) return timeB - timeA;
+        const idA = parseInt(String(a.id).replace('evt_', ''), 10) || 0;
+        const idB = parseInt(String(b.id).replace('evt_', ''), 10) || 0;
+        return idB - idA;
+      });
+
+      setAllDonations(sortedDonations);
+      setAllEvents(sortedEvents);
       setAllUsers(users);
       setAuditLogs(audits);
     }
@@ -1468,6 +1488,10 @@ export const AdminEvents: React.FC = () => {
       latitud: undefined,
       longitud: undefined,
       cupo: 0,
+      vacantesVoluntarios: 15,
+      vacantesBeneficiarios: 25,
+      ayudaOfrecida: '',
+      publicoObjetivo: 'ambos',
       imagen: ''
     });
     setIsModalOpen(true);
@@ -1493,6 +1517,10 @@ export const AdminEvents: React.FC = () => {
     setValue('latitud', evt.latitud || undefined);
     setValue('longitud', evt.longitud || undefined);
     setValue('cupo', evt.cupo || 0);
+    setValue('vacantesVoluntarios', evt.vacantesVoluntarios ?? 0);
+    setValue('vacantesBeneficiarios', evt.vacantesBeneficiarios ?? 0);
+    setValue('ayudaOfrecida', evt.ayudaOfrecida || '');
+    setValue('publicoObjetivo', evt.publicoObjetivo || 'ambos');
     setValue('imagen', evt.imagen || '');
     setIsModalOpen(true);
   };
@@ -1760,14 +1788,44 @@ export const AdminEvents: React.FC = () => {
                 {...register('estado')}
               />
 
+              <Select
+                label="Público Objetivo *"
+                options={[
+                  { value: 'ambos', label: 'Voluntarios y Beneficiarios' },
+                  { value: 'beneficiarios', label: 'Solo Beneficiarios (Verde)' },
+                  { value: 'voluntarios', label: 'Solo Voluntarios (Azul)' },
+                ]}
+                {...register('publicoObjetivo')}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Input
                 type="number"
-                label="Cupo de Voluntarios (0 para ilimitado)"
+                label="Cupo Total"
                 error={errors.cupo?.message}
                 {...register('cupo')}
                 placeholder="Ej. 25"
               />
+              <Input
+                type="number"
+                label="Vacantes Voluntarios"
+                {...register('vacantesVoluntarios')}
+                placeholder="Ej. 15"
+              />
+              <Input
+                type="number"
+                label="Vacantes Beneficiarios"
+                {...register('vacantesBeneficiarios')}
+                placeholder="Ej. 25"
+              />
             </div>
+
+            <Input
+              label="Ayuda / Beneficio para Beneficiarios"
+              {...register('ayudaOfrecida')}
+              placeholder="Ej. Mercados básicos, kits escolares..."
+            />
 
             <Textarea
               label="Descripción detallada *"
@@ -1938,7 +1996,15 @@ export const AdminDonations: React.FC = () => {
       DonationService.getAll(),
       CategoryService.getAll()
     ]);
-    setDonations(list);
+    const sorted = [...list].sort((a, b) => {
+      const timeA = new Date(a.fecha).getTime() || 0;
+      const timeB = new Date(b.fecha).getTime() || 0;
+      if (timeB !== timeA) return timeB - timeA;
+      const idA = parseInt(String(a.id).replace('don_', ''), 10) || 0;
+      const idB = parseInt(String(b.id).replace('don_', ''), 10) || 0;
+      return idB - idA;
+    });
+    setDonations(sorted);
     setCategories(cats);
   }
 
@@ -1970,9 +2036,17 @@ export const AdminDonations: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-neutral-900 uppercase tracking-wider">Historial de Donaciones</h1>
-        <p className="text-xs text-neutral-500 mt-1">Supervisa y verifica todas las aportaciones económicas y de insumos.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-neutral-900 uppercase tracking-wider">Historial de Donaciones</h1>
+          <p className="text-xs text-neutral-500 mt-1">Supervisa y verifica todas las aportaciones económicas y de insumos.</p>
+        </div>
+        <Link to="/donations">
+          <Button variant="primary" size="sm">
+            <Plus className="w-4 h-4 mr-1" />
+            Realizar Nueva Donación
+          </Button>
+        </Link>
       </div>
 
       <div className="bg-white border border-neutral-200 p-4 rounded-xl shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">

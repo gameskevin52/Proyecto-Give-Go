@@ -5,6 +5,20 @@ import { OrganizacionModel } from '../models/organizacionModel';
 import { AuthenticatedRequest } from '../middlewares/authMiddleware';
 import { logAudit } from '../utils/auditLogger';
 
+const resolvePublicoObjetivo = (
+  raw: any,
+  vacVol: number,
+  vacBen: number
+): 'voluntarios' | 'beneficiarios' | 'ambos' => {
+  const normalized = String(raw || '').trim().toLowerCase();
+  if (normalized === 'beneficiarios' || normalized === 'beneficiario') return 'beneficiarios';
+  if (normalized === 'voluntarios' || normalized === 'voluntario') return 'voluntarios';
+  if (normalized === 'ambos') return 'ambos';
+  if (vacBen > 0 && vacVol <= 0) return 'beneficiarios';
+  if (vacVol > 0 && vacBen <= 0) return 'voluntarios';
+  return 'ambos';
+};
+
 const mapEventToFrontend = (evt: any) => {
   let estadoStr = 'activo';
   if (evt.estado === 2) estadoStr = 'finalizado';
@@ -17,6 +31,7 @@ const mapEventToFrontend = (evt: any) => {
   const vacBen = evt.vacantes_beneficiarios !== undefined && evt.vacantes_beneficiarios !== null
     ? parseInt(String(evt.vacantes_beneficiarios), 10)
     : (evt.vacantesBeneficiarios !== undefined ? parseInt(String(evt.vacantesBeneficiarios), 10) : 20);
+  const publicoObjetivo = resolvePublicoObjetivo(evt.publico_objetivo ?? evt.publicoObjetivo, vacVol, vacBen);
 
   return {
     id: `evt_${evt.id_evento}`,
@@ -29,6 +44,7 @@ const mapEventToFrontend = (evt: any) => {
     vacantesVoluntarios: vacVol,
     vacantesBeneficiarios: vacBen,
     ayudaOfrecida: evt.ayuda_ofrecida || evt.ayudaOfrecida || '',
+    publicoObjetivo,
     estado: estadoStr,
     organizacionId: `org_${evt.organizacion_id}`,
     organizacionNombre: evt.organizacion_nombre || evt.organizacionNombre || '',
@@ -108,7 +124,8 @@ export const EventController = {
     try {
       const { 
         nombre, titulo, categoria, id_categoria, idCategoria, descripcion, direccion, fecha, fecha_inicio, fechaInicio,
-        cupo, cupo_maximo, cupoMaximo, vacantesVoluntarios, vacantesBeneficiarios, ayudaOfrecida, estado, organizacionId, id_organizacion,
+        cupo, cupo_maximo, cupoMaximo, vacantesVoluntarios, vacantes_voluntarios, vacantesBeneficiarios, vacantes_beneficiarios,
+        ayudaOfrecida, ayuda_ofrecida, publicoObjetivo, publico_objetivo, estado, organizacionId, id_organizacion,
         barrio, localidad, ciudad, departamento, pais, punto_referencia, nombre_lugar, latitud, longitud, imagen
       } = req.body;
       
@@ -149,6 +166,20 @@ export const EventController = {
       if (estado === 'finalizado') estadoInt = 2;
       if (estado === 'cancelado') estadoInt = 0;
 
+      const rawVacVol = vacantesVoluntarios ?? vacantes_voluntarios;
+      const rawVacBen = vacantesBeneficiarios ?? vacantes_beneficiarios;
+      let parsedVacVol = rawVacVol !== undefined ? parseInt(String(rawVacVol), 10) : (eventCupo ? parseInt(String(eventCupo), 10) : 0);
+      let parsedVacBen = rawVacBen !== undefined ? parseInt(String(rawVacBen), 10) : 20;
+
+      const resolvedAudience = resolvePublicoObjetivo(publicoObjetivo ?? publico_objetivo, parsedVacVol, parsedVacBen);
+      if (resolvedAudience === 'beneficiarios') {
+        parsedVacVol = 0;
+        if (parsedVacBen <= 0) parsedVacBen = parseInt(String(eventCupo), 10) || 20;
+      } else if (resolvedAudience === 'voluntarios') {
+        parsedVacBen = 0;
+        if (parsedVacVol <= 0) parsedVacVol = parseInt(String(eventCupo), 10) || 20;
+      }
+
       const insertId = await EventoModel.create({
         nombre: eventTitle,
         id_categoria: catId,
@@ -156,9 +187,10 @@ export const EventController = {
         direccion: direccion || '',
         fecha: eventDate,
         cupo: eventCupo ? parseInt(String(eventCupo), 10) : 0,
-        vacantes_voluntarios: vacantesVoluntarios !== undefined ? parseInt(String(vacantesVoluntarios), 10) : (eventCupo ? parseInt(String(eventCupo), 10) : 0),
-        vacantes_beneficiarios: vacantesBeneficiarios !== undefined ? parseInt(String(vacantesBeneficiarios), 10) : 20,
-        ayuda_ofrecida: ayudaOfrecida || '',
+        vacantes_voluntarios: parsedVacVol,
+        vacantes_beneficiarios: parsedVacBen,
+        ayuda_ofrecida: ayudaOfrecida ?? ayuda_ofrecida ?? '',
+        publico_objetivo: resolvedAudience,
         estado: estadoInt,
         organizacion_id: orgId,
         barrio: barrio || 'Kennedy Central',
@@ -195,8 +227,9 @@ export const EventController = {
       const rawId = req.params.id;
       const id = parseInt(rawId.replace('evt_', ''), 10);
       const { 
-        nombre, categoria, descripcion, direccion, fecha, cupo, vacantesVoluntarios, vacantesBeneficiarios, ayudaOfrecida, estado, organizacionId,
-        barrio, localidad, ciudad, departamento, pais, punto_referencia, nombre_lugar, latitud, longitud, imagen
+        nombre, categoria, descripcion, direccion, fecha, cupo, vacantesVoluntarios, vacantes_voluntarios,
+        vacantesBeneficiarios, vacantes_beneficiarios, ayudaOfrecida, ayuda_ofrecida, publicoObjetivo, publico_objetivo,
+        estado, organizacionId, barrio, localidad, ciudad, departamento, pais, punto_referencia, nombre_lugar, latitud, longitud, imagen
       } = req.body;
 
       const updateData: any = {};
@@ -205,9 +238,23 @@ export const EventController = {
       if (direccion !== undefined) updateData.direccion = direccion;
       if (fecha !== undefined) updateData.fecha = fecha;
       if (cupo !== undefined) updateData.cupo = parseInt(String(cupo), 10);
-      if (vacantesVoluntarios !== undefined) updateData.vacantes_voluntarios = parseInt(String(vacantesVoluntarios), 10);
-      if (vacantesBeneficiarios !== undefined) updateData.vacantes_beneficiarios = parseInt(String(vacantesBeneficiarios), 10);
-      if (ayudaOfrecida !== undefined) updateData.ayuda_ofrecida = ayudaOfrecida;
+      if (vacantesVoluntarios !== undefined || vacantes_voluntarios !== undefined) {
+        updateData.vacantes_voluntarios = parseInt(String(vacantesVoluntarios ?? vacantes_voluntarios), 10);
+      }
+      if (vacantesBeneficiarios !== undefined || vacantes_beneficiarios !== undefined) {
+        updateData.vacantes_beneficiarios = parseInt(String(vacantesBeneficiarios ?? vacantes_beneficiarios), 10);
+      }
+      if (ayudaOfrecida !== undefined || ayuda_ofrecida !== undefined) {
+        updateData.ayuda_ofrecida = ayudaOfrecida ?? ayuda_ofrecida;
+      }
+      if (publicoObjetivo !== undefined || publico_objetivo !== undefined) {
+        const rawAud = String(publicoObjetivo ?? publico_objetivo).toLowerCase();
+        if (rawAud === 'beneficiarios' || rawAud === 'voluntarios' || rawAud === 'ambos') {
+          updateData.publico_objetivo = rawAud;
+          if (rawAud === 'beneficiarios') updateData.vacantes_voluntarios = 0;
+          if (rawAud === 'voluntarios') updateData.vacantes_beneficiarios = 0;
+        }
+      }
       if (barrio !== undefined) updateData.barrio = barrio;
       if (punto_referencia !== undefined) updateData.punto_referencia = punto_referencia;
       if (nombre_lugar !== undefined) updateData.nombre_lugar = nombre_lugar;

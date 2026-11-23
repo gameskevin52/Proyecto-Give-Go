@@ -77,7 +77,7 @@ export const OrgDetailModal: React.FC<OrgDetailModalProps> = ({
                         { color: isVerified ? '#16A34A' : '#D97706' },
                       ]}
                     >
-                      {isVerified ? '✓ Organización Verificada' : '⏳ Verificación Pendiente / No solicitada'}
+                      {isVerified ? 'Organización Verificada' : 'Verificación Pendiente / No solicitada'}
                     </Text>
                   </View>
                 </View>

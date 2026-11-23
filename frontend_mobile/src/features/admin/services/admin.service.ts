@@ -317,13 +317,15 @@ export const AdminService = {
 
   async respondVerification(
     id: string,
-    estado: 'aprobada' | 'rechazada',
+    estadoOrPayload: 'aprobada' | 'rechazada' | { estado: 'aprobada' | 'rechazada'; respuestaAdmin?: string },
     respuestaAdmin?: string
   ): Promise<{ success: boolean; message?: string }> {
     try {
+      const estado = typeof estadoOrPayload === 'string' ? estadoOrPayload : estadoOrPayload.estado;
+      const resp = typeof estadoOrPayload === 'object' ? estadoOrPayload.respuestaAdmin : respuestaAdmin;
       const res = await apiClient.put(`/verifications/${id}/respond`, {
         estado,
-        respuestaAdmin,
+        respuestaAdmin: resp,
       });
       return {
         success: res.data?.success ?? true,
@@ -371,9 +373,10 @@ export const AdminService = {
           direccion: e.direccion || '',
           fecha: e.fecha || new Date().toISOString(),
           cupo: Number(e.cupo) || 0,
-          vacantes_voluntarios: e.vacantes_voluntarios,
-          vacantes_beneficiarios: e.vacantes_beneficiarios,
-          ayuda_ofrecida: e.ayuda_ofrecida,
+          vacantes_voluntarios: e.vacantes_voluntarios ?? e.vacantesVoluntarios,
+          vacantes_beneficiarios: e.vacantes_beneficiarios ?? e.vacantesBeneficiarios,
+          ayuda_ofrecida: e.ayuda_ofrecida ?? e.ayudaOfrecida,
+          publicoObjetivo: e.publicoObjetivo || e.publico_objetivo || 'ambos',
           estado: (e.estado === 1 || e.estado === 'activo') ? 'activo' : (e.estado === 'finalizado' ? 'finalizado' : 'cancelado'),
           organizacionId: String(e.organizacionId || e.organizacion_id || 'org_1'),
           organizacionNombre: e.organizacionNombre,
@@ -419,6 +422,7 @@ export const AdminService = {
     vacantes_voluntarios?: number;
     vacantes_beneficiarios?: number;
     ayuda_ofrecida?: string;
+    publicoObjetivo?: 'voluntarios' | 'beneficiarios' | 'ambos';
     imagen?: string;
   }): Promise<{ success: boolean; data?: AdminEventItem; message?: string }> {
     try {
@@ -532,6 +536,45 @@ export const AdminService = {
     } catch (err: any) {
       return { success: false, message: err.response?.data?.message || err.message };
     }
+  },
+
+  async createDonation(payload: {
+    tipo: 'monetaria' | 'objeto';
+    categoria: string;
+    usuarioId: string;
+    organizacionId: string;
+    monetaria?: { valor: number; metodo?: string; cuenta?: string };
+    objeto?: { categoria: string; cantidad: number; descripcion: string };
+  }): Promise<{ success: boolean; message?: string; data?: any }> {
+    if (payload.tipo === 'monetaria' && payload.monetaria) {
+      return this.createMonetaryDonation({
+        donation: {
+          categoria: payload.categoria,
+          usuarioId: payload.usuarioId,
+          organizacionId: payload.organizacionId,
+        },
+        monetary: {
+          valor: payload.monetaria.valor,
+          metodoPago: payload.monetaria.metodo,
+          cuenta: payload.monetaria.cuenta,
+        },
+      });
+    }
+    if (payload.objeto) {
+      return this.createObjectDonation({
+        donation: {
+          categoria: payload.categoria,
+          usuarioId: payload.usuarioId,
+          organizacionId: payload.organizacionId,
+        },
+        objectDetail: {
+          categoria: payload.objeto.categoria,
+          cantidad: payload.objeto.cantidad,
+          descripcion: payload.objeto.descripcion,
+        },
+      });
+    }
+    return { success: false, message: 'Datos de donación incompletos' };
   },
 
   // ==========================================

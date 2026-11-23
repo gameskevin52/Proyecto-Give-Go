@@ -43,12 +43,14 @@ export const UsuarioModel = {
   },
 
   async getByEmail(correo: string): Promise<UsuarioDB | null> {
+    const target = (correo || '').trim().toLowerCase();
+    if (!target) return null;
     if (db.isMySQLConnected()) {
-      const [rows] = await db.query('SELECT * FROM usuarios WHERE LOWER(correo) = LOWER(?)', [correo]);
+      const [rows] = await db.query('SELECT * FROM usuarios WHERE LOWER(correo) = LOWER(?)', [target]);
       const users = rows as UsuarioDB[];
       return users.length > 0 ? users[0] : null;
     } else {
-      const user = db.getFallbackData().usuarios.find((u: any) => u.correo.toLowerCase() === correo.toLowerCase());
+      const user = db.getFallbackData().usuarios.find((u: any) => (u.correo || '').trim().toLowerCase() === target);
       return user || null;
     }
   },

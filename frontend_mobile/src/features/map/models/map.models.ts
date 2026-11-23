@@ -17,5 +17,8 @@ export interface MapLocationItem {
   fecha?: string;
   hora?: string;
   ayuda_ofrecida?: string;
+  publicoObjetivo?: 'voluntarios' | 'beneficiarios' | 'ambos';
+  vacantesVoluntarios?: number;
+  vacantesBeneficiarios?: number;
   distanciaKm?: number;
 }

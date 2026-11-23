@@ -281,6 +281,20 @@ export const Donations: React.FC = () => {
               Descargar Comprobante en PDF
             </Button>
             
+            {user?.rol === 'admin' ? (
+              <Link to="/admin/dashboard" className="w-full">
+                <Button variant="secondary" className="w-full">
+                  Ver en Dashboard de Administración
+                </Button>
+              </Link>
+            ) : user?.rol === 'voluntario' ? (
+              <Link to="/volunteer/donations" className="w-full">
+                <Button variant="secondary" className="w-full">
+                  Ver en Mis Donaciones
+                </Button>
+              </Link>
+            ) : null}
+
             <Button 
               variant="outline" 
               onClick={() => {

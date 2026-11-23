@@ -162,6 +162,7 @@ export interface Evento {
   vacantesVoluntarios?: number;
   vacantesBeneficiarios?: number;
   ayudaOfrecida?: string;
+  publicoObjetivo?: 'voluntarios' | 'beneficiarios' | 'ambos';
   barrio?: string;
   localidad?: string;
   ciudad?: string;

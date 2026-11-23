@@ -14,7 +14,11 @@ export function useDashboardController(navigation?: any) {
   const { user } = useAuth();
   const role = (user?.rol || 'voluntario').toLowerCase();
 
-  const [activeTab, setActiveTab] = useState<string>(role);
+  const activeTab = role;
+  const handleTabChange = (_newTab: string) => {
+    // Role isolation: users can only view their own designated dashboard
+  };
+
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [adminUsers, setAdminUsers] = useState<AdminUserItem[]>([]);
@@ -254,7 +258,8 @@ export function useDashboardController(navigation?: any) {
     user,
     role,
     activeTab,
-    setActiveTab,
+    setActiveTab: handleTabChange,
+    handleTabChange,
     isLoading,
     refreshing,
     onRefresh,

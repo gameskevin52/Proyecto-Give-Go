@@ -104,7 +104,7 @@ apiClient.interceptors.response.use(
         code === 'TOKEN_EXPIRED' ||
         (status === 403 && (msg.includes('token') || msg.includes('expirado') || msg.includes('inválido')))
       ) {
-        console.warn('⚠️ Sesión expirada o token inválido detectado por el cliente. Limpiando almacenamiento...');
+        console.warn('Sesión expirada o token inválido detectado por el cliente. Limpiando almacenamiento...');
         try {
           await AsyncStorage.removeItem(ENV.STORAGE_KEYS.TOKEN);
           await AsyncStorage.removeItem(ENV.STORAGE_KEYS.USER);

@@ -28,6 +28,7 @@ export const useCreateEventController = (navigation: any) => {
   const [cupoMaximo, setCupoMaximo] = useState('30');
   const [vacantesVoluntarios, setVacantesVoluntarios] = useState('10');
   const [vacantesBeneficiarios, setVacantesBeneficiarios] = useState('20');
+  const [publicoObjetivo, setPublicoObjetivo] = useState<'ambos' | 'beneficiarios' | 'voluntarios'>('ambos');
   const [ayudaOfrecida, setAyudaOfrecida] = useState('');
 
   // Physical Location & Geography
@@ -86,8 +87,8 @@ export const useCreateEventController = (navigation: any) => {
 
     try {
       const parsedCupo = parseInt(cupoMaximo, 10) || 30;
-      const parsedVol = parseInt(vacantesVoluntarios, 10) || 10;
-      const parsedBen = parseInt(vacantesBeneficiarios, 10) || 20;
+      const parsedVol = publicoObjetivo === 'beneficiarios' ? 0 : (parseInt(vacantesVoluntarios, 10) || 10);
+      const parsedBen = publicoObjetivo === 'voluntarios' ? 0 : (parseInt(vacantesBeneficiarios, 10) || 20);
 
       await eventFeatureService.create({
         titulo: titulo.trim(),
@@ -105,6 +106,8 @@ export const useCreateEventController = (navigation: any) => {
         vacantesBeneficiarios: parsedBen,
         vacantes_voluntarios: parsedVol,
         vacantes_beneficiarios: parsedBen,
+        publicoObjetivo,
+        publico_objetivo: publicoObjetivo,
         ayudaOfrecida: ayudaOfrecida.trim() || undefined,
         ayuda_ofrecida: ayudaOfrecida.trim() || undefined,
         nombre_lugar: nombreLugar.trim() || undefined,
@@ -119,8 +122,10 @@ export const useCreateEventController = (navigation: any) => {
         longitud: longitud || -74.1280,
         imagen_url: imagenUrl.trim() || undefined,
         imagen: imagenUrl.trim() || undefined,
+        organizacionId: user?.organizacionId || user?.id,
+        id_organizacion: user?.id_organizacion,
         estado: 'activo',
-      });
+      } as any);
 
       navigation.goBack();
     } catch (err: any) {
@@ -155,6 +160,8 @@ export const useCreateEventController = (navigation: any) => {
     setVacantesVoluntarios,
     vacantesBeneficiarios,
     setVacantesBeneficiarios,
+    publicoObjetivo,
+    setPublicoObjetivo,
     ayudaOfrecida,
     setAyudaOfrecida,
     nombreLugar,

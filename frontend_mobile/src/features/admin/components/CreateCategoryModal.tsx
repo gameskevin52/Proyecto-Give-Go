@@ -103,7 +103,7 @@ export const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({
           <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
             {errorMessage ? (
               <View style={styles.errorBox}>
-                <Text style={styles.errorText}>⚠️ {errorMessage}</Text>
+                <Text style={styles.errorText}>{errorMessage}</Text>
               </View>
             ) : null}
 

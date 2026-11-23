@@ -72,7 +72,24 @@ export const Events: React.FC = () => {
   }
 
   // Filtrado de eventos
+  const getAudience = (evt: Evento): 'voluntarios' | 'beneficiarios' | 'ambos' => {
+    if (evt.publicoObjetivo) return evt.publicoObjetivo;
+    const vol = evt.vacantesVoluntarios ?? 0;
+    const ben = evt.vacantesBeneficiarios ?? 0;
+    if (ben > 0 && vol <= 0) return 'beneficiarios';
+    if (vol > 0 && ben <= 0) return 'voluntarios';
+    return 'ambos';
+  };
+
   const filteredEvents = events.filter(evt => {
+    const aud = getAudience(evt);
+    if (user?.rol === 'beneficiario' && aud === 'voluntarios') {
+      return false;
+    }
+    if (user?.rol === 'voluntario' && aud === 'beneficiarios') {
+      return false;
+    }
+
     const matchesSearch = 
       evt.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       evt.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -525,7 +542,8 @@ export const Events: React.FC = () => {
                     <EventLocationMap 
                       lat={selectedEvent.latitud} 
                       lng={selectedEvent.longitud} 
-                      title={selectedEvent.nombre} 
+                      title={selectedEvent.nombre}
+                      audience={getAudience(selectedEvent)}
                     />
                   </div>
                 ) : (

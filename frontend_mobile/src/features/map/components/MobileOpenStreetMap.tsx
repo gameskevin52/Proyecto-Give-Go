@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { Building2, Calendar, Heart, Navigation } from 'lucide-react-native';
 import { MapLocationItem } from '../models/map.models';
 import { KENNEDY_COORDS } from '../services/map.service';
 
@@ -17,6 +18,7 @@ interface MobileOpenStreetMapProps {
   onSelectItem: (item: MapLocationItem) => void;
   userLocation?: { lat: number; lng: number } | null;
   centerCoords?: { lat: number; lng: number; zoom?: number; key: number } | null;
+  viewerRole?: string;
   height?: number | string;
   style?: any;
 }
@@ -27,13 +29,22 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
   onSelectItem,
   userLocation,
   centerCoords,
+  viewerRole = '',
   height,
   style,
 }) => {
   const iframeRef = useRef<any>(null);
   const [webViewError, setWebViewError] = useState(false);
-  const [isWebViewLoading, setIsWebViewLoading] = useState(true);
   const [nativeMapMode, setNativeMapMode] = useState<'osm' | 'vector'>('osm');
+
+  const normalizedRole = (viewerRole || '').toLowerCase();
+
+  const isBeneficiaryMarker = (item: MapLocationItem) => {
+    if (item.tipo !== 'evento') return false;
+    if (normalizedRole === 'beneficiario') return true;
+    if (normalizedRole === 'voluntario') return false;
+    return item.publicoObjetivo === 'beneficiarios';
+  };
 
   // Escuchar mensajes desde el iframe en Web
   useEffect(() => {
@@ -86,6 +97,9 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
         latitud: it.latitud,
         longitud: it.longitud,
         verificada: it.verificada,
+        publicoObjetivo: it.publicoObjetivo || 'ambos',
+        isBeneficiaryEvent: isBeneficiaryMarker(it),
+        distanciaKm: it.distanciaKm,
         isSelected: selectedItem?.id === it.id,
       }))
     );
@@ -103,42 +117,15 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body, #map { width: 100%; height: 100%; background: #F8FAFC; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    .custom-marker {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      border: 2px solid #FFFFFF;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-      cursor: pointer;
-      transition: transform 0.15s ease-in-out;
-    }
-    .custom-marker:hover, .custom-marker.active {
-      transform: scale(1.2);
-    }
-    .marker-org {
-      background-color: #2563EB;
-      color: white;
-    }
-    .marker-event {
-      background-color: #DC2626;
-      color: white;
-    }
-    .marker-gps {
-      background-color: #16A34A;
-      color: white;
-      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
-      animation: pulse-gps 2s infinite;
-    }
-    @keyframes pulse-gps {
+    @keyframes pulse-gps-red {
       0% {
-        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
       }
       70% {
-        box-shadow: 0 0 0 12px rgba(22, 163, 74, 0);
+        box-shadow: 0 0 0 14px rgba(220, 38, 38, 0);
       }
       100% {
-        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
       }
     }
     .leaflet-popup-content-wrapper {
@@ -150,32 +137,6 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
       margin: 8px 10px;
       line-height: 1.4;
     }
-    .popup-badge {
-      display: inline-block;
-      font-size: 9px;
-      font-weight: 800;
-      text-transform: uppercase;
-      padding: 2px 6px;
-      border-radius: 9999px;
-      margin-bottom: 4px;
-    }
-    .badge-org { background: #DBEAFE; color: #1D4ED8; }
-    .badge-event { background: #DCFCE7; color: #15803D; }
-    .popup-title { font-weight: 800; font-size: 13px; color: #0F172A; margin-bottom: 3px; }
-    .popup-desc { font-size: 11px; color: #64748B; margin-bottom: 8px; }
-    .popup-btn {
-      display: block;
-      width: 100%;
-      text-align: center;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 11px;
-      font-weight: 700;
-      color: #FFFFFF;
-      background-color: #DC2626;
-      border: none;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
@@ -184,7 +145,6 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
     const items = ${itemsJson};
     const selectedId = "${selectedId}";
 
-    // Inicializar el mapa centrado en la mejor coordenada disponible
     const initialLat = ${centerCoords?.lat || (selectedItem ? selectedItem.latitud : userLocation ? userLocation.lat : KENNEDY_COORDS.lat)};
     const initialLng = ${centerCoords?.lng || (selectedItem ? selectedItem.longitud : userLocation ? userLocation.lng : KENNEDY_COORDS.lng)};
     const initialZoom = ${centerCoords?.zoom || (selectedItem ? 15 : 13)};
@@ -194,43 +154,41 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
       attributionControl: false
     }).setView([initialLat, initialLng], initialZoom);
 
-    // Capa base 1: OpenStreetMap Humanitario (HOT) - 100% libre, sin API key, sin bloqueos
     const osmHot = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
       maxZoom: 19,
       subdomains: ['a', 'b'],
       attribution: '&copy; OpenStreetMap | HOT'
     }).addTo(map);
 
-    // Capa base 2: Esri Calles
     const esriStreet = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
       attribution: '&copy; Esri &mdash; OSM'
     });
 
     L.control.layers({
-      '🗺️ OSM Humanitario': osmHot,
-      '📍 Calles Esri': esriStreet
+      'OSM Humanitario': osmHot,
+      'Calles Esri': esriStreet
     }, null, { position: 'topright' }).addTo(map);
 
-    // Marcador de Ubicación GPS (Verde) del dispositivo actual
+    // Marcador ROJO de Ubicación Actual (GPS) de la persona
     const userLoc = ${userLocation ? JSON.stringify(userLocation) : 'null'};
     if (userLoc && typeof userLoc.lat === 'number' && typeof userLoc.lng === 'number') {
       const gpsIcon = L.divIcon({
         className: 'custom-gps-marker',
         html: \`
-          <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;">
-            <div style="position: absolute; width: 36px; height: 36px; border-radius: 50%; background-color: rgba(16, 185, 129, 0.35); animation: pulse-gps 2s infinite;"></div>
-            <div style="width: 30px; height: 30px; border-radius: 50%; background-color: #059669; border: 2.5px solid #FFFFFF; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; z-index: 2;">
+          <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px;">
+            <div style="position: absolute; width: 36px; height: 36px; border-radius: 50%; background-color: rgba(220, 38, 38, 0.35); animation: pulse-gps-red 2s infinite;"></div>
+            <div style="width: 30px; height: 30px; border-radius: 50%; background-color: #DC2626; border: 2.5px solid #FFFFFF; box-shadow: 0 4px 10px rgba(220,38,38,0.45); display: flex; align-items: center; justify-content: center; color: white; z-index: 2;">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
             </div>
           </div>
         \`,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18]
+        iconSize: [38, 38],
+        iconAnchor: [19, 19]
       });
       L.marker([userLoc.lat, userLoc.lng], { icon: gpsIcon, zIndexOffset: 1000 })
         .addTo(map)
-        .bindPopup('<strong style="font-size:12px; color:#059669;">Tu Ubicación GPS</strong><br/><span style="font-size:10px;color:#64748B;">Dispositivo móvil actual</span>');
+        .bindPopup('<strong style="font-size:12px; color:#DC2626;">Tu Ubicación Actual (GPS)</strong><br/><span style="font-size:10px;color:#64748B;">Posición detectada en el dispositivo</span>');
     }
 
     function notifySelect(id) {
@@ -243,19 +201,32 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
       }
     }
 
-    // Renderizar marcadores de Organizaciones y Convocatorias
+    // Verde (#16A34A) = Eventos para Beneficiarios
+    // Azul (#2563EB) = Eventos para Voluntarios
+    // Morado (#7C3AED) = Sedes de Organizaciones
     items.forEach(item => {
       const isOrg = item.tipo === 'organizacion';
+      const isBeneficiaryEvt = !isOrg && item.isBeneficiaryEvent;
       const isSelected = String(item.id) === selectedId;
       const size = isSelected ? 38 : 32;
 
-      const iconHtml = isOrg
-        ? \`<div style="width: \${size}px; height: \${size}px; border-radius: 50%; background-color: #2563EB; border: 2.5px solid #FFFFFF; box-shadow: 0 4px 12px rgba(37,99,235,0.4); display: flex; align-items: center; justify-content: center; color: white; transition: transform 0.2s;\${isSelected ? ' transform: scale(1.15); ring: 3px solid #60A5FA;' : ''}">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="2" width="18" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="16"/><line x1="15" y1="22" x2="15" y2="16"/><line x1="9" y1="16" x2="15" y2="16"/><path d="M9 10h.01"/><path d="M15 10h.01"/></svg>
-           </div>\`
-        : \`<div style="width: \${size}px; height: \${size}px; border-radius: 50%; background-color: #DC2626; border: 2.5px solid #FFFFFF; box-shadow: 0 4px 12px rgba(220,38,38,0.4); display: flex; align-items: center; justify-content: center; color: white; transition: transform 0.2s;\${isSelected ? ' transform: scale(1.15); ring: 3px solid #F87171;' : ''}">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-           </div>\`;
+      const bgColor = isOrg ? '#7C3AED' : (isBeneficiaryEvt ? '#16A34A' : '#2563EB');
+      const shadowRgba = isOrg
+        ? 'rgba(124,58,237,0.4)'
+        : (isBeneficiaryEvt ? 'rgba(22,163,74,0.4)' : 'rgba(37,99,235,0.4)');
+      const badgeBg = isOrg ? '#EDE9FE' : (isBeneficiaryEvt ? '#DCFCE7' : '#DBEAFE');
+      const badgeColor = isOrg ? '#6D28D9' : (isBeneficiaryEvt ? '#15803D' : '#1D4ED8');
+      const badgeLabel = isOrg
+        ? 'Sede Organizacion'
+        : (isBeneficiaryEvt ? 'Evento para Beneficiarios' : 'Evento para Voluntarios');
+
+      const svgIcon = isOrg
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="2" width="18" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="16"/><line x1="15" y1="22" x2="15" y2="16"/><line x1="9" y1="16" x2="15" y2="16"/><path d="M9 10h.01"/><path d="M15 10h.01"/></svg>'
+        : (isBeneficiaryEvt
+            ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>'
+            : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>');
+
+      const iconHtml = \`<div style="width: \${size}px; height: \${size}px; border-radius: 50%; background-color: \${bgColor}; border: 2.5px solid #FFFFFF; box-shadow: 0 4px 12px \${shadowRgba}; display: flex; align-items: center; justify-content: center; color: white; transition: transform 0.2s;\${isSelected ? ' transform: scale(1.15);' : ''}">\${svgIcon}</div>\`;
 
       const icon = L.divIcon({
         className: 'custom-map-icon',
@@ -266,19 +237,19 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
 
       const marker = L.marker([item.latitud, item.longitud], { icon }).addTo(map);
 
-      const distanceBadge = item.distanciaKm !== undefined 
-        ? \`<div style="font-size: 10px; font-weight: 700; color: #0284C7; background-color: #E0F2FE; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px;">A \${item.distanciaKm} km de ti</div>\` 
+      const distanceBadge = item.distanciaKm !== undefined
+        ? \`<div style="font-size: 10px; font-weight: 700; color: #DC2626; background-color: #FEF2F2; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px;">A \${item.distanciaKm} km de ti</div>\`
         : '';
 
       const popupHtml = \`
-        <div style="min-width: 170px; font-family: -apple-system, system-ui, sans-serif;">
-          <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; padding: 2px 6px; border-radius: 999px; display: inline-block; margin-bottom: 4px; background-color: \${isOrg ? '#DBEAFE' : '#FEE2E2'}; color: \${isOrg ? '#1D4ED8' : '#B91C1C'};">
-            \${isOrg ? '🏢 Sede Organización' : '📅 Evento Solidario'}
+        <div style="min-width: 175px; font-family: -apple-system, system-ui, sans-serif;">
+          <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; padding: 2px 6px; border-radius: 999px; display: inline-block; margin-bottom: 4px; background-color: \${badgeBg}; color: \${badgeColor};">
+            \${badgeLabel}
           </div>
           <div style="font-size: 13px; font-weight: 800; color: #0F172A; line-height: 1.25; margin-bottom: 3px;">\${item.titulo}</div>
-          <div style="font-size: 10px; color: #64748B; margin-bottom: 4px;">📍 \${item.direccion || 'Kennedy, Bogotá'} • \${item.barrio || 'Kennedy'}</div>
+          <div style="font-size: 10px; color: #64748B; margin-bottom: 4px;">\${item.direccion || 'Kennedy, Bogota'} - \${item.barrio || 'Kennedy'}</div>
           \${distanceBadge}
-          <button style="width: 100%; border: none; background-color: \${isOrg ? '#2563EB' : '#DC2626'}; color: white; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; margin-top: 4px;" onclick="notifySelect('\${item.id}')">
+          <button style="width: 100%; border: none; background-color: \${bgColor}; color: white; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; margin-top: 4px;" onclick="notifySelect('\${item.id}')">
             Ver Detalles y Acciones
           </button>
         </div>
@@ -303,7 +274,7 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
   </script>
 </body>
 </html>`;
-  }, [items, selectedItem, userLocation, centerCoords]);
+  }, [items, selectedItem, userLocation, centerCoords, normalizedRole]);
 
   // Proyección de coordenadas para mapa vectorial nativo (Kennedy, Bogotá)
   const getVectorPosition = (lat: number, lng: number) => {
@@ -327,7 +298,6 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
   // Renderizado de mapa vectorial nativo
   const renderNativeVectorMap = () => (
     <View style={styles.vectorCanvas}>
-      {/* Fondo de cuadrícula urbana / barrios de Kennedy */}
       <View style={styles.gridLayer}>
         <View style={styles.roadAmericas}>
           <Text style={styles.roadLabel}>Av. Las Américas</Text>
@@ -343,7 +313,7 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
         </View>
       </View>
 
-      {/* Marcador GPS del Usuario (Verde) */}
+      {/* Marcador GPS del Usuario (ROJO) */}
       {userLocation && (
         <View
           style={[
@@ -353,14 +323,15 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
         >
           <View style={styles.gpsPulse} />
           <View style={styles.gpsDot}>
-            <Text style={styles.gpsMarkerIcon}>📍</Text>
+            <Navigation size={12} color="#FFFFFF" strokeWidth={2.5} />
           </View>
         </View>
       )}
 
-      {/* Marcadores de Organizaciones (Azul) y Eventos (Rojo) */}
+      {/* Marcadores: Organizaciones (Morado), Eventos Beneficiarios (Verde), Eventos Voluntarios (Azul) */}
       {items.map((item) => {
         const isOrg = item.tipo === 'organizacion';
+        const isBenEvt = isBeneficiaryMarker(item);
         const isSelected = selectedItem?.id === item.id;
         const pos = getVectorPosition(item.latitud, item.longitud);
 
@@ -372,16 +343,25 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
             style={[
               styles.vectorMarker,
               pos as any,
-              isOrg ? styles.markerOrg : styles.markerEvent,
+              isOrg
+                ? styles.markerOrg
+                : isBenEvt
+                  ? styles.markerEventBeneficiary
+                  : styles.markerEventVolunteer,
               isSelected && styles.markerActive,
             ]}
           >
-            <Text style={styles.markerEmoji}>{isOrg ? '🏢' : '📅'}</Text>
+            {isOrg ? (
+              <Building2 size={14} color="#FFFFFF" strokeWidth={2.2} />
+            ) : isBenEvt ? (
+              <Heart size={14} color="#FFFFFF" strokeWidth={2.2} />
+            ) : (
+              <Calendar size={14} color="#FFFFFF" strokeWidth={2.2} />
+            )}
           </TouchableOpacity>
         );
       })}
 
-      {/* Botón para alternar a OpenStreetMap si estaba en vector */}
       <View style={styles.vectorMapOverlay}>
         <TouchableOpacity
           style={styles.switchModeBtn}
@@ -425,7 +405,7 @@ export const MobileOpenStreetMap: React.FC<MobileOpenStreetMapProps> = ({
             scalesPageToFit={true}
             renderLoading={() => (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color="#2563EB" />
+                <ActivityIndicator size="small" color="#DC2626" />
                 <Text style={styles.loadingText}>Cargando mapa en dispositivo móvil...</Text>
               </View>
             )}
@@ -563,10 +543,13 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   markerOrg: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#7C3AED',
   },
-  markerEvent: {
-    backgroundColor: '#DC2626',
+  markerEventBeneficiary: {
+    backgroundColor: '#16A34A',
+  },
+  markerEventVolunteer: {
+    backgroundColor: '#2563EB',
   },
   markerActive: {
     transform: [{ translateX: -18 }, { translateY: -18 }, { scale: 1.25 }],
@@ -574,38 +557,32 @@ const styles = StyleSheet.create({
     borderWidth: 2.5,
     zIndex: 10,
   },
-  markerEmoji: {
-    fontSize: 14,
-  },
   gpsMarkerWrapper: {
     position: 'absolute',
-    width: 32,
-    height: 32,
+    width: 34,
+    height: 34,
     alignItems: 'center',
     justifyContent: 'center',
-    transform: [{ translateX: -16 }, { translateY: -16 }],
+    transform: [{ translateX: -17 }, { translateY: -17 }],
     zIndex: 15,
   },
   gpsPulse: {
     position: 'absolute',
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(22, 163, 74, 0.35)',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(220, 38, 38, 0.35)',
   },
   gpsDot: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#16A34A',
+    backgroundColor: '#DC2626',
     borderWidth: 2,
     borderColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 5,
-  },
-  gpsMarkerIcon: {
-    fontSize: 11,
   },
   vectorMapOverlay: {
     position: 'absolute',

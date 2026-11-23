@@ -152,7 +152,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
           <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
             {errorMessage ? (
               <View style={styles.errorBox}>
-                <Text style={styles.errorText}>⚠️ {errorMessage}</Text>
+                <Text style={styles.errorText}>{errorMessage}</Text>
               </View>
             ) : null}
 
@@ -294,7 +294,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     estado === 'activo' && { color: '#16A34A', fontWeight: '800' },
                   ]}
                 >
-                  ✓ Activo
+                  Activo
                 </Text>
               </TouchableOpacity>
 
@@ -311,7 +311,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     estado === 'inactivo' && { color: '#DC2626', fontWeight: '800' },
                   ]}
                 >
-                  ✕ Inactivo / Suspendido
+                  Inactivo / Suspendido
                 </Text>
               </TouchableOpacity>
             </View>

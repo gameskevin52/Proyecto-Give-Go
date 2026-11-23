@@ -1,14 +1,23 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { THEME } from '../../../config/theme';
 
 interface AdminStatCardProps {
   label: string;
   value: number | string;
   color?: string;
+  onPress?: () => void;
 }
 
-export const AdminStatCard: React.FC<AdminStatCardProps> = ({ label, value, color = THEME.colors.primary }) => {
+export const AdminStatCard: React.FC<AdminStatCardProps> = ({ label, value, color = THEME.colors.primary, onPress }) => {
+  if (onPress) {
+    return (
+      <TouchableOpacity style={styles.card} activeOpacity={0.75} onPress={onPress}>
+        <Text style={[styles.value, { color }]}>{value}</Text>
+        <Text style={styles.label}>{label}</Text>
+      </TouchableOpacity>
+    );
+  }
   return (
     <View style={styles.card}>
       <Text style={[styles.value, { color }]}>{value}</Text>

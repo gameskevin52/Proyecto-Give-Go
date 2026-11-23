@@ -13,15 +13,30 @@
       "backgroundColor": "#DC2626"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Give&Go necesita acceso a tu ubicación para mostrar tu posición actual en el mapa y calcular la distancia a eventos solidarios cercanos."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icons/adaptive-icon.png",
         "backgroundColor": "#DC2626"
       },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
       "package": "com.giveandgo.app"
     },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permitir que Give&Go acceda a tu ubicación para mostrarte tu posición actual y los eventos cercanos en el mapa."
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/icons/favicon.png"
     }

@@ -15,41 +15,67 @@ import { AdminOrgItem, AdminCategoryItem } from '../models/admin.models';
 
 interface CreateEventModalProps {
   visible: boolean;
-  organizations: AdminOrgItem[];
-  categories: AdminCategoryItem[];
+  organizations?: AdminOrgItem[];
+  categories?: AdminCategoryItem[];
+  fixedOrgId?: string;
   onClose: () => void;
   onSubmit: (payload: any) => Promise<{ success: boolean; message?: string }>;
 }
 
 export const CreateEventModal: React.FC<CreateEventModalProps> = ({
   visible,
-  organizations,
-  categories,
+  organizations = [],
+  categories = [],
+  fixedOrgId,
   onClose,
   onSubmit,
 }) => {
+  const safeOrgs = Array.isArray(organizations) ? organizations : [];
+  const safeCats = Array.isArray(categories) ? categories : [];
+
   const [nombre, setNombre] = useState('');
-  const [categoria, setCategoria] = useState(categories[0]?.nombre || 'Social y Comunitario');
+  const [categoria, setCategoria] = useState(safeCats[0]?.nombre || 'Social y Comunitario');
   const [descripcion, setDescripcion] = useState('');
   const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
-  const [organizacionId, setOrganizacionId] = useState(organizations[0]?.id || '');
+  const [organizacionId, setOrganizacionId] = useState(fixedOrgId || safeOrgs[0]?.id || '');
   const [direccion, setDireccion] = useState('Parque Central Kennedy');
   const [barrio, setBarrio] = useState('Kennedy Central');
   const [cupo, setCupo] = useState('30');
+  const [vacantesVoluntarios, setVacantesVoluntarios] = useState('15');
+  const [vacantesBeneficiarios, setVacantesBeneficiarios] = useState('30');
+  const [publicoObjetivo, setPublicoObjetivo] = useState<'ambos' | 'beneficiarios' | 'voluntarios'>('ambos');
+  const [ayudaOfrecida, setAyudaOfrecida] = useState('');
   const [latitud, setLatitud] = useState('4.6280');
   const [longitud, setLongitud] = useState('-74.1530');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  React.useEffect(() => {
+    if (visible) {
+      if (fixedOrgId) {
+        setOrganizacionId(fixedOrgId);
+      } else if (safeOrgs.length > 0 && !organizacionId) {
+        setOrganizacionId(safeOrgs[0].id);
+      }
+      if (safeCats.length > 0 && (!categoria || categoria === 'Social y Comunitario')) {
+        setCategoria(safeCats[0].nombre || 'Social y Comunitario');
+      }
+    }
+  }, [visible, safeOrgs, safeCats, fixedOrgId]);
+
   const resetForm = () => {
     setNombre('');
-    setCategoria(categories[0]?.nombre || 'Social y Comunitario');
+    setCategoria(safeCats[0]?.nombre || 'Social y Comunitario');
     setDescripcion('');
     setFecha(new Date().toISOString().split('T')[0]);
-    setOrganizacionId(organizations[0]?.id || '');
+    setOrganizacionId(fixedOrgId || safeOrgs[0]?.id || '');
     setDireccion('Parque Central Kennedy');
     setBarrio('Kennedy Central');
     setCupo('30');
+    setVacantesVoluntarios('15');
+    setVacantesBeneficiarios('30');
+    setPublicoObjetivo('ambos');
+    setAyudaOfrecida('');
     setLatitud('4.6280');
     setLongitud('-74.1530');
     setErrorMessage('');
@@ -82,19 +108,24 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
 
     try {
       setIsLoading(true);
+      const parsedCupo = parseInt(cupo, 10) || parseInt(vacantesVoluntarios, 10) || 30;
       const res = await onSubmit({
         nombre: nombre.trim(),
         categoria: categoria.trim(),
         descripcion: descripcion.trim(),
         fecha: fecha.trim(),
-        organizacionId: organizacionId || organizations[0]?.id || '1',
+        organizacionId: fixedOrgId || organizacionId || safeOrgs[0]?.id || '1',
         direccion: direccion.trim(),
         barrio: barrio.trim() || 'Kennedy Central',
         localidad: 'Kennedy',
         ciudad: 'Bogotá',
         departamento: 'Bogotá D.C.',
         pais: 'Colombia',
-        cupo: parseInt(cupo, 10) || 0,
+        cupo: parsedCupo,
+        vacantesVoluntarios: publicoObjetivo === 'beneficiarios' ? 0 : (parseInt(vacantesVoluntarios, 10) || parsedCupo),
+        vacantesBeneficiarios: publicoObjetivo === 'voluntarios' ? 0 : (parseInt(vacantesBeneficiarios, 10) || 20),
+        publicoObjetivo,
+        ayudaOfrecida: ayudaOfrecida.trim(),
         latitud: parseFloat(latitud) || 4.6280,
         longitud: parseFloat(longitud) || -74.1530,
         estado: 'activo',
@@ -142,7 +173,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
           <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
             {errorMessage ? (
               <View style={styles.errorBox}>
-                <Text style={styles.errorText}>⚠️ {errorMessage}</Text>
+                <Text style={styles.errorText}>{errorMessage}</Text>
               </View>
             ) : null}
 
@@ -156,7 +187,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
 
             <Text style={[styles.sectionTitle, { marginTop: 10 }]}>CATEGORÍA DE IMPACTO</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 10 }}>
-              {(categories.length > 0 ? categories : [
+              {(safeCats.length > 0 ? safeCats : [
                 { id: '1', nombre: 'Medio Ambiente' },
                 { id: '2', nombre: 'Niñez y Juventud' },
                 { id: '3', nombre: 'Adulto Mayor' },
@@ -196,36 +227,47 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
               numberOfLines={3}
             />
 
-            <Text style={[styles.sectionTitle, { marginTop: 10 }]}>ORGANIZACIÓN RESPONSABLE</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 10 }}>
-              {organizations.map((org) => {
-                const isSelected = (organizacionId || organizations[0]?.id) === org.id;
-                return (
-                  <TouchableOpacity
-                    key={org.id}
-                    activeOpacity={0.8}
-                    onPress={() => setOrganizacionId(org.id)}
-                    style={[
-                      styles.chip,
-                      isSelected && styles.chipActive,
-                    ]}
-                  >
-                    <Building2 size={12} color={isSelected ? '#DC2626' : '#64748B'} />
-                    <Text
-                      style={[
-                        styles.chipText,
-                        isSelected && styles.chipTextActive,
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {org.nombre}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
+            <AppInput
+              label="Ayuda / Beneficio para Beneficiarios"
+              value={ayudaOfrecida}
+              onChangeText={setAyudaOfrecida}
+              placeholder="Ej. Paquetes nutricionales, kits escolares..."
+            />
 
-            <Text style={[styles.sectionTitle, { marginTop: 10 }]}>FECHA Y UBICACIÓN</Text>
+            {!fixedOrgId && safeOrgs.length > 0 && (
+              <>
+                <Text style={[styles.sectionTitle, { marginTop: 10 }]}>ORGANIZACIÓN RESPONSABLE</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 10 }}>
+                  {safeOrgs.map((org) => {
+                    const isSelected = (organizacionId || safeOrgs[0]?.id) === org.id;
+                    return (
+                      <TouchableOpacity
+                        key={org.id}
+                        activeOpacity={0.8}
+                        onPress={() => setOrganizacionId(org.id)}
+                        style={[
+                          styles.chip,
+                          isSelected && styles.chipActive,
+                        ]}
+                      >
+                        <Building2 size={12} color={isSelected ? '#DC2626' : '#64748B'} />
+                        <Text
+                          style={[
+                            styles.chipText,
+                            isSelected && styles.chipTextActive,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {org.nombre}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </>
+            )}
+
+            <Text style={[styles.sectionTitle, { marginTop: 10 }]}>FECHA, VACANTES Y UBICACIÓN</Text>
 
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <View style={{ flex: 1 }}>
@@ -238,13 +280,68 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
               </View>
               <View style={{ flex: 1 }}>
                 <AppInput
-                  label="Cupo Voluntarios"
+                  label="Cupo Total"
                   value={cupo}
                   onChangeText={setCupo}
                   placeholder="30"
                   keyboardType="numeric"
                 />
               </View>
+            </View>
+
+            <Text style={[styles.sectionTitle, { marginTop: 10 }]}>PÚBLICO OBJETIVO DEL EVENTO</Text>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+              {[
+                { key: 'ambos', label: 'Ambos', color: '#0F172A' },
+                { key: 'beneficiarios', label: 'Solo Beneficiarios', color: '#16A34A' },
+                { key: 'voluntarios', label: 'Solo Voluntarios', color: '#2563EB' },
+              ].map((opt) => {
+                const isSelected = publicoObjetivo === opt.key;
+                return (
+                  <TouchableOpacity
+                    key={opt.key}
+                    onPress={() => setPublicoObjetivo(opt.key as any)}
+                    style={[
+                      styles.chip,
+                      isSelected && { backgroundColor: opt.color, borderColor: opt.color },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        isSelected && { color: '#FFFFFF', fontWeight: '800' },
+                      ]}
+                    >
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {publicoObjetivo !== 'beneficiarios' && (
+                <View style={{ flex: 1 }}>
+                  <AppInput
+                    label="Vacantes Voluntarios"
+                    value={vacantesVoluntarios}
+                    onChangeText={setVacantesVoluntarios}
+                    placeholder="15"
+                    keyboardType="numeric"
+                  />
+                </View>
+              )}
+              {publicoObjetivo !== 'voluntarios' && (
+                <View style={{ flex: 1 }}>
+                  <AppInput
+                    label="Vacantes Beneficiarios"
+                    value={vacantesBeneficiarios}
+                    onChangeText={setVacantesBeneficiarios}
+                    placeholder="30"
+                    keyboardType="numeric"
+                  />
+                </View>
+              )}
             </View>
 
             <AppInput

@@ -30,6 +30,8 @@ const normalizeEvent = (evt: any): Evento => {
     vacantes_beneficiarios: evt.vacantes_beneficiarios ?? evt.vacantesBeneficiarios ?? 20,
     ayuda_ofrecida: evt.ayuda_ofrecida || evt.ayudaOfrecida || '',
     ayudaOfrecida: evt.ayudaOfrecida || evt.ayuda_ofrecida || '',
+    publicoObjetivo: evt.publicoObjetivo || evt.publico_objetivo || 'ambos',
+    publico_objetivo: evt.publico_objetivo || evt.publicoObjetivo || 'ambos',
     nombre_lugar: evt.nombre_lugar || '',
     punto_referencia: evt.punto_referencia || '',
     direccion: evt.direccion || '',
@@ -60,8 +62,8 @@ export const eventFeatureService = {
     return normalizeEvent(res.data.data);
   },
 
-  async create(data: Partial<Evento>): Promise<Evento> {
-    const payload = {
+  async create(data: Partial<Evento> & { organizacionId?: string | number }): Promise<Evento> {
+    const payload: any = {
       nombre: data.titulo || (data as any).nombre,
       titulo: data.titulo || (data as any).nombre,
       descripcion: data.descripcion,
@@ -75,6 +77,8 @@ export const eventFeatureService = {
       vacantesBeneficiarios: data.vacantesBeneficiarios ?? data.vacantes_beneficiarios ?? 20,
       ayudaOfrecida: data.ayuda_ofrecida || data.ayudaOfrecida || '',
       ayuda_ofrecida: data.ayuda_ofrecida || data.ayudaOfrecida || '',
+      publicoObjetivo: data.publicoObjetivo || data.publico_objetivo || 'ambos',
+      publico_objetivo: data.publico_objetivo || data.publicoObjetivo || 'ambos',
       nombre_lugar: data.nombre_lugar || '',
       punto_referencia: data.punto_referencia || '',
       categoria: data.id_categoria || (data as any).categoria || 1,
@@ -90,6 +94,10 @@ export const eventFeatureService = {
       imagen: data.imagen || data.imagen_url || '',
       estado: data.estado || 'activo',
     };
+    if ((data as any).organizacionId || data.id_organizacion) {
+      payload.organizacionId = (data as any).organizacionId || `org_${data.id_organizacion}`;
+      payload.id_organizacion = data.id_organizacion;
+    }
     const res = await apiClient.post('/events', payload);
     return normalizeEvent(res.data.data);
   },
@@ -101,6 +109,7 @@ export const eventFeatureService = {
       vacantesVoluntarios: data.vacantesVoluntarios ?? data.vacantes_voluntarios,
       vacantesBeneficiarios: data.vacantesBeneficiarios ?? data.vacantes_beneficiarios,
       ayudaOfrecida: data.ayuda_ofrecida || data.ayudaOfrecida,
+      publicoObjetivo: data.publicoObjetivo || data.publico_objetivo,
     };
     const res = await apiClient.put(`/events/${id}`, payload);
     return normalizeEvent(res.data.data);
@@ -111,8 +120,21 @@ export const eventFeatureService = {
     return res.data.success;
   },
 
-  async registerParticipant(eventoId: number | string, tipo?: 'voluntario' | 'beneficiario'): Promise<{ success: boolean; message?: string }> {
-    const res = await apiClient.post(`/events/${eventoId}/register`, { tipo: tipo || 'voluntario' });
+  async registerParticipant(eventoId: number | string, tipo?: 'voluntario' | 'beneficiario', usuarioId?: number | string): Promise<{ success: boolean; message?: string }> {
+    const res = await apiClient.post(`/events/${eventoId}/register`, {
+      tipo: tipo || 'voluntario',
+      ...(usuarioId ? { usuarioId } : {}),
+    });
+    return res.data;
+  },
+
+  async applyBeneficiaryPostulacion(eventoId: number | string, usuarioId: number | string, observaciones?: string): Promise<{ success: boolean; message?: string }> {
+    const res = await apiClient.post('/postulaciones', {
+      id_evento: eventoId,
+      id_usuario: usuarioId,
+      tipo_postulacion: 'beneficiario',
+      observaciones: observaciones || 'Postulación registrada desde detalle de jornada.',
+    });
     return res.data;
   },
 

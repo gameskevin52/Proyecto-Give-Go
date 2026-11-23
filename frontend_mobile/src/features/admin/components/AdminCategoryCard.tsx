@@ -16,7 +16,8 @@ export const AdminCategoryCard: React.FC<AdminCategoryCardProps> = ({
   onDelete,
   onConsult,
 }) => {
-  const isActivo = category.estado === 'activo' || category.estado === '1' || category.estado === 1;
+  const rawEst = String(category.estado || '').toLowerCase();
+  const isActivo = rawEst === 'activo' || rawEst === '1';
 
   return (
     <TouchableOpacity

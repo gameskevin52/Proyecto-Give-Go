@@ -18,6 +18,6 @@ router.post('/monetary', authenticateJWT, authorizeRoles('admin', 'voluntario', 
 router.post('/object', authenticateJWT, authorizeRoles('admin', 'voluntario', 'organizacion'), validateObjectDonation, DonationController.createObject);
 
 // Eliminar donaciones
-router.delete('/:id', authenticateJWT, DonationController.delete);
+router.delete('/:id', authenticateJWT, authorizeRoles('Admin'), DonationController.delete);
 
 export default router;

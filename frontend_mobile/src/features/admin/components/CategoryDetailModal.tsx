@@ -26,7 +26,8 @@ export const CategoryDetailModal: React.FC<CategoryDetailModalProps> = ({
 }) => {
   if (!category) return null;
 
-  const isActivo = category.estado === 'activo' || category.estado === '1' || category.estado === 1;
+  const rawEst = String(category.estado || '').toLowerCase();
+  const isActivo = rawEst === 'activo' || rawEst === '1';
 
   return (
     <Modal

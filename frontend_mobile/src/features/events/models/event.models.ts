@@ -27,6 +27,8 @@ export interface Evento {
   vacantesBeneficiarios?: number;
   ayuda_ofrecida?: string;
   ayudaOfrecida?: string;
+  publicoObjetivo?: 'voluntarios' | 'beneficiarios' | 'ambos';
+  publico_objetivo?: 'voluntarios' | 'beneficiarios' | 'ambos';
   nombre_lugar?: string;
   punto_referencia?: string;
   direccion?: string;

@@ -11,6 +11,7 @@ const dbConfig = {
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'giveandgo_v2',
   connectionLimit: 10,
+  connectTimeout: 2000,
 };
 
 let pool: mysql.Pool | null = null;
@@ -212,9 +213,10 @@ const seedFallbackData = () => {
         direccion: 'Calle 38 Sur # 78-45, Kennedy Central',
         fecha: '2026-07-15T09:00:00Z',
         cupo: 50,
-        vacantes_voluntarios: 15,
+        vacantes_voluntarios: 0,
         vacantes_beneficiarios: 35,
         ayuda_ofrecida: 'Entrega de paquetes nutricionales y mercados básicos con arroz, legumbres y aceite para núcleos familiares.',
+        publico_objetivo: 'beneficiarios',
         estado: 1,
         organizacion_id: 1,
         barrio: 'Kennedy Central',
@@ -239,6 +241,7 @@ const seedFallbackData = () => {
         vacantes_voluntarios: 8,
         vacantes_beneficiarios: 25,
         ayuda_ofrecida: 'Kits completos de útiles escolares (cuadernos, cartuchera, colores) y tutorías de nivelación académica.',
+        publico_objetivo: 'ambos',
         estado: 1,
         organizacion_id: 1,
         barrio: 'Patio Bonito',
@@ -261,8 +264,9 @@ const seedFallbackData = () => {
         fecha: '2026-08-05T07:00:00Z',
         cupo: 100,
         vacantes_voluntarios: 40,
-        vacantes_beneficiarios: 60,
+        vacantes_beneficiarios: 0,
         ayuda_ofrecida: 'Capacitación ambiental, refrigerios y entrega de plantas nativas ornamentales para la comunidad.',
+        publico_objetivo: 'voluntarios',
         estado: 1,
         organizacion_id: 3,
         barrio: 'El Burro',
@@ -284,9 +288,10 @@ const seedFallbackData = () => {
         direccion: 'Carrera 80 # 40B Sur-12, Castilla',
         fecha: '2026-06-30T09:00:00Z',
         cupo: 30,
-        vacantes_voluntarios: 10,
+        vacantes_voluntarios: 0,
         vacantes_beneficiarios: 20,
         ayuda_ofrecida: 'Valoración médica básica preventiva, kits de aseo personal y orientación en hábitos de vida saludable.',
+        publico_objetivo: 'beneficiarios',
         estado: 1,
         organizacion_id: 2,
         barrio: 'Castilla',
@@ -543,6 +548,7 @@ export const initDB = async () => {
           port: dbConfig.port,
           user: dbConfig.user,
           password: dbConfig.password,
+          connectTimeout: 2000,
         });
         await rootConn.query(`CREATE DATABASE IF NOT EXISTS \`${dbConfig.database}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
         await rootConn.end();
@@ -638,6 +644,7 @@ export const initDB = async () => {
           vacantes_voluntarios INT DEFAULT 0,
           vacantes_beneficiarios INT DEFAULT 0,
           ayuda_ofrecida TEXT DEFAULT NULL,
+          publico_objetivo VARCHAR(20) DEFAULT 'ambos',
           imagen TEXT DEFAULT NULL,
           estado TINYINT DEFAULT 1,
           fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -762,7 +769,8 @@ export const initDB = async () => {
         "imagen TEXT NULL",
         "vacantes_voluntarios INT DEFAULT 10",
         "vacantes_beneficiarios INT DEFAULT 25",
-        "ayuda_ofrecida TEXT NULL"
+        "ayuda_ofrecida TEXT NULL",
+        "publico_objetivo VARCHAR(20) DEFAULT 'ambos'"
       ];
       for (const col of eventColumns) {
         try {
@@ -858,13 +866,16 @@ export const initDB = async () => {
       connection.release();
       useFallback = false;
     } catch (err: any) {
-      console.warn('⚠ Advertencia: No se pudo conectar a MySQL en XAMPP. Código de error:', err.code);
-      console.warn('👉 Usando el motor de fallback basado en JSON para garantizar funcionamiento continuo.');
-      console.warn('👉 Para usar XAMPP: Inicia el servicio MySQL en el panel de XAMPP e importa database/giveandgo_full_xampp.sql en phpMyAdmin.');
+      if (pool) {
+        await pool.end().catch(() => {});
+        pool = null;
+      }
+      console.log(`ℹ MySQL no disponible (${err?.code || 'sin conexión'}); iniciando con el motor de respaldo JSON.`);
+      console.log('👉 Para usar XAMPP localmente: inicia MySQL en XAMPP e importa database/giveandgo_full_xampp.sql en phpMyAdmin.');
       useFallback = true;
     }
   } else {
-    console.warn('⚠ Advertencia: Variables de entorno de base de datos no configuradas.');
+    console.log('ℹ Variables de entorno MySQL no configuradas; iniciando con el motor de respaldo JSON.');
     useFallback = true;
   }
   
@@ -901,9 +912,9 @@ function handleFallbackQuery(sql: string, params: any[]): any {
   // 2. SELECT usuarios
   if (queryNormalized.startsWith('select * from usuarios')) {
     let result = [...fallbackData.usuarios];
-    if (queryNormalized.includes('where correo = ?')) {
-      const email = params[0]?.toLowerCase();
-      result = result.filter(u => u.correo.toLowerCase() === email);
+    if (queryNormalized.includes('where correo = ?') || queryNormalized.includes('where lower(correo) = lower(?)')) {
+      const email = (params[0] || '').trim().toLowerCase();
+      result = result.filter(u => (u.correo || '').trim().toLowerCase() === email);
     } else if (queryNormalized.includes('where id_usuario = ?')) {
       const id = parseInt(params[0], 10);
       result = result.filter(u => u.id_usuario === id);
@@ -917,9 +928,9 @@ function handleFallbackQuery(sql: string, params: any[]): any {
     if (queryNormalized.includes('where id_organizacion = ?')) {
       const id = parseInt(params[0], 10);
       result = result.filter(o => o.id_organizacion === id);
-    } else if (queryNormalized.includes('where correo = ?')) {
-      const email = params[0]?.toLowerCase();
-      result = result.filter(o => o.correo.toLowerCase() === email);
+    } else if (queryNormalized.includes('where correo = ?') || queryNormalized.includes('where lower(correo) = lower(?)')) {
+      const email = (params[0] || '').trim().toLowerCase();
+      result = result.filter(o => (o.correo || '').trim().toLowerCase() === email);
     }
     return [result, []];
   }

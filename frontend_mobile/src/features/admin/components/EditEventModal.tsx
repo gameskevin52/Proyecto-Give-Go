@@ -11,12 +11,13 @@ import {
 import { X, Edit3, Tag, Calendar } from 'lucide-react-native';
 import { AppInput } from '../../../shared/components/inputs/AppInput';
 import { AppButton } from '../../../shared/components/buttons/AppButton';
-import { AdminEventItem, AdminCategoryItem } from '../models/admin.models';
+import { AdminEventItem, AdminCategoryItem, AdminOrgItem } from '../models/admin.models';
 
 interface EditEventModalProps {
   visible: boolean;
   event: AdminEventItem | null;
-  categories: AdminCategoryItem[];
+  organizations?: AdminOrgItem[];
+  categories?: AdminCategoryItem[];
   onClose: () => void;
   onSubmit: (id: string | number, payload: Partial<AdminEventItem>) => Promise<{ success: boolean; message?: string }>;
 }
@@ -24,10 +25,12 @@ interface EditEventModalProps {
 export const EditEventModal: React.FC<EditEventModalProps> = ({
   visible,
   event,
-  categories,
+  categories = [],
   onClose,
   onSubmit,
 }) => {
+  const safeCats = Array.isArray(categories) ? categories : [];
+
   const [nombre, setNombre] = useState('');
   const [categoria, setCategoria] = useState('');
   const [descripcion, setDescripcion] = useState('');
@@ -36,6 +39,10 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
   const [direccion, setDireccion] = useState('');
   const [barrio, setBarrio] = useState('');
   const [cupo, setCupo] = useState('30');
+  const [vacantesVoluntarios, setVacantesVoluntarios] = useState('15');
+  const [vacantesBeneficiarios, setVacantesBeneficiarios] = useState('20');
+  const [publicoObjetivo, setPublicoObjetivo] = useState<'ambos' | 'beneficiarios' | 'voluntarios'>('ambos');
+  const [ayudaOfrecida, setAyudaOfrecida] = useState('');
   const [latitud, setLatitud] = useState('4.6280');
   const [longitud, setLongitud] = useState('-74.1530');
   const [isLoading, setIsLoading] = useState(false);
@@ -44,18 +51,22 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
   useEffect(() => {
     if (event) {
       setNombre(event.nombre || '');
-      setCategoria(event.categoria || (categories[0]?.nombre || 'Social y Comunitario'));
+      setCategoria(event.categoria || (safeCats[0]?.nombre || 'Social y Comunitario'));
       setDescripcion(event.descripcion || '');
       setFecha(event.fecha ? event.fecha.split('T')[0] : '');
       setEstado((event.estado as any) || 'activo');
       setDireccion(event.direccion || '');
       setBarrio(event.barrio || 'Kennedy Central');
       setCupo(String(event.cupo || '30'));
+      setVacantesVoluntarios(String((event as any).vacantesVoluntarios ?? event.vacantes_voluntarios ?? event.cupo ?? '15'));
+      setVacantesBeneficiarios(String((event as any).vacantesBeneficiarios ?? event.vacantes_beneficiarios ?? '20'));
+      setPublicoObjetivo((event as any).publicoObjetivo || 'ambos');
+      setAyudaOfrecida((event as any).ayudaOfrecida || event.ayuda_ofrecida || '');
       setLatitud(String(event.latitud || '4.6280'));
       setLongitud(String(event.longitud || '-74.1530'));
       setErrorMessage('');
     }
-  }, [event, categories]);
+  }, [event, safeCats]);
 
   const handleSubmit = async () => {
     if (!event) return;
@@ -85,9 +96,13 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
         direccion: direccion.trim(),
         barrio: barrio.trim(),
         cupo: parseInt(cupo, 10) || 0,
+        vacantesVoluntarios: publicoObjetivo === 'beneficiarios' ? 0 : (parseInt(vacantesVoluntarios, 10) || 0),
+        vacantesBeneficiarios: publicoObjetivo === 'voluntarios' ? 0 : (parseInt(vacantesBeneficiarios, 10) || 0),
+        publicoObjetivo,
+        ayudaOfrecida: ayudaOfrecida.trim(),
         latitud: parseFloat(latitud) || 4.6280,
         longitud: parseFloat(longitud) || -74.1530,
-      });
+      } as any);
 
       if (res.success) {
         Alert.alert('Éxito', res.message || 'Evento actualizado correctamente.');
@@ -131,7 +146,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
           <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
             {errorMessage ? (
               <View style={styles.errorBox}>
-                <Text style={styles.errorText}>⚠️ {errorMessage}</Text>
+                <Text style={styles.errorText}>{errorMessage}</Text>
               </View>
             ) : null}
 
@@ -171,7 +186,7 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
 
             <Text style={[styles.sectionTitle, { marginTop: 10 }]}>CATEGORÍA</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 10 }}>
-              {(categories.length > 0 ? categories : [
+              {(safeCats.length > 0 ? safeCats : [
                 { id: '1', nombre: 'Medio Ambiente' },
                 { id: '2', nombre: 'Niñez y Juventud' },
                 { id: '3', nombre: 'Adulto Mayor' },
@@ -211,6 +226,13 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
               numberOfLines={3}
             />
 
+            <AppInput
+              label="Ayuda / Beneficio Ofrecido"
+              value={ayudaOfrecida}
+              onChangeText={setAyudaOfrecida}
+              placeholder="Ej. Paquetes nutricionales, kits escolares..."
+            />
+
             <Text style={[styles.sectionTitle, { marginTop: 10 }]}>DETALLES OPERATIVOS</Text>
 
             <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -224,13 +246,68 @@ export const EditEventModal: React.FC<EditEventModalProps> = ({
               </View>
               <View style={{ flex: 1 }}>
                 <AppInput
-                  label="Cupo Voluntarios"
+                  label="Cupo Total"
                   value={cupo}
                   onChangeText={setCupo}
                   placeholder="30"
                   keyboardType="numeric"
                 />
               </View>
+            </View>
+
+            <Text style={[styles.sectionTitle, { marginTop: 10 }]}>PÚBLICO OBJETIVO</Text>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+              {[
+                { key: 'ambos', label: 'Ambos', color: '#0F172A' },
+                { key: 'beneficiarios', label: 'Solo Beneficiarios', color: '#16A34A' },
+                { key: 'voluntarios', label: 'Solo Voluntarios', color: '#2563EB' },
+              ].map((opt) => {
+                const isSelected = publicoObjetivo === opt.key;
+                return (
+                  <TouchableOpacity
+                    key={opt.key}
+                    onPress={() => setPublicoObjetivo(opt.key as any)}
+                    style={[
+                      styles.chip,
+                      isSelected && { backgroundColor: opt.color, borderColor: opt.color },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.chipText,
+                        isSelected && { color: '#FFFFFF', fontWeight: '800' },
+                      ]}
+                    >
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {publicoObjetivo !== 'beneficiarios' && (
+                <View style={{ flex: 1 }}>
+                  <AppInput
+                    label="Vacantes Voluntarios"
+                    value={vacantesVoluntarios}
+                    onChangeText={setVacantesVoluntarios}
+                    placeholder="15"
+                    keyboardType="numeric"
+                  />
+                </View>
+              )}
+              {publicoObjetivo !== 'voluntarios' && (
+                <View style={{ flex: 1 }}>
+                  <AppInput
+                    label="Vacantes Beneficiarios"
+                    value={vacantesBeneficiarios}
+                    onChangeText={setVacantesBeneficiarios}
+                    placeholder="20"
+                    keyboardType="numeric"
+                  />
+                </View>
+              )}
             </View>
 
             <AppInput

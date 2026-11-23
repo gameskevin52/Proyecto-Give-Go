@@ -261,9 +261,9 @@ export const OrganizationController = {
       // 1. Eliminar de `organizaciones`
       await OrganizacionModel.delete(id);
 
-      // 2. Eliminar de `usuarios`
+      // 2. Eliminar de `usuarios` solo si su rol actual sigue siendo Organizacion
       const user = await UsuarioModel.getByEmail(org.correo);
-      if (user) {
+      if (user && (user.rol || '').toLowerCase() === 'organizacion') {
         await UsuarioModel.delete(user.id_usuario);
       }
 

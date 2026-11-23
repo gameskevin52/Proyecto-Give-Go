@@ -11,6 +11,7 @@ export interface EventoDB {
   vacantes_voluntarios?: number;
   vacantes_beneficiarios?: number;
   ayuda_ofrecida?: string;
+  publico_objetivo?: 'voluntarios' | 'beneficiarios' | 'ambos';
   estado: number; // 1 = activo, 2 = finalizado, 0 = cancelado
   organizacion_id: number;
   barrio?: string;
@@ -77,12 +78,13 @@ export const EventoModel = {
 
   async create(data: Omit<EventoDB, 'id_evento'>): Promise<number> {
     const estado = data.estado !== undefined ? data.estado : 1;
+    const publicoObjetivo = data.publico_objetivo || 'ambos';
     if (db.isMySQLConnected()) {
       const [result] = await db.query(
         `INSERT INTO eventos (
-          nombre, id_categoria, descripcion, direccion, fecha, cupo, vacantes_voluntarios, vacantes_beneficiarios, ayuda_ofrecida, estado, organizacion_id,
+          nombre, id_categoria, descripcion, direccion, fecha, cupo, vacantes_voluntarios, vacantes_beneficiarios, ayuda_ofrecida, publico_objetivo, estado, organizacion_id,
           barrio, punto_referencia, nombre_lugar, latitud, longitud, imagen
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           data.nombre,
           data.id_categoria,
@@ -93,6 +95,7 @@ export const EventoModel = {
           data.vacantes_voluntarios || 0,
           data.vacantes_beneficiarios || 0,
           data.ayuda_ofrecida || null,
+          publicoObjetivo,
           estado,
           data.organizacion_id,
           data.barrio || 'Kennedy Central',
@@ -118,6 +121,7 @@ export const EventoModel = {
         vacantes_voluntarios: data.vacantes_voluntarios || 0,
         vacantes_beneficiarios: data.vacantes_beneficiarios || 0,
         ayuda_ofrecida: data.ayuda_ofrecida || '',
+        publico_objetivo: publicoObjetivo,
         estado,
         organizacion_id: data.organizacion_id,
         barrio: data.barrio || 'Kennedy Central',
@@ -140,7 +144,7 @@ export const EventoModel = {
   async update(id: number, data: Partial<Omit<EventoDB, 'id_evento'>>): Promise<boolean> {
     const allowedColumns = [
       'nombre', 'id_categoria', 'descripcion', 'direccion', 'fecha', 'fecha_fin',
-      'cupo', 'vacantes_voluntarios', 'vacantes_beneficiarios', 'ayuda_ofrecida',
+      'cupo', 'vacantes_voluntarios', 'vacantes_beneficiarios', 'ayuda_ofrecida', 'publico_objetivo',
       'estado', 'organizacion_id', 'id_barrio', 'barrio', 'punto_referencia',
       'nombre_lugar', 'latitud', 'longitud', 'imagen'
     ];

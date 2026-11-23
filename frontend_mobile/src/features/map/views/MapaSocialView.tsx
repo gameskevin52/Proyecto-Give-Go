@@ -6,10 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Dimensions,
   Modal,
   ActivityIndicator,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -28,14 +26,11 @@ import {
   X,
   RotateCcw,
   SlidersHorizontal,
-  Check,
 } from 'lucide-react-native';
-import { colors } from '../../../config/theme';
 import { useMapController } from '../controllers/useMapController';
 import { AppLoader } from '../../../shared/components/loaders/AppLoader';
 import { MobileOpenStreetMap } from '../components/MobileOpenStreetMap';
-
-const { width } = Dimensions.get('window');
+import { MapLocationItem } from '../models/map.models';
 
 interface MapaSocialViewProps {
   navigation: any;
@@ -43,17 +38,19 @@ interface MapaSocialViewProps {
 
 export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) => {
   const {
+    viewerRole,
+    isBeneficiary,
+    isVolunteer,
     items,
-    allItems,
     allItemsCount,
     orgsCount,
-    eventsCount,
+    beneficiaryEventsCount,
+    volunteerEventsCount,
     closestItem,
     selectedItem,
     setSelectedItem,
     centerCoords,
     focusOnItem,
-    focusOnClosestItem,
     focusOnUserLocation,
     filterType,
     setFilterType,
@@ -70,6 +67,7 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
     isLoading,
     userLocation,
     isLocating,
+    locationError,
     handleSelectItem,
     handleDonateToOrg,
     handleViewEvent,
@@ -77,7 +75,6 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
 
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
 
-  // Active filters count
   const activeFilterCount =
     (filterType !== 'all' ? 1 : 0) +
     (selectedCategory !== 'all' ? 1 : 0) +
@@ -85,6 +82,28 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
     (searchQuery.trim() !== '' ? 1 : 0);
 
   const hasActiveFilters = activeFilterCount > 0;
+
+  const isBeneficiaryItem = (item: MapLocationItem) => {
+    if (item.tipo !== 'evento') return false;
+    if (isBeneficiary) return true;
+    if (isVolunteer) return false;
+    return item.publicoObjetivo === 'beneficiarios';
+  };
+
+  const markerOptions = isBeneficiary
+    ? [{ key: 'all', label: 'Eventos para Beneficiarios' }]
+    : isVolunteer
+      ? [
+          { key: 'all', label: 'Todos' },
+          { key: 'evento_voluntarios', label: 'Eventos Voluntarios' },
+          { key: 'organizacion', label: 'Sedes ONG' },
+        ]
+      : [
+          { key: 'all', label: 'Todos' },
+          { key: 'evento_beneficiarios', label: 'Beneficiarios' },
+          { key: 'evento_voluntarios', label: 'Voluntarios' },
+          { key: 'organizacion', label: 'Sedes ONG' },
+        ];
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -96,7 +115,11 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
             <Search size={18} color="#94A3B8" style={{ marginRight: 8 }} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Buscar por sede, evento o barrio..."
+              placeholder={
+                isBeneficiary
+                  ? 'Buscar ayudas o eventos para ti...'
+                  : 'Buscar por sede, evento o barrio...'
+              }
               placeholderTextColor="#94A3B8"
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -113,7 +136,6 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
             )}
           </View>
 
-          {/* Filter modal toggle button */}
           <TouchableOpacity
             style={[styles.headerIconButton, hasActiveFilters && styles.headerIconButtonActive]}
             onPress={() => setIsFilterModalVisible(true)}
@@ -127,7 +149,6 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
             )}
           </TouchableOpacity>
 
-          {/* View mode toggle (Map <-> List) */}
           <TouchableOpacity
             style={[styles.headerIconButton, viewMode === 'list' && styles.headerIconButtonActive]}
             onPress={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
@@ -147,7 +168,6 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterPillsScroll}
         >
-          {/* Todos */}
           <TouchableOpacity
             style={[
               styles.pill,
@@ -165,58 +185,93 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
                 filterType === 'all' && maxDistance === 0 && selectedCategory === 'all' && styles.pillTextActive,
               ]}
             >
-              Todos ({allItemsCount})
+              {isBeneficiary ? `Disponibles (${allItemsCount})` : `Todos (${allItemsCount})`}
             </Text>
           </TouchableOpacity>
 
-          {/* Sedes / Organizaciones */}
-          <TouchableOpacity
-            style={[styles.pill, filterType === 'organizacion' && styles.pillActiveOrg]}
-            onPress={() => setFilterType(filterType === 'organizacion' ? 'all' : 'organizacion')}
-          >
-            <Building2
-              size={13}
-              color={filterType === 'organizacion' ? '#FFFFFF' : '#2563EB'}
-              style={{ marginRight: 4 }}
-            />
-            <Text
+          {/* Beneficiarios pill (verde) para Admin / Org */}
+          {!isBeneficiary && !isVolunteer && (
+            <TouchableOpacity
               style={[
-                styles.pillText,
-                filterType === 'organizacion' && styles.pillTextActive,
+                styles.pill,
+                filterType === 'evento_beneficiarios' && styles.pillActiveBeneficiary,
               ]}
+              onPress={() =>
+                setFilterType(filterType === 'evento_beneficiarios' ? 'all' : 'evento_beneficiarios')
+              }
             >
-              Sedes ({orgsCount})
-            </Text>
-          </TouchableOpacity>
+              <Heart
+                size={13}
+                color={filterType === 'evento_beneficiarios' ? '#FFFFFF' : '#16A34A'}
+                style={{ marginRight: 4 }}
+              />
+              <Text
+                style={[
+                  styles.pillText,
+                  filterType === 'evento_beneficiarios' && styles.pillTextActive,
+                ]}
+              >
+                Beneficiarios ({beneficiaryEventsCount})
+              </Text>
+            </TouchableOpacity>
+          )}
 
-          {/* Eventos */}
-          <TouchableOpacity
-            style={[styles.pill, filterType === 'evento' && styles.pillActiveEvent]}
-            onPress={() => setFilterType(filterType === 'evento' ? 'all' : 'evento')}
-          >
-            <Calendar
-              size={13}
-              color={filterType === 'evento' ? '#FFFFFF' : '#DC2626'}
-              style={{ marginRight: 4 }}
-            />
-            <Text
+          {/* Voluntarios pill (azul) para todos excepto Beneficiario */}
+          {!isBeneficiary && (
+            <TouchableOpacity
               style={[
-                styles.pillText,
-                filterType === 'evento' && styles.pillTextActive,
+                styles.pill,
+                filterType === 'evento_voluntarios' && styles.pillActiveVolunteer,
               ]}
+              onPress={() =>
+                setFilterType(filterType === 'evento_voluntarios' ? 'all' : 'evento_voluntarios')
+              }
             >
-              Eventos ({eventsCount})
-            </Text>
-          </TouchableOpacity>
+              <Calendar
+                size={13}
+                color={filterType === 'evento_voluntarios' ? '#FFFFFF' : '#2563EB'}
+                style={{ marginRight: 4 }}
+              />
+              <Text
+                style={[
+                  styles.pillText,
+                  filterType === 'evento_voluntarios' && styles.pillTextActive,
+                ]}
+              >
+                Voluntarios ({volunteerEventsCount})
+              </Text>
+            </TouchableOpacity>
+          )}
 
-          {/* Quick Distance: < 3 km */}
+          {/* Sedes / Organizaciones pill (morado) para todos excepto Beneficiario */}
+          {!isBeneficiary && (
+            <TouchableOpacity
+              style={[styles.pill, filterType === 'organizacion' && styles.pillActiveOrg]}
+              onPress={() => setFilterType(filterType === 'organizacion' ? 'all' : 'organizacion')}
+            >
+              <Building2
+                size={13}
+                color={filterType === 'organizacion' ? '#FFFFFF' : '#7C3AED'}
+                style={{ marginRight: 4 }}
+              />
+              <Text
+                style={[
+                  styles.pillText,
+                  filterType === 'organizacion' && styles.pillTextActive,
+                ]}
+              >
+                Sedes ({orgsCount})
+              </Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
             style={[styles.pill, maxDistance === 3 && styles.pillActive]}
             onPress={() => setMaxDistance(maxDistance === 3 ? 0 : 3)}
           >
             <Navigation
               size={12}
-              color={maxDistance === 3 ? '#FFFFFF' : '#0284C7'}
+              color={maxDistance === 3 ? '#FFFFFF' : '#DC2626'}
               style={{ marginRight: 4 }}
             />
             <Text style={[styles.pillText, maxDistance === 3 && styles.pillTextActive]}>
@@ -224,7 +279,6 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
             </Text>
           </TouchableOpacity>
 
-          {/* Quick Distance: < 5 km */}
           <TouchableOpacity
             style={[styles.pill, maxDistance === 5 && styles.pillActive]}
             onPress={() => setMaxDistance(maxDistance === 5 ? 0 : 5)}
@@ -234,7 +288,6 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
             </Text>
           </TouchableOpacity>
 
-          {/* Advanced Filter Button */}
           <TouchableOpacity
             style={[styles.pill, (selectedCategory !== 'all' || maxDistance > 5) && styles.pillActive]}
             onPress={() => setIsFilterModalVisible(true)}
@@ -254,7 +307,6 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
             </Text>
           </TouchableOpacity>
 
-          {/* Reset Filters Pill if active */}
           {hasActiveFilters && (
             <TouchableOpacity style={styles.clearPill} onPress={resetFilters}>
               <RotateCcw size={12} color="#DC2626" style={{ marginRight: 4 }} />
@@ -262,6 +314,21 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
             </TouchableOpacity>
           )}
         </ScrollView>
+
+        {/* Banner de permiso GPS si aún no está activo */}
+        {locationError && !userLocation && (
+          <TouchableOpacity
+            style={styles.gpsBanner}
+            onPress={focusOnUserLocation}
+            activeOpacity={0.85}
+          >
+            <Navigation size={13} color="#DC2626" style={{ marginRight: 6 }} />
+            <Text style={styles.gpsBannerText} numberOfLines={1}>
+              {locationError}
+            </Text>
+            <Text style={styles.gpsBannerAction}>Activar</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Row 3: Closest location highlight banner */}
         {closestItem && (
@@ -271,7 +338,7 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
             activeOpacity={0.85}
           >
             <View style={styles.closestIconWrapper}>
-              <MapPin size={13} color="#059669" />
+              <MapPin size={13} color="#16A34A" />
             </View>
             <View style={{ flex: 1, paddingRight: 6 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -286,7 +353,7 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
             </View>
             <View style={styles.closestActionBtn}>
               <Text style={styles.closestActionText}>Ver</Text>
-              <ChevronRight size={13} color="#059669" />
+              <ChevronRight size={13} color="#16A34A" />
             </View>
           </TouchableOpacity>
         )}
@@ -298,7 +365,6 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
           <AppLoader message="Cargando mapa social..." />
         </View>
       ) : viewMode === 'map' ? (
-        /* Map View Mode: 100% Static & Native, NO outer ScrollView */
         <View style={styles.mapWrapper}>
           <MobileOpenStreetMap
             items={items}
@@ -306,10 +372,11 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
             onSelectItem={handleSelectItem}
             userLocation={userLocation}
             centerCoords={centerCoords}
+            viewerRole={viewerRole}
             style={styles.fullMap}
           />
 
-          {/* Floating Google Maps Style Locate FAB */}
+          {/* Floating Locate FAB (Rojo = Ubicación actual GPS) */}
           <TouchableOpacity
             style={[styles.floatingGpsButton, isLocating && styles.floatingGpsButtonActive]}
             onPress={focusOnUserLocation}
@@ -317,46 +384,66 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
             accessibilityLabel="Actualizar mi ubicación GPS"
           >
             {isLocating ? (
-              <ActivityIndicator size="small" color="#2563EB" />
+              <ActivityIndicator size="small" color="#DC2626" />
             ) : (
-              <Navigation size={22} color="#2563EB" />
+              <Navigation size={22} color="#DC2626" />
             )}
           </TouchableOpacity>
 
           {/* Floating Map Legend Pill */}
           <View style={styles.floatingLegendPill}>
             <View style={styles.legendDotItem}>
-              <View style={[styles.legendDot, { backgroundColor: '#2563EB' }]} />
-              <Text style={styles.legendDotText}>Sedes ({orgsCount})</Text>
-            </View>
-            <View style={styles.legendSeparator} />
-            <View style={styles.legendDotItem}>
               <View style={[styles.legendDot, { backgroundColor: '#DC2626' }]} />
-              <Text style={styles.legendDotText}>Eventos ({eventsCount})</Text>
+              <Text style={[styles.legendDotText, { color: '#DC2626' }]}>
+                {userLocation ? 'Tú (GPS)' : 'GPS'}
+              </Text>
             </View>
-            {userLocation && (
+
+            {(isBeneficiary || !isVolunteer) && (
               <>
                 <View style={styles.legendSeparator} />
                 <View style={styles.legendDotItem}>
-                  <View style={[styles.legendDot, { backgroundColor: '#059669' }]} />
-                  <Text style={[styles.legendDotText, { color: '#059669' }]}>Tú</Text>
+                  <View style={[styles.legendDot, { backgroundColor: '#16A34A' }]} />
+                  <Text style={styles.legendDotText}>
+                    Benef. ({beneficiaryEventsCount})
+                  </Text>
+                </View>
+              </>
+            )}
+
+            {!isBeneficiary && (
+              <>
+                <View style={styles.legendSeparator} />
+                <View style={styles.legendDotItem}>
+                  <View style={[styles.legendDot, { backgroundColor: '#2563EB' }]} />
+                  <Text style={styles.legendDotText}>
+                    Volunt. ({volunteerEventsCount})
+                  </Text>
+                </View>
+                <View style={styles.legendSeparator} />
+                <View style={styles.legendDotItem}>
+                  <View style={[styles.legendDot, { backgroundColor: '#7C3AED' }]} />
+                  <Text style={styles.legendDotText}>Sedes ({orgsCount})</Text>
                 </View>
               </>
             )}
           </View>
 
-          {/* Floating Bottom Card for Selected Item (Google Maps / Airbnb style) */}
+          {/* Floating Bottom Card for Selected Item */}
           {selectedItem ? (
             <View style={styles.bottomCardContainer}>
               <View style={styles.dragIndicator} />
 
-              {/* Header: Type Badge + Distance + Close */}
               <View style={styles.bottomCardHeader}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
                   <View
                     style={[
                       styles.typeBadge,
-                      selectedItem.tipo === 'organizacion' ? styles.typeBadgeOrg : styles.typeBadgeEvent,
+                      selectedItem.tipo === 'organizacion'
+                        ? styles.typeBadgeOrg
+                        : isBeneficiaryItem(selectedItem)
+                          ? styles.typeBadgeBeneficiary
+                          : styles.typeBadgeVolunteer,
                     ]}
                   >
                     <Text
@@ -364,18 +451,22 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
                         styles.typeBadgeText,
                         selectedItem.tipo === 'organizacion'
                           ? styles.typeBadgeTextOrg
-                          : styles.typeBadgeTextEvent,
+                          : isBeneficiaryItem(selectedItem)
+                            ? styles.typeBadgeTextBeneficiary
+                            : styles.typeBadgeTextVolunteer,
                       ]}
                     >
                       {selectedItem.tipo === 'organizacion'
                         ? 'SEDE DE ORGANIZACIÓN'
-                        : 'CONVOCATORIA SOLIDARIA'}
+                        : isBeneficiaryItem(selectedItem)
+                          ? 'EVENTO BENEFICIARIOS'
+                          : 'EVENTO VOLUNTARIOS'}
                     </Text>
                   </View>
 
                   {selectedItem.verificada && (
                     <View style={styles.verifiedBadge}>
-                      <ShieldCheck size={11} color="#1D4ED8" />
+                      <ShieldCheck size={11} color="#6D28D9" />
                       <Text style={styles.verifiedBadgeText}>Verificada</Text>
                     </View>
                   )}
@@ -398,12 +489,10 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
                 </TouchableOpacity>
               </View>
 
-              {/* Title & Description */}
               <Text style={styles.bottomCardTitle} numberOfLines={2}>
                 {selectedItem.titulo}
               </Text>
 
-              {/* Address / Neighborhood */}
               <View style={styles.bottomCardInfoRow}>
                 <MapPin size={13} color="#64748B" style={{ marginRight: 5 }} />
                 <Text style={styles.bottomCardInfoText} numberOfLines={1}>
@@ -412,14 +501,13 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
                 </Text>
               </View>
 
-              {/* Meta: Schedule or Phone */}
               {selectedItem.tipo === 'evento' && selectedItem.fecha ? (
                 <View style={styles.bottomCardInfoRow}>
                   <Calendar size={13} color="#64748B" style={{ marginRight: 5 }} />
                   <Text style={styles.bottomCardInfoText}>
-                    {selectedItem.fecha} • {selectedItem.hora || '08:00'}
+                    {String(selectedItem.fecha).split('T')[0]} • {selectedItem.hora || '08:00'}
                     {selectedItem.cupos_disponibles !== undefined
-                      ? ` • ${selectedItem.cupos_disponibles} cupos libres`
+                      ? ` • ${selectedItem.cupos_disponibles} cupos`
                       : ''}
                   </Text>
                 </View>
@@ -430,14 +518,13 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
                 </View>
               ) : null}
 
-              {/* Action Buttons Row */}
               <View style={styles.bottomCardActionsRow}>
                 <TouchableOpacity
                   style={styles.actionButtonSecondary}
                   onPress={() => focusOnItem(selectedItem)}
                   activeOpacity={0.8}
                 >
-                  <Navigation size={14} color="#2563EB" style={{ marginRight: 4 }} />
+                  <Navigation size={14} color="#DC2626" style={{ marginRight: 4 }} />
                   <Text style={styles.actionButtonSecondaryText}>Centrar</Text>
                 </TouchableOpacity>
 
@@ -450,9 +537,20 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
                     <Heart size={15} color="#FFFFFF" style={{ marginRight: 6 }} />
                     <Text style={styles.actionButtonPrimaryText}>Donar a esta ONG</Text>
                   </TouchableOpacity>
+                ) : isBeneficiaryItem(selectedItem) ? (
+                  <TouchableOpacity
+                    style={styles.actionButtonPrimaryBeneficiary}
+                    onPress={() => handleViewEvent(selectedItem.id)}
+                    activeOpacity={0.8}
+                  >
+                    <Heart size={15} color="#FFFFFF" style={{ marginRight: 6 }} />
+                    <Text style={styles.actionButtonPrimaryText}>
+                      {isBeneficiary ? 'Ver y Postularme' : 'Ver Jornada Beneficiarios'}
+                    </Text>
+                  </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
-                    style={styles.actionButtonPrimaryEvent}
+                    style={styles.actionButtonPrimaryVolunteer}
                     onPress={() => handleViewEvent(selectedItem.id)}
                     activeOpacity={0.8}
                   >
@@ -465,13 +563,14 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
           ) : (
             <View style={styles.floatingHintBar}>
               <Text style={styles.floatingHintText}>
-                💡 Toca cualquier marcador en el mapa para ver la sede o evento social
+                {isBeneficiary
+                  ? 'Toca cualquier marcador verde para consultar ayudas disponibles'
+                  : 'Toca cualquier marcador en el mapa para ver los detalles'}
               </Text>
             </View>
           )}
         </View>
       ) : (
-        /* List Mode: Scrollable list of cards matching web parity */
         <ScrollView
           style={styles.listScrollView}
           contentContainerStyle={styles.listContentContainer}
@@ -501,6 +600,15 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
           ) : (
             items.map((item) => {
               const isOrg = item.tipo === 'organizacion';
+              const isBen = isBeneficiaryItem(item);
+              const badgeBg = isOrg ? '#EDE9FE' : isBen ? '#DCFCE7' : '#DBEAFE';
+              const badgeColor = isOrg ? '#6D28D9' : isBen ? '#15803D' : '#1D4ED8';
+              const badgeText = isOrg
+                ? 'Organización'
+                : isBen
+                  ? 'Para Beneficiarios'
+                  : 'Para Voluntarios';
+
               return (
                 <TouchableOpacity
                   key={String(item.id)}
@@ -512,21 +620,10 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
                   activeOpacity={0.7}
                 >
                   <View style={styles.listCardContent}>
-                    {/* Tag Row */}
                     <View style={styles.listCardTagRow}>
-                      <View
-                        style={[
-                          styles.listTypeBadge,
-                          { backgroundColor: isOrg ? '#EFF6FF' : '#FEF2F2' },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.listTypeBadgeText,
-                            { color: isOrg ? '#1D4ED8' : '#DC2626' },
-                          ]}
-                        >
-                          {isOrg ? 'Organización' : 'Evento Solidario'}
+                      <View style={[styles.listTypeBadge, { backgroundColor: badgeBg }]}>
+                        <Text style={[styles.listTypeBadgeText, { color: badgeColor }]}>
+                          {badgeText}
                         </Text>
                       </View>
 
@@ -537,16 +634,12 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
                       ) : null}
 
                       {item.distanciaKm !== undefined && (
-                        <Text style={styles.listDistanceText}>
-                          a {item.distanciaKm} km
-                        </Text>
+                        <Text style={styles.listDistanceText}>a {item.distanciaKm} km</Text>
                       )}
                     </View>
 
-                    {/* Title */}
                     <Text style={styles.listCardTitle}>{item.titulo}</Text>
 
-                    {/* Address */}
                     <View style={styles.listCardAddressRow}>
                       <MapPin size={13} color="#64748B" style={{ marginRight: 4 }} />
                       <Text style={styles.listCardAddressText} numberOfLines={1}>
@@ -554,12 +647,11 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
                       </Text>
                     </View>
 
-                    {/* Extra Info */}
                     {item.tipo === 'evento' && item.fecha ? (
                       <View style={styles.listCardAddressRow}>
                         <Calendar size={13} color="#64748B" style={{ marginRight: 4 }} />
                         <Text style={styles.listCardAddressText}>
-                          {item.fecha} • {item.cupos_disponibles || 15} cupos
+                          {String(item.fecha).split('T')[0]} • {item.cupos_disponibles ?? 15} cupos
                         </Text>
                       </View>
                     ) : null}
@@ -584,7 +676,6 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            {/* Modal Header */}
             <View style={styles.modalHeader}>
               <View>
                 <Text style={styles.modalTitle}>Filtrar Mapa Social</Text>
@@ -599,14 +690,9 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
             </View>
 
             <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-              {/* Type Filter */}
               <Text style={styles.modalSectionTitle}>Tipo de Marcador</Text>
-              <View style={styles.modalOptionsRow}>
-                {[
-                  { key: 'all', label: 'Todos' },
-                  { key: 'organizacion', label: '🏢 Sedes ONG' },
-                  { key: 'evento', label: '📅 Eventos' },
-                ].map((opt) => (
+              <View style={styles.modalOptionsWrap}>
+                {markerOptions.map((opt) => (
                   <TouchableOpacity
                     key={opt.key}
                     style={[
@@ -627,7 +713,6 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
                 ))}
               </View>
 
-              {/* Distance Range */}
               <Text style={styles.modalSectionTitle}>Radio de Distancia</Text>
               <View style={styles.modalOptionsWrap}>
                 {[
@@ -658,7 +743,6 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
                 ))}
               </View>
 
-              {/* Categories */}
               {availableCategories.length > 0 && (
                 <>
                   <Text style={styles.modalSectionTitle}>Categoría</Text>
@@ -705,7 +789,6 @@ export const MapaSocialView: React.FC<MapaSocialViewProps> = ({ navigation }) =>
               )}
             </ScrollView>
 
-            {/* Modal Footer */}
             <View style={styles.modalFooter}>
               <TouchableOpacity
                 style={styles.modalResetBtn}
@@ -741,7 +824,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  /* Top Bar */
   topBar: {
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
@@ -786,14 +868,14 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   headerIconButtonActive: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
+    backgroundColor: '#DC2626',
+    borderColor: '#DC2626',
   },
   activeFilterDot: {
     position: 'absolute',
     top: -4,
     right: -4,
-    backgroundColor: '#DC2626',
+    backgroundColor: '#16A34A',
     borderRadius: 10,
     minWidth: 18,
     height: 18,
@@ -809,7 +891,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
-  /* Filter Pills */
   filterPillsScroll: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -830,13 +911,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F172A',
     borderColor: '#0F172A',
   },
-  pillActiveOrg: {
+  pillActiveBeneficiary: {
+    backgroundColor: '#16A34A',
+    borderColor: '#16A34A',
+  },
+  pillActiveVolunteer: {
     backgroundColor: '#2563EB',
     borderColor: '#2563EB',
   },
-  pillActiveEvent: {
-    backgroundColor: '#DC2626',
-    borderColor: '#DC2626',
+  pillActiveOrg: {
+    backgroundColor: '#7C3AED',
+    borderColor: '#7C3AED',
   },
   pillText: {
     fontSize: 12,
@@ -860,7 +945,30 @@ const styles = StyleSheet.create({
     color: '#DC2626',
   },
 
-  /* Closest Location Banner */
+  gpsBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginTop: 6,
+  },
+  gpsBannerText: {
+    flex: 1,
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#991B1B',
+  },
+  gpsBannerAction: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#DC2626',
+    marginLeft: 8,
+  },
+
   closestBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -911,7 +1019,6 @@ const styles = StyleSheet.create({
     color: '#15803D',
   },
 
-  /* Map View Wrapper (Static) */
   mapWrapper: {
     flex: 1,
     position: 'relative',
@@ -923,7 +1030,6 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 
-  /* Floating Locate FAB */
   floatingGpsButton: {
     position: 'absolute',
     right: 16,
@@ -940,21 +1046,20 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 6,
     zIndex: 30,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderWidth: 1.5,
+    borderColor: '#FECACA',
   },
   floatingGpsButtonActive: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#FEF2F2',
   },
 
-  /* Floating Legend Pill */
   floatingLegendPill: {
     position: 'absolute',
     left: 14,
     top: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
@@ -978,8 +1083,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   legendDotText: {
-    fontSize: 10.5,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '700',
     color: '#334155',
   },
   legendSeparator: {
@@ -989,7 +1094,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 6,
   },
 
-  /* Floating Bottom Sheet Card */
   bottomCardContainer: {
     position: 'absolute',
     left: 12,
@@ -1029,10 +1133,13 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   typeBadgeOrg: {
-    backgroundColor: '#DBEAFE',
+    backgroundColor: '#EDE9FE',
   },
-  typeBadgeEvent: {
-    backgroundColor: '#FEE2E2',
+  typeBadgeBeneficiary: {
+    backgroundColor: '#DCFCE7',
+  },
+  typeBadgeVolunteer: {
+    backgroundColor: '#DBEAFE',
   },
   typeBadgeText: {
     fontSize: 9.5,
@@ -1040,16 +1147,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
   typeBadgeTextOrg: {
-    color: '#1D4ED8',
+    color: '#6D28D9',
   },
-  typeBadgeTextEvent: {
-    color: '#B91C1C',
+  typeBadgeTextBeneficiary: {
+    color: '#15803D',
+  },
+  typeBadgeTextVolunteer: {
+    color: '#1D4ED8',
   },
   verifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#F5F3FF',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -1057,10 +1167,10 @@ const styles = StyleSheet.create({
   verifiedBadgeText: {
     fontSize: 9.5,
     fontWeight: '700',
-    color: '#1D4ED8',
+    color: '#6D28D9',
   },
   distanceBadge: {
-    backgroundColor: '#F0FDF4',
+    backgroundColor: '#FEF2F2',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -1068,7 +1178,7 @@ const styles = StyleSheet.create({
   distanceBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#15803D',
+    color: '#DC2626',
   },
   closeButton: {
     padding: 4,
@@ -1103,14 +1213,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#FEF2F2',
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: '#FECACA',
   },
   actionButtonSecondaryText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#DC2626',
   },
   actionButtonPrimaryOrg: {
     flex: 1,
@@ -1120,9 +1230,9 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: '#2563EB',
+    backgroundColor: '#7C3AED',
   },
-  actionButtonPrimaryEvent: {
+  actionButtonPrimaryBeneficiary: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -1130,7 +1240,17 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: '#DC2626',
+    backgroundColor: '#16A34A',
+  },
+  actionButtonPrimaryVolunteer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: '#2563EB',
   },
   actionButtonPrimaryText: {
     fontSize: 12.5,
@@ -1157,7 +1277,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  /* List Mode Styles */
   listScrollView: {
     flex: 1,
     backgroundColor: '#F8FAFC',
@@ -1184,7 +1303,7 @@ const styles = StyleSheet.create({
   listResetFiltersText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#2563EB',
+    color: '#DC2626',
   },
   listCard: {
     flexDirection: 'row',
@@ -1233,7 +1352,7 @@ const styles = StyleSheet.create({
   listDistanceText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#059669',
+    color: '#DC2626',
     marginLeft: 'auto',
   },
   listCardTitle: {
@@ -1255,7 +1374,6 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
   },
 
-  /* Empty State */
   emptyContainer: {
     paddingVertical: 48,
     alignItems: 'center',
@@ -1274,7 +1392,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyResetBtn: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#DC2626',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -1285,7 +1403,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  /* Filter Modal */
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(15, 23, 42, 0.5)',
@@ -1334,11 +1451,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
-  modalOptionsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 10,
-  },
   modalOptionsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1354,8 +1466,8 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   modalOptionPillActive: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
+    backgroundColor: '#DC2626',
+    borderColor: '#DC2626',
   },
   modalOptionPillText: {
     fontSize: 12.5,
@@ -1388,7 +1500,7 @@ const styles = StyleSheet.create({
   },
   modalApplyBtn: {
     flex: 1.5,
-    backgroundColor: '#2563EB',
+    backgroundColor: '#DC2626',
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',

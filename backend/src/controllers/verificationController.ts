@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { SolicitudVerificacionModel, SolicitudVerificacionDB } from '../models/solicitudVerificacionModel';
 import { OrganizacionModel } from '../models/organizacionModel';
+import { UsuarioModel } from '../models/usuarioModel';
 import { logAudit } from '../utils/auditLogger';
 
 const mapRequestToFrontend = (req: SolicitudVerificacionDB) => {
@@ -42,18 +43,29 @@ export const VerificationController = {
   async getOrgStatus(req: Request, res: Response) {
     try {
       const rawId = req.params.orgId;
-      const orgId = parseInt(rawId.replace('org_', ''), 10);
+      const orgId = parseInt(String(rawId).replace('org_', '').replace('usr_', ''), 10);
 
-      const org = await OrganizacionModel.getById(orgId);
+      let org = !isNaN(orgId) ? await OrganizacionModel.getById(orgId) : null;
+      if (!org && !isNaN(orgId)) {
+        const linkedUser = await UsuarioModel.getById(orgId);
+        if (linkedUser && linkedUser.correo) {
+          org = await OrganizacionModel.getByEmail(linkedUser.correo);
+        }
+      }
+
       if (!org) {
-        return res.status(404).json({
-          success: false,
-          message: 'Organización no encontrada.',
-          errors: []
+        return res.status(200).json({
+          success: true,
+          message: 'Estado de verificación recuperado.',
+          data: {
+            verificada: false,
+            estadoVerificacion: 'no_solicitado',
+            activeRequest: null
+          }
         });
       }
 
-      const latestReq = await SolicitudVerificacionModel.getLatestByOrgId(orgId);
+      const latestReq = await SolicitudVerificacionModel.getLatestByOrgId(org.id_organizacion);
       const isVerified = Boolean(org.verificada);
       const estadoVerificacion = org.estado_verificacion || (isVerified ? 'aprobada' : 'no_solicitado');
 
@@ -86,8 +98,14 @@ export const VerificationController = {
         });
       }
 
-      const orgId = parseInt(String(organizacionId).replace('org_', ''), 10);
-      const org = await OrganizacionModel.getById(orgId);
+      const parsedId = parseInt(String(organizacionId).replace('org_', '').replace('usr_', ''), 10);
+      let org = !isNaN(parsedId) ? await OrganizacionModel.getById(parsedId) : null;
+      if (!org && !isNaN(parsedId)) {
+        const linkedUser = await UsuarioModel.getById(parsedId);
+        if (linkedUser && linkedUser.correo) {
+          org = await OrganizacionModel.getByEmail(linkedUser.correo);
+        }
+      }
       if (!org) {
         return res.status(404).json({
           success: false,
@@ -95,6 +113,7 @@ export const VerificationController = {
           errors: []
         });
       }
+      const orgId = org.id_organizacion;
 
       // Verificar si ya existe una solicitud pendiente
       const pending = await SolicitudVerificacionModel.getPendingByOrgId(orgId);

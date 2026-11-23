@@ -772,6 +772,7 @@ export const OrgEvents: React.FC = () => {
       vacantesVoluntarios: 10,
       vacantesBeneficiarios: 20,
       ayudaOfrecida: '',
+      publicoObjetivo: 'ambos',
       imagen: ''
     });
     setIsModalOpen(true);
@@ -799,6 +800,7 @@ export const OrgEvents: React.FC = () => {
     setValue('vacantesVoluntarios', evt.vacantesVoluntarios || 0);
     setValue('vacantesBeneficiarios', evt.vacantesBeneficiarios || 0);
     setValue('ayudaOfrecida', evt.ayudaOfrecida || '');
+    setValue('publicoObjetivo', evt.publicoObjetivo || 'ambos');
     setValue('imagen', evt.imagen || '');
     setIsModalOpen(true);
   };
@@ -1017,7 +1019,17 @@ export const OrgEvents: React.FC = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Select
+                label="Público Objetivo del Evento *"
+                options={[
+                  { value: 'ambos', label: 'Voluntarios y Beneficiarios (Ambos)' },
+                  { value: 'beneficiarios', label: 'Solo para Beneficiarios (Verde en mapa)' },
+                  { value: 'voluntarios', label: 'Solo para Voluntarios (Azul en mapa)' },
+                ]}
+                {...register('publicoObjetivo')}
+              />
+
               <Select
                 label="Estado Inicial de la Convocatoria *"
                 options={[
@@ -1027,7 +1039,9 @@ export const OrgEvents: React.FC = () => {
                 ]}
                 {...register('estado')}
               />
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 type="number"
                 label="Vacantes Voluntarios"
@@ -1044,7 +1058,7 @@ export const OrgEvents: React.FC = () => {
             </div>
 
             <Input
-              label="Ayuda / Beneficio Ofrecido a los Beneficiarios *"
+              label="Ayuda / Beneficio Ofrecido a los Beneficiarios"
               {...register('ayudaOfrecida')}
               placeholder="Ej. Kit alimentario mensual + atención médica general"
             />

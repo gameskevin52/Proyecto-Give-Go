@@ -6,12 +6,16 @@ import { donationsStyles } from '../styles/donations.styles';
 import { DonationItemCard } from '../components/DonationItemCard';
 import { AppLoader } from '../../../shared/components/loaders/AppLoader';
 import { useDonationsController } from '../controllers/useDonationsController';
+import { useAuth } from '../../../store/auth/AuthContext';
 
 interface DonationsListViewProps {
   navigation: any;
 }
 
 export const DonationsListView: React.FC<DonationsListViewProps> = ({ navigation }) => {
+  const { user } = useAuth();
+  const isBeneficiary = (user?.rol || '').toLowerCase() === 'beneficiario';
+
   const {
     donations,
     isLoading,
@@ -54,14 +58,16 @@ export const DonationsListView: React.FC<DonationsListViewProps> = ({ navigation
         />
       )}
 
-      <TouchableOpacity
-        activeOpacity={0.85}
-        onPress={navigateToCreate}
-        style={donationsStyles.fab}
-      >
-        <Heart size={20} color="#FFFFFF" strokeWidth={2.5} />
-        <Text style={donationsStyles.fabText}>Hacer Donación</Text>
-      </TouchableOpacity>
+      {!isBeneficiary && (
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={navigateToCreate}
+          style={donationsStyles.fab}
+        >
+          <Heart size={20} color="#FFFFFF" strokeWidth={2.5} />
+          <Text style={donationsStyles.fabText}>Hacer Donación</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 };

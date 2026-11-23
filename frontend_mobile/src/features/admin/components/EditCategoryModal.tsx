@@ -36,7 +36,8 @@ export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
     if (category) {
       setNombre(category.nombre || '');
       setDescripcion(category.descripcion || '');
-      setEstado((category.estado === 'inactivo' || category.estado === '0' || category.estado === 0) ? 'inactivo' : 'activo');
+      const rawEstado = String(category.estado || '').toLowerCase();
+      setEstado(rawEstado === 'inactivo' || rawEstado === '0' ? 'inactivo' : 'activo');
       setErrorMessage('');
     }
   }, [category]);
@@ -105,7 +106,7 @@ export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
           <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
             {errorMessage ? (
               <View style={styles.errorBox}>
-                <Text style={styles.errorText}>⚠️ {errorMessage}</Text>
+                <Text style={styles.errorText}>{errorMessage}</Text>
               </View>
             ) : null}
 

@@ -94,13 +94,31 @@ export const createLocationPickerIcon = (): L.DivIcon => {
 };
 
 /**
- * Icono para eventos solidarios en el mapa (Rojo).
+ * Icono para eventos para Beneficiarios en el mapa (Verde).
  */
-export const createEventMarkerIcon = (): L.DivIcon => {
+export const createBeneficiaryEventMarkerIcon = (): L.DivIcon => {
   return L.divIcon({
-    className: 'custom-event-marker-wrapper',
+    className: 'custom-event-beneficiary-wrapper',
     html: `
-      <div class="w-9 h-9 rounded-full bg-red-600 border-2 border-white flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all cursor-pointer ring-2 ring-red-400/30">
+      <div class="w-9 h-9 rounded-full bg-emerald-600 border-2 border-white flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all cursor-pointer ring-2 ring-emerald-400/35">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+        </svg>
+      </div>
+    `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+  });
+};
+
+/**
+ * Icono para eventos para Voluntarios en el mapa (Azul).
+ */
+export const createVolunteerEventMarkerIcon = (): L.DivIcon => {
+  return L.divIcon({
+    className: 'custom-event-volunteer-wrapper',
+    html: `
+      <div class="w-9 h-9 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all cursor-pointer ring-2 ring-blue-400/35">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
           <line x1="16" x2="16" y1="2" y2="6"/>
@@ -115,13 +133,23 @@ export const createEventMarkerIcon = (): L.DivIcon => {
 };
 
 /**
- * Icono para sedes de organizaciones sociales en el mapa (Azul).
+ * Icono para eventos solidarios según público objetivo (Verde = Beneficiarios, Azul = Voluntarios).
+ */
+export const createEventMarkerIcon = (audience: 'voluntarios' | 'beneficiarios' | 'ambos' = 'voluntarios'): L.DivIcon => {
+  if (audience === 'beneficiarios') {
+    return createBeneficiaryEventMarkerIcon();
+  }
+  return createVolunteerEventMarkerIcon();
+};
+
+/**
+ * Icono para sedes de organizaciones sociales en el mapa (Morado).
  */
 export const createOrgMarkerIcon = (): L.DivIcon => {
   return L.divIcon({
     className: 'custom-org-marker-wrapper',
     html: `
-      <div class="w-9 h-9 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all cursor-pointer ring-2 ring-blue-400/30">
+      <div class="w-9 h-9 rounded-full bg-violet-600 border-2 border-white flex items-center justify-center text-white shadow-lg hover:scale-110 transition-all cursor-pointer ring-2 ring-violet-400/30">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="2" width="18" height="20" rx="2" ry="2"/>
           <line x1="9" y1="22" x2="9" y2="16"/>
@@ -142,15 +170,15 @@ export const createOrgMarkerIcon = (): L.DivIcon => {
 };
 
 /**
- * Icono para la ubicación actual del dispositivo/GPS (Verde).
+ * Icono para la ubicación actual del dispositivo/GPS (Rojo).
  */
 export const createUserLocationMarkerIcon = (): L.DivIcon => {
   return L.divIcon({
     className: 'custom-gps-marker-wrapper',
     html: `
       <div class="relative flex items-center justify-center">
-        <div class="absolute w-8 h-8 rounded-full bg-emerald-500 animate-ping opacity-45"></div>
-        <div class="w-9 h-9 rounded-full bg-emerald-600 border-2 border-white flex items-center justify-center text-white shadow-xl hover:scale-110 transition-all cursor-pointer ring-2 ring-emerald-400/40 z-10">
+        <div class="absolute w-8 h-8 rounded-full bg-red-500 animate-ping opacity-45"></div>
+        <div class="w-9 h-9 rounded-full bg-red-600 border-2 border-white flex items-center justify-center text-white shadow-xl hover:scale-110 transition-all cursor-pointer ring-2 ring-red-400/40 z-10">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="3 11 22 2 13 21 11 13 3 11"/>
           </svg>
@@ -161,4 +189,5 @@ export const createUserLocationMarkerIcon = (): L.DivIcon => {
     iconAnchor: [18, 18],
   });
 };
+
 

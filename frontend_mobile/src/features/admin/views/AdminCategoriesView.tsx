@@ -66,7 +66,8 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
         (cat.descripcion && cat.descripcion.toLowerCase().includes(searchTerm.toLowerCase())) ||
         String(cat.id || cat.id_categoria).includes(searchTerm);
 
-      const isActivo = cat.estado === 'activo' || cat.estado === '1' || cat.estado === 1;
+      const rawEst = String(cat.estado || '').toLowerCase();
+      const isActivo = rawEst === 'activo' || rawEst === '1';
       let matchesStatus = true;
       if (statusFilter === 'activa') matchesStatus = isActivo;
       if (statusFilter === 'inactiva') matchesStatus = !isActivo;
@@ -126,8 +127,8 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
 
   const counts = {
     todas: categories.length,
-    activas: categories.filter((c) => c.estado === 'activo' || c.estado === '1' || c.estado === 1).length,
-    inactivas: categories.filter((c) => !(c.estado === 'activo' || c.estado === '1' || c.estado === 1)).length,
+    activas: categories.filter((c) => String(c.estado || '').toLowerCase() === 'activo' || String(c.estado || '') === '1').length,
+    inactivas: categories.filter((c) => !(String(c.estado || '').toLowerCase() === 'activo' || String(c.estado || '') === '1')).length,
   };
 
   return (
@@ -176,7 +177,7 @@ export const AdminCategoriesView: React.FC<AdminCategoriesViewProps> = ({
           />
           {searchTerm.length > 0 && (
             <TouchableOpacity onPress={() => setSearchTerm('')}>
-              <Text style={{ fontSize: 13, color: '#94A3B8', fontWeight: '700' }}>✕</Text>
+              <Text style={{ fontSize: 13, color: '#94A3B8', fontWeight: '700' }}>X</Text>
             </TouchableOpacity>
           )}
         </View>

@@ -9,7 +9,12 @@ import app from './app';
 import { initDB } from './config/db';
 import { createServer as createViteServer } from 'vite';
 
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const portArgIndex = process.argv.indexOf('--port');
+const cliPort = portArgIndex !== -1 && process.argv[portArgIndex + 1] ? parseInt(process.argv[portArgIndex + 1], 10) : NaN;
+const PORT = !isNaN(cliPort) && cliPort > 0 ? cliPort : parseInt(process.env.PORT || '3000', 10);
+
+const hostArgIndex = process.argv.indexOf('--host');
+const HOST = hostArgIndex !== -1 && process.argv[hostArgIndex + 1] ? process.argv[hostArgIndex + 1] : '0.0.0.0';
 
 async function startServer() {
   // 1. Inicializar Base de Datos (con auto-fallback si no se detecta MySQL activo)
@@ -22,10 +27,15 @@ async function startServer() {
     const vite = await createViteServer({
       root: frontendDir,
       configFile: path.resolve(frontendDir, 'vite.config.ts'),
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: false,
+        ws: false,
+        watch: null,
+      },
       appType: 'spa',
     });
-    // Montar el middleware de Vite para que procese las peticiones estáticas y HMR del frontend
+    // Montar el middleware de Vite para que procese las peticiones estáticas del frontend
     app.use(vite.middlewares);
   } else {
     // Servir archivos estáticos construidos en el directorio /dist en producción
@@ -36,8 +46,8 @@ async function startServer() {
     });
   }
 
-  // 3. Escuchar en Host 0.0.0.0 y puerto 3000 (obligatorio en Cloud Run / contenedores sandboxed)
-  app.listen(PORT, '0.0.0.0', () => {
+  // 3. Escuchar en el host y puerto configurados (0.0.0.0 para compatibilidad de red y contenedores)
+  app.listen(PORT, HOST, () => {
     console.log(`🚀 Servidor Give&Go iniciado correctamente.`);
     console.log(`👉 Backend API: http://localhost:${PORT}/api`);
     console.log(`👉 Frontend App: http://localhost:${PORT}`);

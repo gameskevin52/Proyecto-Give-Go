@@ -61,6 +61,7 @@ export interface AdminOrgItem {
   nit?: string;
   localidad?: string;
   barrio?: string;
+  categoria?: string;
   totalEventos?: number;
   totalDonaciones?: number;
 }
@@ -93,12 +94,16 @@ export interface AdminEventItem {
   vacantes_voluntarios?: number;
   vacantes_beneficiarios?: number;
   ayuda_ofrecida?: string;
+  publicoObjetivo?: 'voluntarios' | 'beneficiarios' | 'ambos';
   estado: 'activo' | 'finalizado' | 'cancelado';
   organizacionId: string;
   organizacionNombre?: string;
+  nombreOrganizacion?: string;
   imagen?: string;
   barrio?: string;
   localidad?: string;
+  latitud?: number;
+  longitud?: number;
 }
 
 export interface AdminDonationItem {
@@ -113,6 +118,7 @@ export interface AdminDonationItem {
   monetaria?: {
     valor: number;
     metodoPago?: string;
+    metodo?: string;
     cuenta?: string;
   };
   objeto?: {

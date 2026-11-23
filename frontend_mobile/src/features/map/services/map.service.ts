@@ -78,6 +78,10 @@ export const mapService = {
       const evts = evtsRes.data?.data || [];
 
       evts.forEach((evt: any, idx: number) => {
+        if (evt.estado && evt.estado !== 'activo' && evt.estado !== 1) {
+          return;
+        }
+
         const lat = evt.latitud
           ? parseFloat(evt.latitud)
           : KENNEDY_COORDS.lat + (((idx + 2) % 6) - 2.5) * 0.007;
@@ -89,6 +93,20 @@ export const mapService = {
           userLat && userLng
             ? calculateDistance(userLat, userLng, lat, lng)
             : calculateDistance(KENNEDY_COORDS.lat, KENNEDY_COORDS.lng, lat, lng);
+
+        const vacVol = evt.vacantesVoluntarios ?? evt.vacantes_voluntarios ?? evt.cupo ?? 0;
+        const vacBen = evt.vacantesBeneficiarios ?? evt.vacantes_beneficiarios ?? 0;
+        const rawAudience = String(evt.publicoObjetivo || evt.publico_objetivo || '').toLowerCase();
+        let publicoObjetivo: 'voluntarios' | 'beneficiarios' | 'ambos' = 'ambos';
+        if (rawAudience === 'beneficiarios' || rawAudience === 'beneficiario') {
+          publicoObjetivo = 'beneficiarios';
+        } else if (rawAudience === 'voluntarios' || rawAudience === 'voluntario') {
+          publicoObjetivo = 'voluntarios';
+        } else if (vacBen > 0 && vacVol <= 0) {
+          publicoObjetivo = 'beneficiarios';
+        } else if (vacVol > 0 && vacBen <= 0) {
+          publicoObjetivo = 'voluntarios';
+        }
 
         points.push({
           id: evt.id_evento || evt.id || `evt_${idx}`,
@@ -102,10 +120,16 @@ export const mapService = {
           ciudad: evt.ciudad || 'Bogotá',
           latitud: lat,
           longitud: lng,
-          cupos_disponibles: evt.cupos_disponibles ?? evt.vacantesVoluntarios ?? 15,
+          cupos_disponibles:
+            publicoObjetivo === 'beneficiarios'
+              ? vacBen
+              : evt.cupos_disponibles ?? (vacVol || vacBen || 15),
           fecha: evt.fecha || evt.fecha_inicio,
           hora: evt.hora_inicio || '08:00',
           ayuda_ofrecida: evt.ayudaOfrecida || evt.ayuda_ofrecida,
+          publicoObjetivo,
+          vacantesVoluntarios: vacVol,
+          vacantesBeneficiarios: vacBen,
           distanciaKm: dist,
         });
       });

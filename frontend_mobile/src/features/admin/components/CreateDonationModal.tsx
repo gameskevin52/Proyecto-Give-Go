@@ -15,25 +15,29 @@ import { AdminOrgItem, AdminUserItem, AdminCategoryItem } from '../models/admin.
 
 interface CreateDonationModalProps {
   visible: boolean;
-  organizations: AdminOrgItem[];
-  users: AdminUserItem[];
-  categories: AdminCategoryItem[];
+  organizations?: AdminOrgItem[];
+  users?: AdminUserItem[];
+  categories?: AdminCategoryItem[];
   onClose: () => void;
   onSubmit: (payload: any) => Promise<{ success: boolean; message?: string }>;
 }
 
 export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
   visible,
-  organizations,
-  users,
-  categories,
+  organizations = [],
+  users = [],
+  categories = [],
   onClose,
   onSubmit,
 }) => {
+  const safeOrgs = Array.isArray(organizations) ? organizations : [];
+  const safeUsers = Array.isArray(users) ? users : [];
+  const safeCats = Array.isArray(categories) ? categories : [];
+
   const [tipo, setTipo] = useState<'monetaria' | 'objeto'>('monetaria');
-  const [organizacionId, setOrganizacionId] = useState(organizations[0]?.id || '');
-  const [usuarioId, setUsuarioId] = useState(users[0]?.id ? String(users[0].id) : 'anonimo');
-  const [categoria, setCategoria] = useState(categories[0]?.nombre || 'Social y Comunitario');
+  const [organizacionId, setOrganizacionId] = useState(safeOrgs[0]?.id || '');
+  const [usuarioId, setUsuarioId] = useState(safeUsers[0]?.id ? String(safeUsers[0].id) : 'anonimo');
+  const [categoria, setCategoria] = useState(safeCats[0]?.nombre || 'Social y Comunitario');
 
   // Monetaria fields
   const [valor, setValor] = useState('50000');
@@ -48,11 +52,22 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  React.useEffect(() => {
+    if (visible) {
+      if (safeOrgs.length > 0 && !organizacionId) {
+        setOrganizacionId(safeOrgs[0].id);
+      }
+      if (safeCats.length > 0 && (!categoria || categoria === 'Social y Comunitario')) {
+        setCategoria(safeCats[0].nombre || 'Social y Comunitario');
+      }
+    }
+  }, [visible, safeOrgs, safeCats]);
+
   const resetForm = () => {
     setTipo('monetaria');
-    setOrganizacionId(organizations[0]?.id || '');
-    setUsuarioId(users[0]?.id ? String(users[0].id) : 'anonimo');
-    setCategoria(categories[0]?.nombre || 'Social y Comunitario');
+    setOrganizacionId(safeOrgs[0]?.id || '');
+    setUsuarioId(safeUsers[0]?.id ? String(safeUsers[0].id) : 'anonimo');
+    setCategoria(safeCats[0]?.nombre || 'Social y Comunitario');
     setValor('50000');
     setMetodo('nequi');
     setCuenta('3109876543');
@@ -91,7 +106,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
     try {
       setIsLoading(true);
 
-      const targetOrg = organizations.find((o) => o.id === organizacionId) || organizations[0];
+      const targetOrg = safeOrgs.find((o) => o.id === organizacionId) || safeOrgs[0];
       const payload: any = {
         tipo,
         categoria: categoria || targetOrg?.categoria || 'General',
@@ -156,7 +171,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
           <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
             {errorMessage ? (
               <View style={styles.errorBox}>
-                <Text style={styles.errorText}>⚠️ {errorMessage}</Text>
+                <Text style={styles.errorText}>{errorMessage}</Text>
               </View>
             ) : null}
 
@@ -217,8 +232,8 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: 8, paddingBottom: 10 }}
             >
-              {organizations.map((org) => {
-                const isSelected = (organizacionId || organizations[0]?.id) === org.id;
+              {safeOrgs.map((org) => {
+                const isSelected = (organizacionId || safeOrgs[0]?.id) === org.id;
                 return (
                   <TouchableOpacity
                     key={org.id}
@@ -278,7 +293,7 @@ export const CreateDonationModal: React.FC<CreateDonationModalProps> = ({
                 </Text>
               </TouchableOpacity>
 
-              {users.slice(0, 10).map((u) => {
+              {safeUsers.slice(0, 10).map((u) => {
                 const isSelected = usuarioId === String(u.id);
                 return (
                   <TouchableOpacity

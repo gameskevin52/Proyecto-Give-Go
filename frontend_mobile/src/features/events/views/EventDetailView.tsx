@@ -30,7 +30,10 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ route, navigat
     return <AppLoader fullScreen message="Cargando detalles de la jornada..." />;
   }
 
-  const isBeneficiary = user?.rol === 'Beneficiario' || (user?.rol as string) === 'beneficiario';
+  const role = (user?.rol || '').toLowerCase();
+  const isBeneficiary = role === 'beneficiario';
+  const isOrg = role === 'organizacion';
+  const isAdmin = role === 'admin';
 
   return (
     <SafeAreaView style={eventDetailStyles.container}>
@@ -121,6 +124,13 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ route, navigat
             variant="secondary"
             onPress={() => handleRegister('beneficiario')}
             isLoading={isSubmitting}
+            style={eventDetailStyles.actionButton}
+          />
+        ) : isOrg || isAdmin ? (
+          <AppButton
+            title="Administrar / Editar Convocatoria"
+            variant="outline"
+            onPress={() => navigation.navigate('EditEvent', { event })}
             style={eventDetailStyles.actionButton}
           />
         ) : (

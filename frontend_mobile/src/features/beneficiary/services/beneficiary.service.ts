@@ -1,53 +1,116 @@
 import { apiClient } from '../../../services/api/apiClient';
 import { SolicitudAyuda, CreateSolicitudPayload } from '../models/beneficiary.models';
 
-const normalizeRequest = (r: any): SolicitudAyuda => {
-  if (!r) return r;
-  const idNum = r.id_solicitud !== undefined ? r.id_solicitud : (r.id ? parseInt(String(r.id).replace('sol_', ''), 10) : 0);
-  const uId = r.id_beneficiario || (r.beneficiarioId ? parseInt(String(r.beneficiarioId).replace('usr_', ''), 10) : 1);
-  const rawStatus = (r.estado || 'pendiente').toLowerCase();
-  let statusVal: SolicitudAyuda['estado'] = 'pendiente';
-  if (rawStatus.includes('aprob') || rawStatus === 'completada') statusVal = 'aprobada';
-  else if (rawStatus.includes('rechaz')) statusVal = 'rechazada';
-  else if (rawStatus.includes('entreg')) statusVal = 'entregada';
-  else if (rawStatus.includes('revis')) statusVal = 'en_revision';
+export interface BeneficiaryEventItem {
+  id: string;
+  id_evento?: number;
+  nombre: string;
+  categoria: string;
+  descripcion: string;
+  direccion: string;
+  barrio?: string;
+  fecha: string;
+  cupo: number;
+  vacantesBeneficiarios?: number;
+  ayudaOfrecida?: string;
+  estado: 'activo' | 'finalizado' | 'cancelado';
+  organizacionId: string;
+  organizacionNombre?: string;
+}
 
-  return {
-    id_solicitud: idNum,
-    id_beneficiario: uId,
-    id_categoria: r.id_categoria || 1,
-    categoria_nombre: r.categoria_nombre || r.categoria || 'Ayuda Humanitaria',
-    titulo: r.titulo || 'Solicitud de Asistencia',
-    descripcion: r.descripcion || '',
-    urgencia: (r.urgencia || 'media').toLowerCase(),
-    estado: statusVal,
-    fecha_solicitud: r.fecha_solicitud || r.fecha || new Date().toISOString(),
-    direccion_entrega: r.direccion_entrega || r.direccion || '',
-    barrio: r.barrio || '',
-    localidad: r.localidad || 'Bogotá',
-  };
+export interface BeneficiaryPostulacionItem {
+  id: string;
+  eventoId: string;
+  eventoNombre: string;
+  eventoFecha: string;
+  eventoDireccion: string;
+  ayudaOfrecida: string;
+  organizacionNombre: string;
+  usuarioId: string;
+  usuarioNombre: string;
+  usuarioCorreo: string;
+  usuarioTelefono: string;
+  tipoPostulacion: 'beneficiario' | 'voluntario';
+  estadoPostulacion: 'pendiente' | 'aprobado' | 'rechazado' | 'confirmado' | 'cancelado';
+  fechaPostulacion: string;
+  fechaAprobacion?: string | null;
+  fechaConfirmacion?: string | null;
+  observaciones?: string;
+}
+
+export const extractBeneficiaryUserId = (user: any): string => {
+  const raw = user?.id_usuario ?? user?.usuarioId ?? user?.id ?? '';
+  return String(raw).replace('usr_', '').replace('org_', '');
+};
+
+export const beneficiaryService = {
+  async getActiveEvents(): Promise<BeneficiaryEventItem[]> {
+    const res = await apiClient.get('/events');
+    const list = res.data?.data || [];
+    if (!Array.isArray(list)) return [];
+    return list.filter((e: any) => {
+      if (e.estado !== 'activo') return false;
+      const aud = String(e.publicoObjetivo || e.publico_objetivo || '').toLowerCase();
+      if (aud === 'voluntarios') return false;
+      const vacBen = e.vacantesBeneficiarios ?? e.vacantes_beneficiarios;
+      const vacVol = e.vacantesVoluntarios ?? e.vacantes_voluntarios;
+      if (vacBen !== undefined && Number(vacBen) <= 0 && Number(vacVol || 0) > 0 && aud !== 'beneficiarios') {
+        return false;
+      }
+      return true;
+    });
+  },
+
+  async getMyPostulaciones(userId: string | number): Promise<BeneficiaryPostulacionItem[]> {
+    const cleanId = String(userId).replace('usr_', '').replace('org_', '');
+    if (!cleanId) return [];
+    const res = await apiClient.get(`/postulaciones/usuario/${cleanId}`, {
+      params: { tipo: 'beneficiario' },
+    });
+    const list = res.data?.data || [];
+    return Array.isArray(list) ? list : [];
+  },
+
+  async applyToEvent(payload: {
+    id_evento: string | number;
+    id_usuario: string | number;
+    observaciones?: string;
+  }): Promise<{ success: boolean; message?: string }> {
+    const cleanUserId = String(payload.id_usuario).replace('usr_', '').replace('org_', '');
+    const res = await apiClient.post('/postulaciones', {
+      id_evento: payload.id_evento,
+      id_usuario: cleanUserId,
+      tipo_postulacion: 'beneficiario',
+      observaciones: payload.observaciones || 'Postulación registrada por el beneficiario.',
+    });
+    return res.data;
+  },
+
+  async confirmAttendance(postulacionId: string | number): Promise<{ success: boolean; message?: string }> {
+    const res = await apiClient.put(`/postulaciones/${postulacionId}/estado`, {
+      estado_postulacion: 'confirmado',
+      observaciones: 'Asistencia confirmada por el beneficiario.',
+    });
+    return res.data;
+  },
+
+  async withdrawPostulacion(postulacionId: string | number): Promise<{ success: boolean; message?: string }> {
+    const res = await apiClient.delete(`/postulaciones/${postulacionId}`);
+    return res.data;
+  },
 };
 
 export const beneficiaryFeatureService = {
   async getMyRequests(): Promise<SolicitudAyuda[]> {
     const res = await apiClient.get('/requests/me');
-    const list = res.data.data || [];
-    return list.map(normalizeRequest);
+    const list = res.data?.data || [];
+    return Array.isArray(list) ? list : [];
   },
 
-  async createRequest(payload: CreateSolicitudPayload): Promise<SolicitudAyuda> {
-    const res = await apiClient.post('/requests', {
-      ...payload,
-      beneficiarioId: undefined, // Let token handle or send
-    });
-    return normalizeRequest(res.data.data);
-  },
-
-  async cancelRequest(id: number): Promise<boolean> {
-    const res = await apiClient.delete(`/requests/${id}`);
-    return res.data.success;
+  async createRequest(payload: CreateSolicitudPayload): Promise<{ success: boolean; data?: SolicitudAyuda; message?: string }> {
+    const res = await apiClient.post('/requests', payload);
+    return res.data;
   },
 };
 
-export default beneficiaryFeatureService;
-
+export default beneficiaryService;

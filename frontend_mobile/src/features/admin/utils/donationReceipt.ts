@@ -76,7 +76,7 @@ plataforma comunitaria Give&Go.
       <div class="amount-box">
         <div style="font-size:12px; font-weight:700; color:#64748B;">${isMonetary ? 'MONTO APORTADO' : 'CANTIDAD EN ESPECIE'}</div>
         <div class="amount-val">${amountOrQty}</div>
-        <div style="font-size:12px; color:#16A34A; font-weight:600;">✓ Aportación Registrada en Libro Contable</div>
+        <div style="font-size:12px; color:#16A34A; font-weight:600;">Aportación Registrada en Libro Contable</div>
       </div>
       <div class="row"><span class="label">Donante:</span><span class="val">${donorName}</span></div>
       <div class="row"><span class="label">Organización:</span><span class="val">${orgName}</span></div>

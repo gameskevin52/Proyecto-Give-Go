@@ -54,12 +54,14 @@ export const OrganizacionModel = {
   },
 
   async getByEmail(correo: string): Promise<OrganizacionDB | null> {
+    const target = (correo || '').trim().toLowerCase();
+    if (!target) return null;
     if (db.isMySQLConnected()) {
-      const [rows] = await db.query('SELECT * FROM organizaciones WHERE LOWER(correo) = LOWER(?)', [correo]);
+      const [rows] = await db.query('SELECT * FROM organizaciones WHERE LOWER(correo) = LOWER(?)', [target]);
       const orgs = rows as OrganizacionDB[];
       return orgs.length > 0 ? orgs[0] : null;
     } else {
-      const org = db.getFallbackData().organizaciones.find((o: any) => o.correo.toLowerCase() === correo.toLowerCase());
+      const org = db.getFallbackData().organizaciones.find((o: any) => (o.correo || '').trim().toLowerCase() === target);
       return org || null;
     }
   },

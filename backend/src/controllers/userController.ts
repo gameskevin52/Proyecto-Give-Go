@@ -95,40 +95,95 @@ const mapUserToFrontend = (user: UsuarioDB) => {
   };
 };
 
-const enrichUserIfOrganization = async (frontendUser: any) => {
+const parseEstadoInt = (val: any, defaultVal = 1): number => {
+  if (val === undefined || val === null || val === '') return defaultVal;
+  if (val === 'activo' || val === 1 || val === '1' || val === true) return 1;
+  return 0;
+};
+
+const ensureOrganizationForUser = async (user: UsuarioDB, extra: any = {}) => {
+  if (!user || user.rol !== 'Organizacion' || !user.correo) return null;
+  let org = await OrganizacionModel.getByEmail(user.correo);
+  if (!org) {
+    const baseName = `${extra.nombre1 ?? user.nombre1 ?? ''}`.trim();
+    const lastName =
+      extra.apellido1 && extra.apellido1 !== 'Organización'
+        ? extra.apellido1
+        : user.apellido1 && user.apellido1 !== 'Organización'
+        ? user.apellido1
+        : '';
+    const fullName = [baseName, lastName].filter(Boolean).join(' ').trim();
+    const fallbackHash = user.password || (await hashPassword('User123*'));
+    const newOrgId = await OrganizacionModel.create({
+      nombre: fullName || user.correo.split('@')[0] || 'Organización Aliada',
+      direccion: extra.direccion ?? user.direccion ?? '',
+      telefono: extra.telefono ?? user.telefono ?? '',
+      correo: user.correo,
+      password: fallbackHash,
+      descripcion: extra.descripcion ?? extra.biografia ?? user.biografia ?? 'Organización comunitaria registrada en Give&Go.',
+      estado: 1,
+      nit: extra.nit || '',
+      representante_legal: extra.representante_legal || fullName || 'Representante Legal',
+      barrio: extra.barrio ?? user.barrio ?? 'Kennedy Central',
+      categoria: extra.categoria || 'Social y Comunitario',
+      mision: extra.mision || '',
+      vision: extra.vision || '',
+      sitio_web: extra.sitioWeb || extra.sitio_web || '',
+      redes_sociales:
+        extra.redesSociales || extra.redes_sociales
+          ? typeof (extra.redesSociales || extra.redes_sociales) === 'object'
+            ? JSON.stringify(extra.redesSociales || extra.redes_sociales)
+            : extra.redesSociales || extra.redes_sociales
+          : '',
+      logo: extra.logo || user.foto || '',
+      foto_portada: extra.fotoPortada || extra.foto_portada || '',
+    });
+    org = await OrganizacionModel.getById(newOrgId);
+  }
+  return org;
+};
+
+const enrichUserIfOrganization = async (frontendUser: any, rawUser?: UsuarioDB) => {
   if (frontendUser.rol === 'organizacion') {
-    const org = await OrganizacionModel.getByEmail(frontendUser.correo);
-    if (org) {
-      const orgFormattedId = `org_${org.id_organizacion}`;
-      const originalUserId = frontendUser.id;
-      return {
-        ...frontendUser,
-        id: orgFormattedId,
-        organizacionId: orgFormattedId,
-        id_organizacion: org.id_organizacion,
-        id_usuario: parseInt(String(originalUserId).replace('usr_', ''), 10) || undefined,
-        usuarioId: String(originalUserId).startsWith('usr_') ? originalUserId : `usr_${originalUserId}`,
-        nombre1: org.nombre || frontendUser.nombre1,
-        nit: org.nit || '',
-        representante_legal: org.representante_legal || '',
-        barrio: org.barrio || 'Kennedy Central',
-        localidad: 'Kennedy',
-        ciudad: 'Bogotá',
-        departamento: 'Bogotá D.C.',
-        pais: 'Colombia',
-        categoria: org.categoria || '',
-        logo: org.logo || '',
-        fotoPortada: org.foto_portada || '',
-        sitioWeb: org.sitio_web || '',
-        redesSociales: org.redes_sociales ? parseSafeJSON(org.redes_sociales, {}) : {},
-        mision: org.mision || '',
-        vision: org.vision || '',
-        descripcion: org.descripcion || '',
-        direccion: org.direccion || frontendUser.direccion || '',
-        telefono: org.telefono || frontendUser.telefono || '',
-        verificada: Boolean(org.verificada),
-        estadoVerificacion: org.estado_verificacion || (org.verificada ? 'aprobada' : 'no_solicitado')
-      };
+    try {
+      let org = await OrganizacionModel.getByEmail(frontendUser.correo);
+      if (!org && rawUser) {
+        org = await ensureOrganizationForUser(rawUser);
+      }
+      if (org) {
+        const orgFormattedId = `org_${org.id_organizacion}`;
+        const originalUserId = frontendUser.id;
+        return {
+          ...frontendUser,
+          id: orgFormattedId,
+          organizacionId: orgFormattedId,
+          id_organizacion: org.id_organizacion,
+          id_usuario: parseInt(String(originalUserId).replace('usr_', '').replace('org_', ''), 10) || undefined,
+          usuarioId: String(originalUserId).startsWith('usr_') ? originalUserId : `usr_${originalUserId}`,
+          nombre1: org.nombre || frontendUser.nombre1,
+          nit: org.nit || '',
+          representante_legal: org.representante_legal || '',
+          barrio: org.barrio || 'Kennedy Central',
+          localidad: 'Kennedy',
+          ciudad: 'Bogotá',
+          departamento: 'Bogotá D.C.',
+          pais: 'Colombia',
+          categoria: org.categoria || '',
+          logo: org.logo || '',
+          fotoPortada: org.foto_portada || '',
+          sitioWeb: org.sitio_web || '',
+          redesSociales: org.redes_sociales ? parseSafeJSON(org.redes_sociales, {}) : {},
+          mision: org.mision || '',
+          vision: org.vision || '',
+          descripcion: org.descripcion || '',
+          direccion: org.direccion || frontendUser.direccion || '',
+          telefono: org.telefono || frontendUser.telefono || '',
+          verificada: Boolean(org.verificada),
+          estadoVerificacion: org.estado_verificacion || (org.verificada ? 'aprobada' : 'no_solicitado')
+        };
+      }
+    } catch (err) {
+      console.warn('Error enriqueciendo organización del usuario:', err);
     }
   }
   return frontendUser;
@@ -168,7 +223,7 @@ export const UserController = {
         });
       }
 
-      const frontendUser = await enrichUserIfOrganization(mapUserToFrontend(user));
+      const frontendUser = await enrichUserIfOrganization(mapUserToFrontend(user), user);
       const token = generateToken({
         id: user.id_usuario,
         rol: user.rol,
@@ -239,7 +294,11 @@ export const UserController = {
       const user = await UsuarioModel.getById(insertId);
       if (!user) throw new Error('Error al recuperar el usuario creado.');
 
-      const frontendUser = await enrichUserIfOrganization(mapUserToFrontend(user));
+      if (user.rol === 'Organizacion') {
+        await ensureOrganizationForUser(user, req.body);
+      }
+
+      const frontendUser = await enrichUserIfOrganization(mapUserToFrontend(user), user);
       const token = generateToken({
         id: user.id_usuario,
         rol: user.rol,
@@ -278,7 +337,7 @@ export const UserController = {
           errors: []
         });
       }
-      const frontendUser = await enrichUserIfOrganization(mapUserToFrontend(user));
+      const frontendUser = await enrichUserIfOrganization(mapUserToFrontend(user), user);
       return res.status(200).json({
         success: true,
         message: 'Perfil recuperado.',
@@ -360,7 +419,7 @@ export const UserController = {
       // Loguear auditoría
       await logAudit(id, 'Actualizó sus datos de perfil.');
 
-      const frontendUser = await enrichUserIfOrganization(mapUserToFrontend(updatedUser));
+      const frontendUser = await enrichUserIfOrganization(mapUserToFrontend(updatedUser), updatedUser);
       return res.status(200).json({
         success: true,
         message: 'Perfil actualizado correctamente.',
@@ -465,19 +524,24 @@ export const UserController = {
         telefono,
         correo,
         password: hashedPassword,
-        estado: estado === 'activo' || estado === 1 ? 1 : 0
+        estado: parseEstadoInt(estado, 1)
       });
 
       const user = await UsuarioModel.getById(insertId);
       if (!user) throw new Error('Error al crear usuario.');
 
+      if (user.rol === 'Organizacion') {
+        await ensureOrganizationForUser(user, req.body);
+      }
+
       const adminId = (req as AuthenticatedRequest).user?.id || 1;
       await logAudit(adminId, `Creó el usuario ${user.nombre1} ${user.apellido1} (${user.rol}).`);
 
+      const frontendUser = await enrichUserIfOrganization(mapUserToFrontend(user), user);
       return res.status(201).json({
         success: true,
         message: 'Usuario creado correctamente.',
-        data: mapUserToFrontend(user)
+        data: frontendUser
       });
     } catch (err: any) {
       return res.status(500).json({
@@ -490,7 +554,7 @@ export const UserController = {
 
   async update(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id, 10);
+      const id = parseInt(String(req.params.id).replace('usr_', '').replace('org_', ''), 10);
       const {
         rol, nombre1, nombre2, apellido1, apellido2, telefono, correo, password, estado,
         fecha_nacimiento, direccion, barrio, foto, biografia,
@@ -507,7 +571,7 @@ export const UserController = {
       if (apellido2 !== undefined) updateData.apellido2 = apellido2;
       if (telefono !== undefined) updateData.telefono = telefono;
       if (correo !== undefined) updateData.correo = correo;
-      if (estado !== undefined) updateData.estado = estado === 'activo' || estado === 1 ? 1 : 0;
+      if (estado !== undefined) updateData.estado = parseEstadoInt(estado, 1);
       if (fecha_nacimiento !== undefined) updateData.fecha_nacimiento = fecha_nacimiento;
       if (direccion !== undefined) updateData.direccion = direccion;
       if (barrio !== undefined) updateData.barrio = barrio;
@@ -530,9 +594,9 @@ export const UserController = {
       const user = await UsuarioModel.getById(id);
       if (!user) throw new Error('Usuario no encontrado.');
 
-      // Sincronizar con la tabla organizaciones si es una Organización
+      // Sincronizar o crear el registro en la tabla organizaciones si es una Organización
       if (user.rol === 'Organizacion') {
-        const org = await OrganizacionModel.getByEmail(user.correo);
+        const org = await ensureOrganizationForUser(user, req.body);
         if (org) {
           const orgDataToUpdate: any = {};
           if (nombre1 !== undefined) orgDataToUpdate.nombre = nombre1;
@@ -553,6 +617,7 @@ export const UserController = {
           if (telefono !== undefined) orgDataToUpdate.telefono = telefono;
           if (correo !== undefined) orgDataToUpdate.correo = correo;
           if (barrio !== undefined) orgDataToUpdate.barrio = barrio;
+          if (estado !== undefined) orgDataToUpdate.estado = parseEstadoInt(estado, 1);
 
           if (Object.keys(orgDataToUpdate).length > 0) {
             await OrganizacionModel.update(org.id_organizacion, orgDataToUpdate);
@@ -560,7 +625,7 @@ export const UserController = {
         }
       }
 
-      let frontendUser = await enrichUserIfOrganization(mapUserToFrontend(user));
+      let frontendUser = await enrichUserIfOrganization(mapUserToFrontend(user), user);
 
       const adminId = (req as AuthenticatedRequest).user?.id || 1;
       await logAudit(adminId, `Actualizó los datos del usuario: ${user.nombre1} ${user.apellido1} (${user.rol}).`);
@@ -688,7 +753,7 @@ export const UserController = {
 
       const userName = user 
         ? `${user.nombre1} ${user.apellido1 || ''}`.trim() 
-        : (org?.nombre_organizacion || 'Usuario');
+        : (org?.nombre || 'Usuario');
 
       // CASO 1: Solicitud de cambio con nueva contraseña
       if (nuevaPassword) {

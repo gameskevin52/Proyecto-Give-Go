@@ -15,7 +15,7 @@ import { AdminOrgItem } from '../models/admin.models';
 
 interface CreateVerificationModalProps {
   visible: boolean;
-  organizations: AdminOrgItem[];
+  organizations?: AdminOrgItem[];
   onClose: () => void;
   onSubmit: (payload: {
     organizacionId: string;
@@ -27,10 +27,11 @@ interface CreateVerificationModalProps {
 
 export const CreateVerificationModal: React.FC<CreateVerificationModalProps> = ({
   visible,
-  organizations,
+  organizations = [],
   onClose,
   onSubmit,
 }) => {
+  const safeOrgs = Array.isArray(organizations) ? organizations : [];
   const [selectedOrgId, setSelectedOrgId] = useState('');
   const [nit, setNit] = useState('');
   const [mensaje, setMensaje] = useState('');
@@ -122,7 +123,7 @@ export const CreateVerificationModal: React.FC<CreateVerificationModalProps> = (
           <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
             {errorMessage ? (
               <View style={styles.errorBox}>
-                <Text style={styles.errorText}>⚠️ {errorMessage}</Text>
+                <Text style={styles.errorText}>{errorMessage}</Text>
               </View>
             ) : null}
 
@@ -132,7 +133,7 @@ export const CreateVerificationModal: React.FC<CreateVerificationModalProps> = (
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: 8, paddingBottom: 10 }}
             >
-              {organizations.map((org) => {
+              {safeOrgs.map((org) => {
                 const isSelected = selectedOrgId === org.id;
                 return (
                   <TouchableOpacity

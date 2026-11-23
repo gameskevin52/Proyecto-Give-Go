@@ -8,6 +8,7 @@ interface AppButtonProps {
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   isLoading?: boolean;
+  loading?: boolean;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
@@ -19,12 +20,14 @@ export const AppButton: React.FC<AppButtonProps> = ({
   onPress,
   variant = 'primary',
   isLoading = false,
+  loading = false,
   disabled = false,
   style,
   textStyle,
   icon,
 }) => {
-  const isActionDisabled = disabled || isLoading;
+  const isSpinning = isLoading || loading;
+  const isActionDisabled = disabled || isSpinning;
 
   const getVariantStyle = () => {
     switch (variant) {
@@ -64,7 +67,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
         style,
       ]}
     >
-      {isLoading ? (
+      {isSpinning ? (
         <ActivityIndicator color={variant === 'outline' || variant === 'ghost' ? colors.primary : colors.surface} />
       ) : (
         <>

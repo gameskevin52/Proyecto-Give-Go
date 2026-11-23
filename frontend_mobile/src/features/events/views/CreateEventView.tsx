@@ -31,6 +31,8 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({ navigation }) 
     setVacantesVoluntarios,
     vacantesBeneficiarios,
     setVacantesBeneficiarios,
+    publicoObjetivo,
+    setPublicoObjetivo,
     ayudaOfrecida,
     setAyudaOfrecida,
     nombreLugar,
@@ -142,26 +144,52 @@ export const CreateEventView: React.FC<CreateEventViewProps> = ({ navigation }) 
           </View>
 
           {/* 4. Cupos y Vacantes */}
-          <Text style={createEventStyles.sectionTitle}>4. Cupos y Vacantes</Text>
+          <Text style={createEventStyles.sectionTitle}>4. Público Objetivo y Cupos</Text>
+          <View style={createEventStyles.chipContainer}>
+            {[
+              { key: 'ambos', label: 'Voluntarios y Beneficiarios' },
+              { key: 'beneficiarios', label: 'Solo Beneficiarios (Verde)' },
+              { key: 'voluntarios', label: 'Solo Voluntarios (Azul)' },
+            ].map((aud) => {
+              const isActive = publicoObjetivo === aud.key;
+              return (
+                <TouchableOpacity
+                  key={aud.key}
+                  style={[createEventStyles.chip, isActive && createEventStyles.chipActive]}
+                  onPress={() => setPublicoObjetivo(aud.key as any)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[createEventStyles.chipText, isActive && createEventStyles.chipTextActive]}>
+                    {aud.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
           <View style={createEventStyles.row}>
-            <View style={createEventStyles.halfInput}>
-              <AppInput
-                label="Cupo Voluntarios"
-                placeholder="10"
-                value={vacantesVoluntarios}
-                onChangeText={setVacantesVoluntarios}
-                keyboardType="numeric"
-              />
-            </View>
-            <View style={createEventStyles.halfInput}>
-              <AppInput
-                label="Cupo Beneficiarios"
-                placeholder="20"
-                value={vacantesBeneficiarios}
-                onChangeText={setVacantesBeneficiarios}
-                keyboardType="numeric"
-              />
-            </View>
+            {publicoObjetivo !== 'beneficiarios' && (
+              <View style={createEventStyles.halfInput}>
+                <AppInput
+                  label="Cupo Voluntarios"
+                  placeholder="10"
+                  value={vacantesVoluntarios}
+                  onChangeText={setVacantesVoluntarios}
+                  keyboardType="numeric"
+                />
+              </View>
+            )}
+            {publicoObjetivo !== 'voluntarios' && (
+              <View style={createEventStyles.halfInput}>
+                <AppInput
+                  label="Cupo Beneficiarios"
+                  placeholder="20"
+                  value={vacantesBeneficiarios}
+                  onChangeText={setVacantesBeneficiarios}
+                  keyboardType="numeric"
+                />
+              </View>
+            )}
           </View>
 
           <AppInput

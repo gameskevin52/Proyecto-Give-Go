@@ -204,7 +204,7 @@ export const AdminDonationsView: React.FC<AdminDonationsViewProps> = ({
           />
           {searchTerm.length > 0 && (
             <TouchableOpacity onPress={() => setSearchTerm('')}>
-              <Text style={{ fontSize: 13, color: '#94A3B8', fontWeight: '700' }}>✕</Text>
+              <Text style={{ fontSize: 13, color: '#94A3B8', fontWeight: '700' }}>X</Text>
             </TouchableOpacity>
           )}
         </View>

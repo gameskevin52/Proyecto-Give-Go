@@ -34,10 +34,18 @@ export const useEventDetailController = (navigation: any, eventId: number) => {
     setSuccessMessage('');
 
     try {
-      const res = await eventFeatureService.registerParticipant(event.id_evento, tipo);
+      const uid = user?.id_usuario || user?.id || '';
+      const res =
+        tipo === 'beneficiario'
+          ? await eventFeatureService.applyBeneficiaryPostulacion(event.id_evento, uid)
+          : await eventFeatureService.registerParticipant(event.id_evento, tipo, uid);
       if (res.success) {
-        setSuccessMessage('¡Inscripción registrada con éxito!');
-        fetchEvent(); // Refresh slots
+        setSuccessMessage(
+          tipo === 'beneficiario'
+            ? 'Postulación enviada en estado En Revisión para aprobación de la organización.'
+            : 'Inscripción como voluntario registrada con éxito.'
+        );
+        fetchEvent();
       } else {
         setErrorMessage(res.message || 'No se pudo completar la inscripción.');
       }
